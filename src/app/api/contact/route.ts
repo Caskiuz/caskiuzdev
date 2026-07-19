@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma/client";
+
+const contacts: Array<{
+  id: number;
+  name: string;
+  email: string;
+  service: string | null;
+  message: string;
+  createdAt: Date;
+}> = [];
+let contactIdCounter = 1;
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,19 +22,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contact = await prisma.contact.create({
-      data: {
-        name,
-        email,
-        service: service || null,
-        message,
-      },
-    });
+    const contact = {
+      id: contactIdCounter++,
+      name,
+      email,
+      service: service || null,
+      message,
+      createdAt: new Date(),
+    };
 
-    return NextResponse.json(
-      { success: true, id: contact.id },
-      { status: 201 }
-    );
+    contacts.push(contact);
+    console.log("📩 Nuevo contacto:", contact.email);
+
+    return NextResponse.json({ success: true, id: contact.id }, { status: 201 });
   } catch (error) {
     console.error("Error al guardar contacto:", error);
     return NextResponse.json(

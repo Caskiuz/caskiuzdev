@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma/client";
+
+const subscribers: Set<string> = new Set();
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,17 +14,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await prisma.subscriber.findUnique({
-      where: { email },
-    });
-    if (existing) {
+    if (subscribers.has(email)) {
       return NextResponse.json(
         { message: "Ya estás suscrito" },
         { status: 200 }
       );
     }
 
-    await prisma.subscriber.create({ data: { email } });
+    subscribers.add(email);
+    console.log("📧 Nuevo suscriptor:", email);
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
