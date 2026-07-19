@@ -10,6 +10,7 @@ import {
   Clock,
   CheckCircle2,
   ArrowRight,
+  Briefcase,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -119,6 +120,27 @@ export function Contact() {
                 </div>
               </div>
             </div>
+
+            {/* LinkedIn card */}
+            <Link
+              href="https://www.linkedin.com/in/ricardo-agelvis-9489a9370"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-[#0A66C2]" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold">LinkedIn</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Conecta conmigo
+                  </p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-[#0A66C2] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
 
             {/* Location */}
             <div className="glass-card p-5">
