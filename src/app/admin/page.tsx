@@ -16,8 +16,9 @@ export default async function AdminPage() {
     ]);
   } catch (error) {
     console.error("Error al conectar con la base de datos:", error);
-    dbError =
-      "No se pudo conectar a la base de datos. Verifica que DATABASE_URL en .env sea correcto y que la IP de tu servidor esté en la whitelist de Aiven.";
+    const msg =
+      error instanceof Error ? error.message : JSON.stringify(error);
+    dbError = `Error: ${msg}`;
   }
 
   return (
