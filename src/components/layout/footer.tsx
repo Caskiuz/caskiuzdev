@@ -3,14 +3,14 @@ import { Zap, Globe, Briefcase, MessageSquare, Mail, Heart } from "lucide-react"
 
 const footerLinks = {
   navegación: [
-    { href: "#home", label: "Inicio" },
-    { href: "#projects", label: "Proyectos" },
-    { href: "#services", label: "Servicios" },
-    { href: "#about", label: "Sobre mí" },
+    { href: "/#home", label: "Inicio" },
+    { href: "/#projects", label: "Proyectos" },
+    { href: "/#services", label: "Servicios" },
+    { href: "/#about", label: "Sobre mí" },
   ],
   recursos: [
     { href: "/blog", label: "Blog" },
-    { href: "#contact", label: "Contacto" },
+    { href: "/#contact", label: "Contacto" },
   ],
 };
 
@@ -31,7 +31,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link href="#home" className="flex items-center gap-2 mb-4">
+            <Link href="/#home" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
@@ -89,7 +89,7 @@ export function Footer() {
               Cuéntame tu idea y la convertimos en realidad.
             </p>
             <Link
-              href="#contact"
+              href="/#contact"
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-lg shadow-primary/25"
             >
               ¡Hablemos! 💬

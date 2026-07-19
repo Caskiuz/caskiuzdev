@@ -8,13 +8,13 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "#home", label: "Inicio" },
-  { href: "#projects", label: "Proyectos" },
-  { href: "#services", label: "Servicios" },
-  { href: "#tech-stack", label: "Stack" },
-  { href: "#about", label: "Sobre mí" },
+  { href: "/#home", label: "Inicio" },
+  { href: "/#projects", label: "Proyectos" },
+  { href: "/#services", label: "Servicios" },
+  { href: "/#tech-stack", label: "Stack" },
+  { href: "/#about", label: "Sobre mí" },
   { href: "/blog", label: "Blog" },
-  { href: "#contact", label: "Contacto" },
+  { href: "/#contact", label: "Contacto" },
 ];
 
 export function Header() {
@@ -43,7 +43,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
-            href="#home"
+            href="/#home"
             className="flex items-center gap-2 group"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -83,7 +83,7 @@ export function Header() {
               </button>
             )}
             <Link
-              href="#contact"
+              href="/#contact"
               className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-primary/40"
             >
               ¡Hablemos!
@@ -147,7 +147,7 @@ export function Header() {
                 </motion.div>
               ))}
               <Link
-                href="#contact"
+                href="/#contact"
                 onClick={() => setIsMobileOpen(false)}
                 className="block mt-3 px-4 py-3 text-center text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all"
               >
