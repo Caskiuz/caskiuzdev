@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const contacts: Array<{
-  id: number;
-  name: string;
-  email: string;
-  service: string | null;
-  message: string;
-  createdAt: Date;
-}> = [];
-let contactIdCounter = 1;
+import { prisma } from "@/lib/prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,16 +13,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contact = {
-      id: contactIdCounter++,
-      name,
-      email,
-      service: service || null,
-      message,
-      createdAt: new Date(),
-    };
+    const contact = await prisma.contact.create({
+      data: {
+        name,
+        email,
+        service: service || null,
+        message,
+      },
+    });
 
-    contacts.push(contact);
     console.log("📩 Nuevo contacto:", contact.email);
 
     return NextResponse.json({ success: true, id: contact.id }, { status: 201 });
