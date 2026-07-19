@@ -59,22 +59,22 @@ export function ProjectIcon({ name, size = ICON_SIZE }: { name: string; size?: n
             <stop offset="100%" stopColor="#FF8E53" />
           </linearGradient>
         </defs>
-        <g transform="translate(30, 24)">
-          {/* Tarjeta de crédito - cyan/purple brillante */}
-          <rect x="0" y="8" width="100" height="63" rx="8" fill={`url(#${g}-card)`} fillOpacity="0.2" stroke={`url(#${g}-card)`} strokeWidth="1.5" strokeOpacity="0.5" />
+        {/* Grupo con escala 85% para padding visual */}
+        <g transform="translate(12, 12) scale(0.85)">
+          {/* Tarjeta de crédito */}
+          <rect x="10" y="20" width="110" height="70" rx="9" fill={`url(#${g}-card)`} fillOpacity="0.2" stroke={`url(#${g}-card)`} strokeWidth="1.5" strokeOpacity="0.5" />
           {/* Chip */}
-          <rect x="10" y="18" width="18" height="12" rx="3" fill={`url(#${g}-card)`} opacity="0.7" />
-          {/* Símbolo $ brillante */}
-          <text x="50" y="54" textAnchor="middle" fill={`url(#${g}-card)`} fontSize="28" fontWeight="800" fontFamily="system-ui" opacity="1">$</text>
+          <rect x="20" y="32" width="20" height="14" rx="3" fill={`url(#${g}-card)`} opacity="0.7" />
+          {/* Símbolo $ centrado */}
+          <text x="65" y="68" textAnchor="middle" dominantBaseline="middle" fill={`url(#${g}-card)`} fontSize="30" fontWeight="800" fontFamily="system-ui" opacity="1">$</text>
           {/* Líneas decorativas */}
-          <line x1="12" y1="100" x2="88" y2="100" stroke="white" strokeWidth="1" opacity="0.15" />
-          <line x1="12" y1="107" x2="75" y2="107" stroke="white" strokeWidth="1" opacity="0.1" />
-          {/* Moneda 1 - dentro del viewBox */}
-          <circle cx="108" cy="28" r="13" fill={`url(#${g}-coin)`} opacity="0.9" />
-          <text x="108" y="33" textAnchor="middle" fill="white" fontSize="11" fontWeight="800">$</text>
-          {/* Moneda 2 - dentro del viewBox */}
-          <circle cx="108" cy="85" r="10" fill={`url(#${g}-coin)`} opacity="0.75" />
-          <text x="108" y="89" textAnchor="middle" fill="white" fontSize="9" fontWeight="800">$</text>
+          <line x1="22" y1="105" x2="98" y2="105" stroke="white" strokeWidth="1" opacity="0.15" />
+          <line x1="22" y1="113" x2="85" y2="113" stroke="white" strokeWidth="1" opacity="0.12" />
+          {/* Monedas - a la derecha, sin tocar bordes */}
+          <circle cx="130" cy="40" r="11" fill={`url(#${g}-coin)`} opacity="0.9" />
+          <text x="130" y="45" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10" fontWeight="800">$</text>
+          <circle cx="130" cy="90" r="9" fill={`url(#${g}-coin)`} opacity="0.75" />
+          <text x="130" y="94" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="8" fontWeight="800">$</text>
         </g>
       </svg>
     );
