@@ -53,7 +53,7 @@ export function Projects() {
   useEffect(() => {
     async function fetchRepos() {
       try {
-        const res = await fetch("https://api.github.com/users/Caskiuz/repos?per_page=20&sort=updated");
+        const res = await fetch("/api/github");
         if (!res.ok) throw new Error("GitHub API error");
         const data: GitHubRepo[] = await res.json();
         // Filtrar: quitar forks, repos vacíos (solo size 0 y sin descripción), ordenar por estrellas

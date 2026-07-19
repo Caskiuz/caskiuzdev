@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-// ═══════════════════════════════════════════════════
-// En producción (Vercel), las tablas ya existen en Aiven MySQL.
-// Para activar Prisma, descomenta la versión de abajo y elimina esta.
-// ═══════════════════════════════════════════════════
-
-// ─── VERSIÓN MEMORIA (desarrollo local) ───
-const subscribers: Set<string> = new Set();
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,15 +15,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (subscribers.has(email)) {
+    const existing = await prisma.subscriber.findUnique({
+      where: { email },
+    });
+    if (existing) {
       return NextResponse.json(
         { message: "Ya estás suscrito" },
         { status: 200 }
       );
     }
 
-    subscribers.add(email);
-    console.log("📧 Nuevo suscriptor:", email);
+    await prisma.subscriber.create({ data: { email } });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
@@ -39,26 +36,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-// ─── VERSIÓN PRISMA + AIVEN (descomentar para producción) ───
-// import { PrismaClient } from "@prisma/client";
-// const prisma = new PrismaClient();
-//
-// export async function POST(request: NextRequest) {
-//   try {
-//     const body = await request.json();
-//     const { email } = body;
-//     if (!email) {
-//       return NextResponse.json({ error: "Email es requerido" }, { status: 400 });
-//     }
-//     const existing = await prisma.subscriber.findUnique({ where: { email } });
-//     if (existing) {
-//       return NextResponse.json({ message: "Ya estás suscrito" }, { status: 200 });
-//     }
-//     await prisma.subscriber.create({ data: { email } });
-//     return NextResponse.json({ success: true }, { status: 201 });
-//   } catch (error) {
-//     console.error("Error en suscripción:", error);
-//     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
-//   }
-// }
