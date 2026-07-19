@@ -5,36 +5,71 @@ import { motion, useInView } from "framer-motion";
 
 const techCategories = [
   {
-    category: "Frontend",
+    category: "Frontend & Mobile",
     items: [
       { name: "React", icon: "⚛️" },
       { name: "Next.js", icon: "▲" },
       { name: "TypeScript", icon: "🔷" },
+      { name: "JavaScript", icon: "🟨" },
       { name: "TailwindCSS", icon: "🎨" },
-      { name: "Framer Motion", icon: "🔄" },
+      { name: "HTML / CSS", icon: "🌐" },
       { name: "React Native", icon: "📱" },
+      { name: "Expo", icon: "🏗️" },
+      { name: "Flutter / Dart", icon: "💙" },
+      { name: "Blade / Bootstrap", icon: "📄" },
+      { name: "Framer Motion", icon: "🎬" },
+      { name: "Radix UI", icon: "🧩" },
+      { name: "Lucide React", icon: "🪶" },
+      { name: "shadcn/ui", icon: "🎯" },
     ],
   },
   {
-    category: "Backend",
+    category: "Backend & APIs",
     items: [
       { name: "Node.js", icon: "🟢" },
-      { name: "Express", icon: "🚂" },
-      { name: "Prisma", icon: "🔺" },
+      { name: "Express.js", icon: "⚡" },
+      { name: "PHP", icon: "🐘" },
+      { name: "Laravel", icon: "🔥" },
+      { name: "Python", icon: "🐍" },
+      { name: "Django / DRF", icon: "🧩" },
       { name: "MySQL", icon: "🐬" },
-      { name: "PostgreSQL", icon: "🐘" },
+      { name: "PostgreSQL", icon: "🗄️" },
+      { name: "Prisma ORM", icon: "🔺" },
+      { name: "REST APIs", icon: "🔗" },
       { name: "GraphQL", icon: "◈" },
+      { name: "Microservicios", icon: "🏘️" },
     ],
   },
   {
-    category: "DevOps & Tools",
+    category: "DevOps & Cloud",
     items: [
       { name: "Docker", icon: "🐳" },
-      { name: "Git", icon: "📦" },
-      { name: "GitHub Actions", icon: "⚡" },
+      { name: "Git / GitHub", icon: "📦" },
+      { name: "GitHub Actions", icon: "⚙️" },
       { name: "Vercel", icon: "⬆️" },
+      { name: "Render", icon: "☁️" },
       { name: "AWS", icon: "☁️" },
-      { name: "Linux", icon: "🐧" },
+      { name: "Linux / Ubuntu", icon: "🐧" },
+      { name: "CI/CD", icon: "🔄" },
+      { name: "HTTPS / SSL", icon: "🔒" },
+      { name: "Hosting Compartido", icon: "🏠" },
+    ],
+  },
+  {
+    category: "Pagos, Web3 & Más",
+    items: [
+      { name: "Stripe", icon: "💳" },
+      { name: "Twilio", icon: "📞" },
+      { name: "Web3 / DApps", icon: "⛓️" },
+      { name: "BNB Chain", icon: "💎" },
+      { name: "Smart Contracts", icon: "📜" },
+      { name: "WebSockets", icon: "🔌" },
+      { name: "GPS / Mapas", icon: "📍" },
+      { name: "Resend (Email)", icon: "✉️" },
+      { name: "SEO / PWA", icon: "📊" },
+      { name: "MDX / Blog", icon: "📝" },
+      { name: "Prism / Syntax", icon: "🖍️" },
+      { name: "Octokit / GitHub API", icon: "🐙" },
     ],
   },
 ];
@@ -62,18 +97,18 @@ export function TechStack() {
             Tecnologías que <span className="gradient-text">domino</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Herramientas modernas para construir productos robustos, escalables y
-            mantenibles.
+            Stack completo para construir productos digitales robustos, escalables
+            y con experiencia de usuario excepcional.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {techCategories.map((cat, ci) => (
             <motion.div
               key={cat.category}
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: ci * 0.15 }}
+              transition={{ duration: 0.5, delay: ci * 0.12 }}
               className="glass-card p-6 sm:p-8"
             >
               <h3 className="text-lg font-bold mb-6 text-center">
@@ -85,12 +120,12 @@ export function TechStack() {
                     key={item.name}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.3, delay: ci * 0.15 + ii * 0.05 }}
+                    transition={{ duration: 0.3, delay: ci * 0.12 + ii * 0.05 }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface hover:bg-surface-hover border border-border transition-all duration-200 cursor-default"
                   >
                     <span className="text-lg">{item.icon}</span>
-                    <span className="text-sm font-medium">{item.name}</span>
+                    <span className="text-sm font-medium truncate">{item.name}</span>
                   </motion.div>
                 ))}
               </div>
