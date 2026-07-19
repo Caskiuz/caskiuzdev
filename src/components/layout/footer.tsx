@@ -18,7 +18,7 @@ const socialLinks = [
   { href: "https://github.com/caskiuz", icon: Globe, label: "GitHub" },
   { href: "https://www.linkedin.com/in/ricardo-agelvis-9489a9370", icon: Briefcase, label: "LinkedIn" },
   { href: "https://twitter.com/caskiuz", icon: MessageSquare, label: "Twitter" },
-  { href: "mailto:hola@caskiuz.dev", icon: Mail, label: "Email" },
+  { href: "mailto:rijarwow@gmail.com", icon: Mail, label: "Email" },
 ];
 
 export function Footer() {

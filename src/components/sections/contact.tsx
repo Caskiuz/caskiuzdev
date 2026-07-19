@@ -89,7 +89,7 @@ export function Contact() {
 
             {/* Email card */}
             <Link
-              href="mailto:hola@caskiuz.dev"
+              href="mailto:rijarwow@gmail.com"
               className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
             >
               <div className="flex items-center gap-4">
@@ -99,7 +99,7 @@ export function Contact() {
                 <div className="flex-1">
                   <h4 className="font-semibold">Email</h4>
                   <p className="text-sm text-muted-foreground">
-                    hola@caskiuz.dev
+                    rijarwow@gmail.com
                   </p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />

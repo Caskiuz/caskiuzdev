@@ -164,6 +164,6 @@ MIT © Caskiuz
 
 <div align="center">
 
-**[🌐 Ver Portfolio](https://caskiuz.vercel.app)** &nbsp;|&nbsp; **[💬 WhatsApp](https://wa.me/584262931869)** &nbsp;|&nbsp; **[📧 Email](mailto:hola@caskiuz.dev)**
+**[🌐 Ver Portfolio](https://caskiuz.vercel.app)** &nbsp;|&nbsp; **[💬 WhatsApp](https://wa.me/584262931869)** &nbsp;|&nbsp; **[📧 Email](mailto:rijarwow@gmail.com)**
 
 </div>
