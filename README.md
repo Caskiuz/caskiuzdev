@@ -152,7 +152,7 @@ El sistema de diseño usa variables CSS personalizadas para ambos temas:
 - **Dark mode** (default): fondo `#0a0a0f`, primario `#6C5CE7`, secundario `#00D2FF`
 - **Light mode**: fondo `#fafafa`, primario `#5B4CC4`, secundario `#0099CC`
 
-Las cards usan `backdrop-filter: blur(16px)` para el efecto glassmorphism. Los textos gradientes usan `background-clip: text`.
+Las cards usan `backdrop-filter: blur(16px)` para el efecto glassmorphism.
 
 ---
 
