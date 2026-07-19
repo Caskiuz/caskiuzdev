@@ -273,7 +273,7 @@ export function Projects() {
             {/* Side projects */}
             {sideProjects.map((project) => (
               <motion.div key={project.id} variants={itemVariants} className="group">
-                <div className="relative h-full rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 p-5 flex flex-col">
+                <div className="relative h-full min-h-[200px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 p-5 flex flex-col">
                   <div className="flex items-start justify-between mb-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                       <Code2 className="w-5 h-5 text-primary" />

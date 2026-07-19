@@ -9,10 +9,8 @@ const footerLinks = {
     { href: "#about", label: "Sobre mí" },
   ],
   recursos: [
-    { href: "#blog", label: "Blog" },
-    { href: "#faq", label: "FAQ" },
+    { href: "/blog", label: "Blog" },
     { href: "#contact", label: "Contacto" },
-    { href: "#privacy", label: "Privacidad" },
   ],
 };
 
