@@ -22,7 +22,7 @@ const services = [
     title: "Web Apps",
     description:
       "Aplicaciones web full-stack con React, Next.js y TypeScript. SSR, SSG, ISR — la estrategia correcta para cada caso.",
-    price: "Desde $1,500 USD",
+    price: "Desde $800 USD",
     features: [
       "Next.js / React SPA",
       "Server Side Rendering",
@@ -37,7 +37,7 @@ const services = [
     title: "Mobile Apps",
     description:
       "Apps nativas y multiplataforma con React Native y Expo. Una sola base de código para iOS y Android.",
-    price: "Desde $2,000 USD",
+    price: "Desde $1,200 USD",
     features: [
       "iOS + Android",
       "Expo managed workflow",
@@ -52,7 +52,7 @@ const services = [
     title: "APIs & Backend",
     description:
       "APIs RESTful y GraphQL con Node.js, Express, MySQL y arquitecturas serverless escalables.",
-    price: "Desde $800 USD",
+    price: "Desde $500 USD",
     features: [
       "REST / GraphQL APIs",
       "MySQL / PostgreSQL",
@@ -67,7 +67,7 @@ const services = [
     title: "Landing Pages",
     description:
       "Landing pages de alto rendimiento optimizadas para conversión. Carga ultrarrápida, diseño premium y formularios integrados.",
-    price: "Desde $500 USD",
+    price: "Desde $300 USD",
     features: [
       "Next.js + TailwindCSS",
       "Animaciones Framer Motion",
@@ -82,7 +82,7 @@ const services = [
     title: "SaaS MVP",
     description:
       "Producto mínimo viable para startups. Autenticación, pagos, dashboard y deploy en tiempo récord.",
-    price: "Desde $3,000 USD",
+    price: "Desde $1,800 USD",
     features: [
       "Auth + Roles de usuario",
       "Stripe / MercadoPago",
@@ -97,7 +97,7 @@ const services = [
     title: "E-commerce",
     description:
       "Tiendas online completas con carrito, pagos integrados y panel de administración de productos.",
-    price: "Desde $2,500 USD",
+    price: "Desde $1,500 USD",
     features: [
       "Stripe / MercadoPago",
       "Gestión de inventario",
@@ -112,7 +112,7 @@ const services = [
     title: "Dashboards & CRM",
     description:
       "Paneles administrativos y CRMs a medida con gráficos, reportes y gestión de datos en tiempo real.",
-    price: "Desde $1,500 USD",
+    price: "Desde $900 USD",
     features: [
       "Gráficos interactivos",
       "Exportación CSV/PDF",
@@ -127,7 +127,7 @@ const services = [
     title: "Integración IA",
     description:
       "Agrega inteligencia artificial a tu producto: chatbots, generadores de contenido, análisis predictivo con OpenAI/Claude.",
-    price: "Desde $800 USD",
+    price: "Desde $500 USD",
     features: [
       "ChatGPT / Claude API",
       "Chatbots inteligentes",
@@ -142,7 +142,7 @@ const services = [
     title: "Mantenimiento & Soporte",
     description:
       "Paz mental para tu negocio. Hosting, backups, actualizaciones, monitoreo 24/7 y soporte técnico continuo.",
-    price: "Desde $300 USD/mes",
+    price: "Desde $150 USD/mes",
     features: [
       "Hosting + Dominio",
       "Backups automáticos",
