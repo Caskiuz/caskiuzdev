@@ -129,24 +129,24 @@ export function Projects() {
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {/* Featured project 1 - large */}
+            {/* Featured project 1 */}
             {mainProjects[0] && (
-              <motion.div variants={itemVariants} className="lg:col-span-2 lg:row-span-2 group">
-                <div className="relative h-full min-h-[400px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden gradient-border p-6 flex flex-col justify-between">
+              <motion.div variants={itemVariants} className="group">
+                <div className="relative h-full min-h-[340px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   {/* SVG Illustration */}
-                  <div className="absolute top-0 right-0 w-60 h-60 opacity-50 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none">
-                    <ProjectIcon name={mainProjects[0].name} size={240} />
+                  <div className="absolute top-2 right-2 w-36 h-36 opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none">
+                    <ProjectIcon name={mainProjects[0].name} size={144} />
                   </div>
 
                   <div className="relative z-10">
                     <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                       Destacado
                     </span>
-                    <h3 className="text-2xl font-bold mt-2 mb-3 max-w-md">
+                    <h3 className="text-xl font-bold mt-2 mb-3">
                       {mainProjects[0].name.replace(/-/g, " ")}
                     </h3>
                     <p className="text-muted-foreground leading-relaxed max-w-lg">
@@ -207,12 +207,12 @@ export function Projects() {
             {/* Featured project 2 */}
             {mainProjects[1] && (
               <motion.div variants={itemVariants} className="group">
-                <div className="relative h-full min-h-[400px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
+                <div className="relative h-full min-h-[340px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
                   <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   {/* SVG Illustration */}
-                  <div className="absolute bottom-0 right-0 w-40 h-40 opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none">
-                    <ProjectIcon name={mainProjects[1].name} size={160} />
+                  <div className="absolute top-2 right-2 w-36 h-36 opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none">
+                    <ProjectIcon name={mainProjects[1].name} size={144} />
                   </div>
 
                   <div className="relative z-10">
