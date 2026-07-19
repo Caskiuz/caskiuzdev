@@ -2,9 +2,18 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
-import { ExternalLink, Code2, ArrowUpRight, Star, GitFork, Loader2 } from "lucide-react";
+import { ExternalLink, Code2, ArrowUpRight, Star, GitFork, Loader2, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { ProjectIcon } from "@/components/ui/project-icons";
+
+const hardcodedDescriptions: Record<string, string> = {
+  SistemadePrestamos:
+    "Sistema web de gestión de préstamos desarrollado en Laravel 11. Optimizado para producción en Render con Docker, persistencia de sesiones seguras HTTPS, diseño adaptable mobile-first, lógica de reportes financieros multimoneda y middleware personalizado.",
+  caskiuzdev:
+    "Portfolio personal full-stack — Next.js 14, TailwindCSS, Prisma, Framer Motion. Desplegado en Vercel con CI/CD. Blog MDX, SEO optimizado, formulario de contacto y panel admin.",
+  caskiuz:
+    "Perfil de GitHub con README personalizado. Presentación profesional, estadísticas de actividad y proyectos destacados.",
+};
 
 interface GitHubRepo {
   id: number;
@@ -150,7 +159,7 @@ export function Projects() {
                       {mainProjects[0].name.replace(/-/g, " ")}
                     </h3>
                     <p className="text-muted-foreground leading-relaxed max-w-lg">
-                      {mainProjects[0].description || "Sin descripción"}
+                      {hardcodedDescriptions[mainProjects[0].name] || mainProjects[0].description || "Sin descripción"}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-4">
                       {mainProjects[0].topics?.slice(0, 4).map((topic) => (
@@ -223,7 +232,7 @@ export function Projects() {
                       {mainProjects[1].name.replace(/-/g, " ")}
                     </h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      {mainProjects[1].description || "Sin descripción"}
+                      {hardcodedDescriptions[mainProjects[1].name] || mainProjects[1].description || "Sin descripción"}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-4">
                       {mainProjects[1].topics?.slice(0, 3).map((topic) => (
@@ -286,7 +295,7 @@ export function Projects() {
                     {project.name.replace(/-/g, " ")}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                    {project.description || "Sin descripción"}
+                    {hardcodedDescriptions[project.name] || project.description || "Sin descripción"}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-4">
                     {project.language && (
@@ -315,6 +324,29 @@ export function Projects() {
                 </div>
               </motion.div>
             ))}
+
+            {/* LinkedIn Card */}
+            <motion.div variants={itemVariants} className="group">
+              <div className="relative h-full min-h-[200px] rounded-2xl border border-[#0A66C2]/30 bg-[#0A66C2]/[0.03] hover:bg-[#0A66C2]/[0.06] transition-all duration-300 p-5 flex flex-col">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-[#0A66C2]" />
+                  </div>
+                </div>
+                <h3 className="font-bold mb-2">LinkedIn</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Conecta conmigo en LinkedIn. Experiencia profesional verificada, recomendaciones de clientes y habilidades validadas en desarrollo de software.
+                </p>
+                <Link
+                  href="https://www.linkedin.com/in/ricardo-agelvis-9489a9370"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 text-xs text-[#0A66C2] hover:underline font-medium inline-flex items-center gap-1"
+                >
+                  Ver perfil <ArrowUpRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </motion.div>
           </motion.div>
         )}
 
