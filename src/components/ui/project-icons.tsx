@@ -4,8 +4,14 @@ import { useId } from "react";
 
 const ICON_SIZE = 160;
 
+/** Sanitiza useId() para SVG: React 19 genera IDs con ":" que rompen url(#...) */
+function useSvgSafeId() {
+  const raw = useId();
+  return raw.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 export function ProjectIcon({ name, size = ICON_SIZE }: { name: string; size?: number }) {
-  const uid = useId();
+  const uid = useSvgSafeId();
   const lower = name.toLowerCase();
 
   // Delivery: Scooter de reparto con paquete

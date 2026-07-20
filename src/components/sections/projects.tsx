@@ -282,8 +282,13 @@ export function Projects() {
             {/* Side projects */}
             {sideProjects.map((project) => (
               <motion.div key={project.id} variants={itemVariants} className="group">
-                <div className="relative h-full min-h-[200px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 p-5 flex flex-col">
-                  <div className="flex items-start justify-between mb-3">
+                <div className="relative h-full min-h-[200px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 p-5 flex flex-col overflow-hidden">
+                  {/* SVG Illustration */}
+                  <div className="absolute top-1 right-1 w-28 h-28 opacity-25 group-hover:opacity-45 transition-opacity duration-500 pointer-events-none">
+                    <ProjectIcon name={project.name} size={112} />
+                  </div>
+
+                  <div className="relative z-10 flex items-start justify-between mb-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                       <Code2 className="w-5 h-5 text-primary" />
                     </div>
@@ -291,13 +296,13 @@ export function Projects() {
                       <Star className="w-3 h-3" /> {project.stargazers_count}
                     </span>
                   </div>
-                  <h3 className="font-bold mb-2 capitalize">
+                  <h3 className="font-bold mb-2 capitalize relative z-10">
                     {project.name.replace(/-/g, " ")}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1 relative z-10">
                     {hardcodedDescriptions[project.name] || project.description || "Sin descripción"}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-4">
+                  <div className="relative z-10 flex flex-wrap gap-1.5 mt-4">
                     {project.language && (
                       <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
                         <span className={`w-1.5 h-1.5 rounded-full ${langColor(project.language)}`} />
@@ -317,7 +322,7 @@ export function Projects() {
                     href={project.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
+                    className="relative z-10 mt-3 text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
                   >
                     Ver código <ArrowUpRight className="w-3 h-3" />
                   </Link>
