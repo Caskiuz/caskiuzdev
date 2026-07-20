@@ -8,6 +8,7 @@ const CATEGORIES = [
   { key: "desarrollo", label: "🏗️ Desarrollo" },
   { key: "producto", label: "🚀 Producto" },
   { key: "consultoria", label: "🔧 Consultoría" },
+  { key: "seo", label: "🔍 SEO Web" },
 ];
 
 function createEmptyService(): ServiceItem {

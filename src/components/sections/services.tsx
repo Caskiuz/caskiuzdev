@@ -13,11 +13,14 @@ import {
   Headset,
   Rocket,
   CheckCircle2,
+  Search,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Globe, Smartphone, Server, Zap, Rocket, ShoppingCart, BarChart3, Bot, Headset,
+  Search, MapPin,
 };
 
 const defaultServices = [
@@ -84,12 +87,41 @@ const defaultServices = [
     features: ["Hosting + Dominio incluido", "3h de cambios/soporte al mes", "Backups automáticos", "Actualizaciones de seguridad"],
     popular: true,
   },
+  {
+    id: "seo1", icon: "Search", title: "Auditoría SEO Completa",
+    description: "Análisis técnico, on-page y de competencia con reporte detallado. Descubrí exactamente qué impide que tu sitio aparezca en Google.",
+    price: "Desde $199 USD", category: "seo",
+    features: ["Reporte técnico + on-page + competencia", "Análisis de Core Web Vitals", "Plan de acción priorizado (PDF)", "Consultoría 1h para revisar hallazgos"],
+    popular: true,
+  },
+  {
+    id: "seo2", icon: "Zap", title: "SEO On-Page + Velocidad",
+    description: "Optimización de meta tags, headings, schema markup y rendimiento. Tu sitio pasará de lento a volar en搜索结果.",
+    price: "Desde $299 USD", category: "seo",
+    features: ["Meta tags + headings optimizados", "Schema markup (JSON-LD)", "Lighthouse ≥ 90 garantizado", "Core Web Vitals en verde"],
+    popular: false,
+  },
+  {
+    id: "seo3", icon: "MapPin", title: "SEO Local (Google My Business)",
+    description: "Perfil de negocio verificado, optimizado y conectado a tu web. Aparecé en el mapa cuando tus clientes te busquen.",
+    price: "Desde $199 USD", category: "seo",
+    features: ["Perfil GMB verificado y optimizado", "Fotos, horarios, servicios configurados", "Vinculación con tu sitio web", "Estrategia de reseñas locales"],
+    popular: false,
+  },
+  {
+    id: "seo4", icon: "BarChart3", title: "Keyword Research + Contenido",
+    description: "Investigación de palabras clave rentables + artículos listos para publicar. Atrae tráfico que convierte.",
+    price: "Desde $249 USD", category: "seo",
+    features: ["30+ keywords con volumen y dificultad", "Análisis de intención de búsqueda", "2 artículos optimizados listos para publicar", "Estrategia de contenidos a 3 meses"],
+    popular: false,
+  },
 ];
 
 const categories = [
   { key: "desarrollo", label: "🏗️ Desarrollo" },
   { key: "producto", label: "🚀 Producto" },
   { key: "consultoria", label: "🔧 Consultoría" },
+  { key: "seo", label: "🔍 SEO Web" },
 ];
 
 const containerVariants = {
