@@ -6,6 +6,8 @@ import { TechStack } from "@/components/sections/tech-stack";
 import { About } from "@/components/sections/about";
 import { Contact } from "@/components/sections/contact";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const config = await getSiteConfig();
 

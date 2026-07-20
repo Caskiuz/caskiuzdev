@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 const fields = [
   { key: "about_label", label: "Etiqueta superior", placeholder: "Sobre mí" },
   { key: "about_title", label: "Título de la sección", placeholder: "Mi historia" },
-  { key: "about_bio_title", label: "Título de la bio", placeholder: "Más allá del código" },
+  { key: "about_bio_title", label: "Título de la bio (1ra parte)", placeholder: "Más allá del" },
+  { key: "about_bio_title_highlight", label: "Título de la bio (highlight)", placeholder: "código" },
   { key: "about_bio_p1", label: "Bio - Párrafo 1", type: "textarea" as const, placeholder: "Soy un desarrollador full-stack..." },
   { key: "about_bio_p2", label: "Bio - Párrafo 2", type: "textarea" as const, placeholder: "Me especializo en el ecosistema..." },
   { key: "about_quick_location_label", label: "Quick fact - Ubicación label", placeholder: "Ubicación" },
