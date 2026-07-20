@@ -96,7 +96,7 @@ const defaultServices = [
   },
   {
     id: "seo2", icon: "Zap", title: "SEO On-Page + Velocidad",
-    description: "Optimización de meta tags, headings, schema markup y rendimiento. Tu sitio pasará de lento a volar en搜索结果.",
+    description: "Optimización de meta tags, headings, schema markup y rendimiento. Tu sitio pasará de lento a volar en los resultados de búsqueda.",
     price: "Desde $299 USD", category: "seo",
     features: ["Meta tags + headings optimizados", "Schema markup (JSON-LD)", "Lighthouse ≥ 90 garantizado", "Core Web Vitals en verde"],
     popular: false,
