@@ -30,8 +30,8 @@ async function main() {
 
     // ─── ABOUT ───
     { key: "about_label", value: "Sobre mí", group: "about" },
-    { key: "about_title", value: "Mi historia", group: "about" },
-    { key: "about_bio_title", value: "Más allá del código", group: "about" },
+    { key: "about_title", value: "historia", group: "about" },
+    { key: "about_bio_title", value: "Más allá del", group: "about" },
     { key: "about_bio_p1", value: "Soy un desarrollador full-stack apasionado por crear productos digitales que marcan la diferencia. Mi enfoque combina excelencia técnica con pensamiento estratégico, asegurando que cada línea de código contribuya al éxito del negocio.", group: "about" },
     { key: "about_bio_p2", value: "Me especializo en el ecosistema React/Next.js para frontend y Node.js/MySQL para backend, con experiencia en arquitecturas serverless, microservicios y despliegues en la nube.", group: "about" },
     { key: "about_quick_location_label", value: "Ubicación", group: "about" },
