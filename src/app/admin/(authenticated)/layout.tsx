@@ -7,6 +7,7 @@ import {
   LogOut,
   Home,
 } from "lucide-react";
+import { LogoutButton } from "./logout-button";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -75,16 +76,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Home className="w-5 h-5" />
             Ver Sitio Web
           </Link>
-          <button
-            onClick={async () => {
-              await fetch("/api/admin/login", { method: "DELETE" });
-              window.location.href = "/admin/login";
-            }}
-            className="flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors w-full"
-          >
-            <LogOut className="w-5 h-5" />
-            Cerrar Sesión
-          </button>
+          <LogoutButton />
         </div>
       </aside>
 
