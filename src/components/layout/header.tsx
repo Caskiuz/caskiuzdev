@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
-import { Menu, X, Sun, Moon, Zap } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -46,8 +46,14 @@ export function Header() {
             href="/#home"
             className="flex items-center gap-2 group"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
+              <img
+                src="/logo.svg"
+                alt="Caskiuz Logo"
+                className="w-8 h-8 object-contain"
+                width={32}
+                height={32}
+              />
             </div>
             <span className="font-bold text-lg tracking-tight">
               <span className="gradient-text">Caskiuz</span>
