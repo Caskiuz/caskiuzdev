@@ -48,21 +48,21 @@ export const metadata: Metadata = {
       "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
     images: [
       {
-        url: "/logo.svg",
-        width: 512,
-        height: 512,
-        alt: "Caskiuz Logo - Full-Stack Developer neon",
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Caskiuz - Full-Stack Developer | React, Next.js, Node.js",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Caskiuz | Full-Stack Developer & Software Architect",
     description:
       "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
-    images: ["/logo.svg"],
+    images: ["/api/og"],
   },
-  metadataBase: new URL("https://caskiuz.dev"),
+  metadataBase: new URL("https://caskiuz.vercel.app"),
 };
 
 export default async function RootLayout({
