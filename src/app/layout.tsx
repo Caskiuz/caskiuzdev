@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   authors: [{ name: "Caskiuz" }],
   creator: "Caskiuz",
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   openGraph: {
     type: "website",

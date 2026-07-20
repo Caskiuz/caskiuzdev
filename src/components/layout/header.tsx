@@ -46,14 +46,19 @@ export function Header() {
             href="/#home"
             className="flex items-center gap-2 group"
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
-              <img
-                src="/logo.svg"
-                alt="Caskiuz Logo"
-                className="w-8 h-8 object-contain"
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 32 32"
                 width={32}
                 height={32}
-              />
+                className="w-8 h-8"
+                aria-label="Caskiuz Logo"
+              >
+                <rect width="32" height="32" rx="6" fill="transparent" />
+                <text x="16" y="22" fontFamily="'Segoe UI', 'Geist Sans', system-ui, sans-serif" fontSize="18" fontWeight="800"
+                      textAnchor="middle" fill="white">C</text>
+              </svg>
             </div>
             <span className="font-bold text-lg tracking-tight">
               <span className="gradient-text">Caskiuz</span>
