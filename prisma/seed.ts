@@ -5,6 +5,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Iniciando seed de SiteConfig...");
 
+  // Verificar si ya existen configuraciones para NO sobrescribir datos guardados desde el panel admin
+  const existingCount = await prisma.siteConfig.count();
+  if (existingCount > 0) {
+    console.log(`⚠️  Ya existen ${existingCount} configuraciones en la DB. Seed omitido para preservar datos del admin.`);
+    console.log("   Si necesitas reiniciar los datos, vacía la tabla site_config primero.");
+    return;
+  }
+
   const configs = [
     // ─── HERO ───
     { key: "hero_name", value: "Caskiuz", group: "hero" },
@@ -68,35 +76,35 @@ async function main() {
         {
           id: "s1",
           title: "Web Apps",
-          description: "Aplicaciones web full-stack con React, Next.js y TypeScript. SSR, SSG, ISR — la estrategia correcta para cada caso.",
-          price: "Desde $800 USD",
+          description: "Aplicaciones web full-stack con React, Next.js y TypeScript. Código 100% custom, sin plantillas. Precio ajustable según alcance.",
+          price: "Desde $350 USD",
           category: "desarrollo",
-          features: ["Next.js / React SPA", "Server Side Rendering", "SEO optimizado", "Responsive design"],
+          features: ["Next.js / React SPA", "TypeScript + SSR/ISG", "SEO optimizado", "Pago 50% inicio / 50% entrega"],
           popular: true,
         },
         {
           id: "s2",
           title: "Mobile Apps",
-          description: "Apps nativas y multiplataforma con React Native y Expo. Una sola base de código para iOS y Android.",
-          price: "Desde $1,200 USD",
+          description: "Apps nativas y multiplataforma con React Native y Expo. Versión MVP desde precio base; funcionalidades extra ajustan el valor.",
+          price: "Desde $800 USD",
           category: "desarrollo",
-          features: ["iOS + Android", "Expo managed workflow", "Push notifications", "Offline-first"],
+          features: ["iOS + Android (MVP)", "Expo managed workflow", "Push notifications", "Financiamiento por hitos"],
           popular: false,
         },
         {
           id: "s3",
           title: "APIs & Backend",
-          description: "APIs RESTful y GraphQL con Node.js, Express, MySQL y arquitecturas serverless escalables.",
-          price: "Desde $500 USD",
+          description: "APIs RESTful y GraphQL con Node.js, Express, MySQL. Escala con la complejidad del proyecto.",
+          price: "Desde $300 USD",
           category: "desarrollo",
-          features: ["REST / GraphQL APIs", "MySQL / PostgreSQL", "Autenticación JWT/OAuth", "Microservicios"],
+          features: ["REST / GraphQL APIs", "MySQL / PostgreSQL", "Autenticación JWT/OAuth", "Arquitectura escalable"],
           popular: false,
         },
         {
           id: "s4",
           title: "Landing Pages",
-          description: "Landing pages de alto rendimiento optimizadas para conversión. Carga ultrarrápida, diseño premium y formularios integrados.",
-          price: "Desde $300 USD",
+          description: "Landing pages de alto rendimiento con código custom. Sin plantillas WordPress — velocidad y SEO real. El gancho perfecto para tu negocio.",
+          price: "Desde $150 USD",
           category: "desarrollo",
           features: ["Next.js + TailwindCSS", "Animaciones Framer Motion", "SEO 100% optimizado", "Formulario con WhatsApp/Email"],
           popular: false,
@@ -104,35 +112,35 @@ async function main() {
         {
           id: "s5",
           title: "SaaS MVP",
-          description: "Producto mínimo viable para startups. Autenticación, pagos, dashboard y deploy en tiempo récord.",
-          price: "Desde $1,800 USD",
+          description: "Producto mínimo viable para startups. Valida tu idea en semanas. El precio final depende de funcionalidades.",
+          price: "Desde $1,000 USD",
           category: "producto",
-          features: ["Auth + Roles de usuario", "Stripe / MercadoPago", "Dashboard administrativo", "Deploy en Vercel/AWS"],
+          features: ["Auth + Roles de usuario", "Stripe / MercadoPago", "Dashboard administrativo", "Financiamiento 50/50"],
           popular: true,
         },
         {
           id: "s6",
           title: "E-commerce",
-          description: "Tiendas online completas con carrito, pagos integrados y panel de administración de productos.",
-          price: "Desde $1,500 USD",
+          description: "Tiendas online con carrito, pagos y panel de administración. Precio base para catálogo simple; crece con tu inventario.",
+          price: "Desde $1,000 USD",
           category: "producto",
-          features: ["Stripe / MercadoPago", "Gestión de inventario", "Carrito + Checkout", "SEO para productos"],
+          features: ["Stripe / MercadoPago", "Gestión de inventario", "Carrito + Checkout", "Pago en 3 hitos"],
           popular: false,
         },
         {
           id: "s7",
           title: "Dashboards & CRM",
-          description: "Paneles administrativos y CRMs a medida con gráficos, reportes y gestión de datos en tiempo real.",
-          price: "Desde $900 USD",
+          description: "Paneles administrativos y CRMs a medida. Precio gancho para dashboards básicos; se ajusta con funcionalidades avanzadas.",
+          price: "Desde $350 USD",
           category: "producto",
-          features: ["Gráficos interactivos", "Exportación CSV/PDF", "Roles y permisos", "Filtros avanzados"],
+          features: ["Gráficos interactivos", "Exportación CSV/PDF", "Roles y permisos", "Pago 50% inicio / 50% entrega"],
           popular: false,
         },
         {
           id: "s8",
           title: "Integración IA",
-          description: "Agrega inteligencia artificial a tu producto: chatbots, generadores de contenido, análisis predictivo con OpenAI/Claude.",
-          price: "Desde $500 USD",
+          description: "Conecta tu producto a OpenAI, Claude o la IA que necesites. Chatbots, generadores de contenido, análisis. Precio de entrada inmejorable.",
+          price: "Desde $150 USD",
           category: "producto",
           features: ["ChatGPT / Claude API", "Chatbots inteligentes", "Generación de contenido", "Análisis de sentimiento"],
           popular: false,
@@ -140,10 +148,10 @@ async function main() {
         {
           id: "s9",
           title: "Mantenimiento & Soporte",
-          description: "Paz mental para tu negocio. Hosting, backups, actualizaciones, monitoreo 24/7 y soporte técnico continuo.",
-          price: "Desde $150 USD/mes",
+          description: "Hosting, backups, actualizaciones y una bolsa de horas mensual para cambios. Paga solo por lo que necesitas.",
+          price: "Desde $80 USD/mes",
           category: "consultoria",
-          features: ["Hosting + Dominio", "Backups automáticos", "Actualizaciones de seguridad", "Soporte prioritario 24/7"],
+          features: ["Hosting + Dominio incluido", "3h de cambios/soporte al mes", "Backups automáticos", "Actualizaciones de seguridad"],
           popular: true,
         },
       ]),
