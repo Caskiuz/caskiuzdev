@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { getSiteConfig } from "@/lib/site-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,11 +46,18 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://caskiuz.dev"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let config: Record<string, string> = {};
+  try {
+    config = await getSiteConfig();
+  } catch {
+    // Si la DB no está disponible, usamos fallbacks en cada componente
+  }
+
   return (
     <html
       lang="es"
@@ -65,8 +73,8 @@ export default function RootLayout({
         >
           <Header />
           <main className="flex-1">{children}</main>
-          <Footer />
-          <WhatsAppButton />
+          <Footer config={config} />
+          <WhatsAppButton config={config} />
         </ThemeProvider>
       </body>
     </html>

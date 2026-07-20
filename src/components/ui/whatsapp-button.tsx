@@ -3,10 +3,16 @@
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 
-export function WhatsAppButton() {
-  const phoneNumber = "584262931869";
+interface WhatsAppButtonProps {
+  config?: Record<string, string>;
+}
+
+export function WhatsAppButton({ config = {} }: WhatsAppButtonProps) {
+  const c = (key: string, fallback: string) => config[key] || fallback;
+
+  const phoneNumber = c("contact_whatsapp", "584262931869");
   const message = encodeURIComponent(
-    "¡Hola Caskiuz! 👋 Vi tu portfolio y me interesa trabajar contigo."
+    c("contact_whatsapp_message", "¡Hola Caskiuz! 👋 Vi tu portfolio y me interesa trabajar contigo.")
   );
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 

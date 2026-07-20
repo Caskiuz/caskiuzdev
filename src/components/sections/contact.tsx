@@ -15,17 +15,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export function Contact() {
+interface ContactProps {
+  config?: Record<string, string>;
+}
+
+export function Contact({ config = {} }: ContactProps) {
+  const c = (key: string, fallback: string) => config[key] || fallback;
+
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [formState, setFormState] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
 
-  const phoneNumber = "584262931869";
+  const phoneNumber = c("contact_whatsapp", "584262931869");
   const whatsappMessage = encodeURIComponent(
-    "¡Hola Caskiuz! 👋 Me gustaría conversar sobre un proyecto."
+    c("contact_whatsapp_message", "¡Hola Caskiuz! 👋 Me gustaría conversar sobre un proyecto.")
   );
+  const email = c("contact_email", "rijarwow@gmail.com");
+  const linkedinUrl = c("contact_linkedin_url", "https://www.linkedin.com/in/ricardo-agelvis-9489a9370");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,14 +76,13 @@ export function Contact() {
           className="text-center mb-16"
         >
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">
-            Contacto
+            {c("contact_label", "Contacto")}
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            ¿Listo para <span className="gradient-text">empezar</span>?
+            ¿Listo para <span className="gradient-text">{c("contact_title", "empezar")}</span>?
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Cuéntame sobre tu proyecto y te responderé en menos de 24 horas. La
-            primera consulta es gratis.
+            {c("contact_subtitle", "Cuéntame sobre tu proyecto y te responderé en menos de 24 horas. La primera consulta es gratis.")}
           </p>
         </motion.div>
 
@@ -99,9 +106,11 @@ export function Contact() {
                   <MessageCircle className="w-6 h-6 text-[#25D366]" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold">WhatsApp Directo</h4>
+                  <h4 className="font-semibold">
+                    {c("contact_whatsapp_card_title", "WhatsApp Directo")}
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Respuesta en minutos
+                    {c("contact_whatsapp_card_subtitle", "Respuesta en minutos")}
                   </p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-[#25D366] group-hover:translate-x-1 transition-all" />
@@ -110,7 +119,7 @@ export function Contact() {
 
             {/* Email card */}
             <Link
-              href="mailto:rijarwow@gmail.com"
+              href={`mailto:${email}`}
               className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
             >
               <div className="flex items-center gap-4">
@@ -119,9 +128,7 @@ export function Contact() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">Email</h4>
-                  <p className="text-sm text-muted-foreground">
-                    rijarwow@gmail.com
-                  </p>
+                  <p className="text-sm text-muted-foreground">{email}</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
@@ -136,32 +143,34 @@ export function Contact() {
                 <div>
                   <h4 className="font-semibold">Disponibilidad</h4>
                   <p className="text-sm text-muted-foreground">
-                    Lunes a Viernes, 9AM - 6PM (GMT-4)
+                    {c("contact_availability", "Lunes a Viernes, 9AM - 6PM (GMT-4)")}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* LinkedIn card */}
-            <Link
-              href="https://www.linkedin.com/in/ricardo-agelvis-9489a9370"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
-                  <Briefcase className="w-6 h-6 text-[#0A66C2]" />
+            {linkedinUrl && (
+              <Link
+                href={linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
+                    <Briefcase className="w-6 h-6 text-[#0A66C2]" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">LinkedIn</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {c("contact_linkedin_label", "Conecta conmigo")}
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-[#0A66C2] group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold">LinkedIn</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Conecta conmigo
-                  </p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-[#0A66C2] group-hover:translate-x-1 transition-all" />
-              </div>
-            </Link>
+              </Link>
+            )}
 
             {/* Location */}
             <div className="glass-card p-5">
@@ -172,7 +181,7 @@ export function Contact() {
                 <div>
                   <h4 className="font-semibold">Ubicación</h4>
                   <p className="text-sm text-muted-foreground">
-                    Remoto — Trabajo con clientes de todo el mundo
+                    {c("contact_location", "Remoto — Trabajo con clientes de todo el mundo")}
                   </p>
                 </div>
               </div>

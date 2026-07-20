@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setAuthCookie } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Establecer la cookie de sesión
     await setAuthCookie();
 
-    return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error en login:", error);
     return NextResponse.json(
@@ -35,4 +36,10 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE() {
+  const cookieStore = await cookies();
+  cookieStore.delete("admin_token");
+  return NextResponse.json({ success: true });
 }

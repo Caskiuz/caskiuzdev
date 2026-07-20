@@ -57,3 +57,12 @@ model Project {
 
   @@map("projects")
 }
+
+model SiteConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String @db.Text
+  group String
+
+  @@map("site_config")
+}

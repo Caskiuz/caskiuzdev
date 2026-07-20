@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Zap, Globe, Briefcase, MessageSquare, Mail, Heart } from "lucide-react";
 
+interface FooterProps {
+  config?: Record<string, string>;
+}
+
 const footerLinks = {
   navegación: [
     { href: "/#home", label: "Inicio" },
@@ -14,14 +18,16 @@ const footerLinks = {
   ],
 };
 
-const socialLinks = [
-  { href: "https://github.com/caskiuz", icon: Globe, label: "GitHub" },
-  { href: "https://www.linkedin.com/in/ricardo-agelvis-9489a9370", icon: Briefcase, label: "LinkedIn" },
-  { href: "https://twitter.com/caskiuz", icon: MessageSquare, label: "Twitter" },
-  { href: "mailto:rijarwow@gmail.com", icon: Mail, label: "Email" },
-];
+export function Footer({ config = {} }: FooterProps) {
+  const c = (key: string, fallback: string) => config[key] || fallback;
 
-export function Footer() {
+  const socialLinks = [
+    { href: c("social_github_url", "https://github.com/caskiuz"), icon: Globe, label: c("social_github_label", "GitHub") },
+    { href: c("social_linkedin_url", "https://www.linkedin.com/in/ricardo-agelvis-9489a9370"), icon: Briefcase, label: c("social_linkedin_label", "LinkedIn") },
+    { href: c("social_twitter_url", ""), icon: MessageSquare, label: c("social_twitter_label", "Twitter") },
+    { href: c("social_instagram_url", "") || `mailto:${c("contact_email", "rijarwow@gmail.com")}`, icon: Mail, label: c("social_instagram_label", "Email") },
+  ].filter((s) => s.href);
+
   return (
     <footer className="relative border-t border-border bg-surface/50 backdrop-blur-sm">
       {/* Top gradient line */}
@@ -100,11 +106,10 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Caskiuz. Todos los derechos reservados.
+            {c("footer_copyright", `© ${new Date().getFullYear()} Caskiuz. Todos los derechos reservados.`)}
           </p>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            Hecho con <Heart className="w-3 h-3 text-accent fill-accent" /> y mucho
-            ☕
+            {c("footer_built_with", "Hecho con")} <Heart className="w-3 h-3 text-accent fill-accent" />
           </p>
         </div>
       </div>

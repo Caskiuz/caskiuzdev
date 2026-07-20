@@ -4,34 +4,37 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Code2, Briefcase, GraduationCap, Heart, MapPin, Coffee } from "lucide-react";
 
-const timeline = [
-  {
-    year: "2024 — Presente",
-    title: "Senior Full-Stack Developer",
-    company: "Freelance Internacional",
-    description:
-      "Desarrollo de aplicaciones web y mobile para clientes en USA, Europa y Latinoamérica. Arquitectura de soluciones cloud-native.",
-    icon: Code2,
-  },
-  {
-    year: "2022 — 2024",
-    title: "Full-Stack Developer",
-    company: "Agencia Digital TechCo",
-    description:
-      "Lideré el equipo de frontend en proyectos React/Next.js. Implementé CI/CD pipelines y migraciones a TypeScript.",
-    icon: Briefcase,
-  },
-  {
-    year: "2020 — 2022",
-    title: "Backend Developer",
-    company: "Startup Fintech",
-    description:
-      "Diseñé e implementé APIs RESTful con Node.js y MySQL. Construí microservicios para procesamiento de pagos.",
-    icon: GraduationCap,
-  },
-];
+interface AboutProps {
+  config?: Record<string, string>;
+}
 
-export function About() {
+export function About({ config = {} }: AboutProps) {
+  const c = (key: string, fallback: string) => config[key] || fallback;
+
+  const timeline = [
+    {
+      year: c("about_tl_1_year", "2024 — Presente"),
+      title: c("about_tl_1_title", "Senior Full-Stack Developer"),
+      company: c("about_tl_1_company", "Freelance Internacional"),
+      description: c("about_tl_1_desc", "Desarrollo de aplicaciones web y mobile para clientes en USA, Europa y Latinoamérica. Arquitectura de soluciones cloud-native."),
+      icon: Code2,
+    },
+    {
+      year: c("about_tl_2_year", "2022 — 2024"),
+      title: c("about_tl_2_title", "Full-Stack Developer"),
+      company: c("about_tl_2_company", "Agencia Digital TechCo"),
+      description: c("about_tl_2_desc", "Lideré el equipo de frontend en proyectos React/Next.js. Implementé CI/CD pipelines y migraciones a TypeScript."),
+      icon: Briefcase,
+    },
+    {
+      year: c("about_tl_3_year", "2020 — 2022"),
+      title: c("about_tl_3_title", "Backend Developer"),
+      company: c("about_tl_3_company", "Startup Fintech"),
+      description: c("about_tl_3_desc", "Diseñé e implementé APIs RESTful con Node.js y MySQL. Construí microservicios para procesamiento de pagos."),
+      icon: GraduationCap,
+    },
+  ];
+
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -45,10 +48,10 @@ export function About() {
           className="text-center mb-16"
         >
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">
-            Sobre mí
+            {c("about_label", "Sobre mí")}
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Mi <span className="gradient-text">historia</span>
+            Mi <span className="gradient-text">{c("about_title", "historia")}</span>
           </h2>
         </motion.div>
 
@@ -61,21 +64,14 @@ export function About() {
           >
             <div className="glass-card p-8">
               <h3 className="text-2xl font-bold mb-4">
-                Más allá del <span className="gradient-text">código</span>
+                {c("about_bio_title", "Más allá del")}{" "}
+                <span className="gradient-text">{c("about_bio_title_highlight", "código")}</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Soy un desarrollador full-stack apasionado por crear productos
-                digitales que marcan la diferencia. Mi enfoque combina
-                <strong className="text-foreground"> excelencia técnica </strong>
-                con
-                <strong className="text-foreground"> pensamiento estratégico</strong>
-                , asegurando que cada línea de código contribuya al éxito del
-                negocio.
+                {c("about_bio_p1", "Soy un desarrollador full-stack apasionado por crear productos digitales que marcan la diferencia. Mi enfoque combina excelencia técnica con pensamiento estratégico, asegurando que cada línea de código contribuya al éxito del negocio.")}
               </p>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Me especializo en el ecosistema React/Next.js para frontend y
-                Node.js/MySQL para backend, con experiencia en arquitecturas
-                serverless, microservicios y despliegues en la nube.
+                {c("about_bio_p2", "Me especializo en el ecosistema React/Next.js para frontend y Node.js/MySQL para backend, con experiencia en arquitecturas serverless, microservicios y despliegues en la nube.")}
               </p>
 
               {/* Quick facts */}
@@ -83,15 +79,23 @@ export function About() {
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
                   <MapPin className="w-5 h-5 text-primary" />
                   <div>
-                    <div className="text-xs text-muted-foreground">Ubicación</div>
-                    <div className="text-sm font-medium">Remoto Global</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c("about_quick_location_label", "Ubicación")}
+                    </div>
+                    <div className="text-sm font-medium">
+                      {c("about_quick_location_value", "Remoto Global")}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
                   <Coffee className="w-5 h-5 text-primary" />
                   <div>
-                    <div className="text-xs text-muted-foreground">Disponible</div>
-                    <div className="text-sm font-medium">Full-Time</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c("about_quick_avail_label", "Disponible")}
+                    </div>
+                    <div className="text-sm font-medium">
+                      {c("about_quick_avail_value", "Full-Time")}
+                    </div>
                   </div>
                 </div>
               </div>

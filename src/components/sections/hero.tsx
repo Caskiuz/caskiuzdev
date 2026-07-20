@@ -5,7 +5,13 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-export function Hero() {
+interface HeroProps {
+  config?: Record<string, string>;
+}
+
+export function Hero({ config = {} }: HeroProps) {
+  const c = (key: string, fallback: string) => config[key] || fallback;
+
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -103,7 +109,7 @@ export function Hero() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
-          Disponible para nuevos proyectos
+          {c("hero_badge", "Disponible para nuevos proyectos")}
         </motion.div>
 
         {/* Main heading */}
@@ -114,13 +120,11 @@ export function Hero() {
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6"
         >
           <span className="text-foreground">Hola, soy </span>
-          <span className="gradient-text">Caskiuz</span>
+          <span className="gradient-text">{c("hero_name", "Caskiuz")}</span>
           <br />
-          <span className="text-foreground">
-            <span className="gradient-text">Full-Stack</span> Developer
+          <span className="text-foreground whitespace-pre-line">
+            {c("hero_title", "Full-Stack Developer\n& Software Architect")}
           </span>
-          <br />
-          <span className="text-foreground">& Software Architect</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -130,11 +134,7 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Construyo aplicaciones web y mobile de alto rendimiento que{" "}
-          <span className="text-foreground font-medium">
-            elevan tu negocio al siguiente nivel
-          </span>
-          . Especializado en React, Next.js, Node.js y arquitecturas escalables en la nube.
+          {c("hero_subtitle", "Construyo aplicaciones web y mobile de alto rendimiento que elevan tu negocio al siguiente nivel. Especializado en React, Next.js, Node.js y arquitecturas escalables en la nube.")}
         </motion.p>
 
         {/* CTA buttons */}
@@ -149,14 +149,14 @@ export function Hero() {
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5"
           >
             <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
-            ¡Trabajemos juntos!
+            {c("hero_cta_primary", "¡Trabajemos juntos!")}
           </Link>
           <Link
             href="#projects"
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-foreground bg-surface hover:bg-surface-hover border border-border rounded-full transition-all duration-200 hover:-translate-y-0.5"
           >
             <ExternalLink className="w-5 h-5 group-hover:rotate-45 transition-transform" />
-            Ver proyectos
+            {c("hero_cta_secondary", "Ver proyectos")}
           </Link>
         </motion.div>
 
@@ -168,9 +168,9 @@ export function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-8 sm:gap-12"
         >
           {[
-            { value: "3+", label: "Años de experiencia" },
-            { value: "50+", label: "Proyectos completados" },
-            { value: "30+", label: "Clientes satisfechos" },
+            { value: c("hero_stat_1_value", "3+"), label: c("hero_stat_1_label", "Años de experiencia") },
+            { value: c("hero_stat_2_value", "50+"), label: c("hero_stat_2_label", "Proyectos completados") },
+            { value: c("hero_stat_3_value", "30+"), label: c("hero_stat_3_label", "Clientes satisfechos") },
           ].map((stat, i) => (
             <div key={i} className="text-center">
               <div className="text-3xl sm:text-4xl font-bold gradient-text">

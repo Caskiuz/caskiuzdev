@@ -33,6 +33,9 @@
     "resend": "^6.17.2",
     "tailwind-merge": "^3.6.0"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
