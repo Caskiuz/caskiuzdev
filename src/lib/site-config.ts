@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma/client";
-import { unstable_cache } from "next/cache";
 
 export type ConfigGroup =
   | "hero"
@@ -17,34 +16,37 @@ export interface SiteConfigRecord {
 
 /**
  * Obtiene todas las configuraciones del sitio desde la base de datos.
- * Usa caché de Next.js para evitar queries repetidos.
+ * Retorna un mapa vacío si la DB no está disponible.
  */
 export async function getSiteConfig(): Promise<Record<string, string>> {
-  return unstable_cache(
-    async () => {
-      const configs = await prisma.siteConfig.findMany();
-      const map: Record<string, string> = {};
-      for (const c of configs) {
-        map[c.key] = c.value;
-      }
-      return map;
-    },
-    ["site-config"],
-    { revalidate: 60, tags: ["site-config"] }
-  )();
+  try {
+    const configs = await prisma.siteConfig.findMany();
+    const map: Record<string, string> = {};
+    for (const c of configs) {
+      map[c.key] = c.value;
+    }
+    return map;
+  } catch {
+    // DB no disponible o tabla no existe — retornar vacío, el frontend usará fallbacks
+    return {};
+  }
 }
 
 /**
  * Obtiene las configuraciones agrupadas por grupo.
  */
 export async function getSiteConfigByGroup(): Promise<Record<string, Record<string, string>>> {
-  const configs = await prisma.siteConfig.findMany();
-  const grouped: Record<string, Record<string, string>> = {};
-  for (const c of configs) {
-    if (!grouped[c.group]) grouped[c.group] = {};
-    grouped[c.group][c.key] = c.value;
+  try {
+    const configs = await prisma.siteConfig.findMany();
+    const grouped: Record<string, Record<string, string>> = {};
+    for (const c of configs) {
+      if (!grouped[c.group]) grouped[c.group] = {};
+      grouped[c.group][c.key] = c.value;
+    }
+    return grouped;
+  } catch {
+    return {};
   }
-  return grouped;
 }
 
 /**
