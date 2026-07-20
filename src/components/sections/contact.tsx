@@ -9,6 +9,7 @@ import {
   Send,
   Clock,
   CheckCircle2,
+  AlertCircle,
   ArrowRight,
   Briefcase,
 } from "lucide-react";
@@ -30,11 +31,31 @@ export function Contact() {
     e.preventDefault();
     setFormState("submitting");
 
-    // Simular envío (placeholder para API route)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setFormState("success");
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      service: formData.get("service") as string,
+      message: formData.get("message") as string,
+    };
 
-    setTimeout(() => setFormState("idle"), 3000);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Error al enviar");
+
+      setFormState("success");
+      e.currentTarget.reset();
+
+      setTimeout(() => setFormState("idle"), 5000);
+    } catch {
+      setFormState("error");
+      setTimeout(() => setFormState("idle"), 4000);
+    }
   };
 
   return (
@@ -166,7 +187,35 @@ export function Contact() {
             className="lg:col-span-2"
           >
             <div className="glass-card p-6 sm:p-8">
-              {formState === "success" ? (
+              {formState === "error" ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-12"
+                >
+                  <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">¡Oops! Algo salió mal</h3>
+                  <p className="text-muted-foreground mb-6">
+                    No se pudo enviar el mensaje. Por favor, inténtalo de nuevo o escríbeme directamente por WhatsApp.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      onClick={() => setFormState("idle")}
+                      className="px-6 py-3 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
+                    >
+                      Intentar de nuevo
+                    </button>
+                    <Link
+                      href={`https://wa.me/${phoneNumber}?text=${whatsappMessage}`}
+                      target="_blank"
+                      className="px-6 py-3 text-sm font-medium text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all"
+                    >
+                      <MessageCircle className="w-4 h-4 inline mr-1.5" />
+                      WhatsApp
+                    </Link>
+                  </div>
+                </motion.div>
+              ) : formState === "success" ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
