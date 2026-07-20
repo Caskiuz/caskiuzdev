@@ -155,14 +155,17 @@ export function Services({ config = {} }: ServicesProps) {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Parse services from config or use defaults
+  // Merge: DB services take priority, new defaults are appended
   let services: ServiceItem[] = defaultServices;
   try {
     const raw = config["services_data"];
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        services = parsed;
+        const dbIds = new Set(parsed.map((s: ServiceItem) => s.id));
+        // Defaults not in DB get appended (new services added in code)
+        const newDefaults = defaultServices.filter((s) => !dbIds.has(s.id));
+        services = [...parsed, ...newDefaults];
       }
     }
   } catch {
