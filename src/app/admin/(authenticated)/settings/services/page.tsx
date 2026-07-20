@@ -1,18 +1,23 @@
 import { getSiteConfig } from "@/lib/site-config";
 import { ServicesEditor } from "./services-editor";
+import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 
 export const dynamic = "force-dynamic";
 
 export default async function ServicesSettingsPage() {
   const config = await getSiteConfig();
 
-  // Parse existing services or default to empty array
+  // Parse existing services from DB and merge with defaults
   let services: ServiceItem[] = [];
   try {
     const raw = config["services_data"];
-    if (raw) services = JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        services = mergeServices(parsed);
+      }
+    }
   } catch {
-    // Default services structure
     services = [];
   }
 
@@ -32,12 +37,4 @@ export default async function ServicesSettingsPage() {
   );
 }
 
-export interface ServiceItem {
-  id: string;
-  title: string;
-  description: string;
-  price: string;
-  category: string;
-  features: string[];
-  popular: boolean;
-}
+export type { ServiceItem } from "@/lib/services-defaults";

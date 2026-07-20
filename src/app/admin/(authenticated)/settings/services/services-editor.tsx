@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { Save, Plus, Trash2, CheckCircle2, AlertCircle, Loader2, GripVertical, X, Star } from "lucide-react";
-import type { ServiceItem } from "./page";
-
-const CATEGORIES = [
-  { key: "desarrollo", label: "🏗️ Desarrollo" },
-  { key: "producto", label: "🚀 Producto" },
-  { key: "consultoria", label: "🔧 Consultoría" },
-  { key: "seo", label: "🔍 SEO Web" },
-];
+import { type ServiceItem, serviceCategories as CATEGORIES } from "@/lib/services-defaults";
 
 function createEmptyService(): ServiceItem {
   return {
