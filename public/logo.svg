@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Neon glow filters -->
+    <filter id="neonPurple" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="neonCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="neonCoral" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle inner shadow for depth -->
+    <filter id="innerGlow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"/>
+      <feComposite in="blur" in2="SourceGraphic" operator="in"/>
+    </filter>
+
+    <!-- Grid pattern background -->
+    <pattern id="grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.4" fill="rgba(108,92,231,0.15)"/>
+    </pattern>
+
+    <!-- Radial background gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="rgba(108,92,231,0.08)"/>
+      <stop offset="100%" stop-color="rgba(10,10,15,0)"/>
+    </radialGradient>
+
+    <!-- Gradient for code brackets -->
+    <linearGradient id="codeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6c5ce7"/>
+      <stop offset="50%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#6c5ce7"/>
+    </linearGradient>
+
+    <!-- Gradient for the slash symbol -->
+    <linearGradient id="slashGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#6c5ce7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="60" fill="#0a0a0f"/>
+  <rect width="512" height="512" rx="60" fill="url(#bgGlow)"/>
+  <rect width="512" height="512" rx="60" fill="url(#grid)"/>
+
+  <!-- Subtle border -->
+  <rect x="2" y="2" width="508" height="508" rx="58" fill="none" stroke="rgba(108,92,231,0.15)" stroke-width="1.5"/>
+
+  <!-- === DECORATIVE CODE ELEMENTS === -->
+
+  <!-- Left bracket < -->
+  <text x="100" y="270" font-family="'Courier New', 'Fira Code', monospace" font-size="120" font-weight="bold"
+        fill="none" stroke="url(#codeGradient)" stroke-width="3" filter="url(#neonPurple)" opacity="0.9">
+    <
+    <animate attributeName="opacity" values="0.9;0.5;0.9" dur="3s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- Right bracket > -->
+  <text x="370" y="270" font-family="'Courier New', 'Fira Code', monospace" font-size="120" font-weight="bold"
+        fill="none" stroke="url(#codeGradient)" stroke-width="3" filter="url(#neonCyan)" opacity="0.9">
+    >
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- Slash / -->
+  <text x="230" y="300" font-family="'Courier New', 'Fira Code', monospace" font-size="90" font-weight="bold"
+        fill="none" stroke="url(#slashGradient)" stroke-width="2.5" filter="url(#neonCoral)" opacity="0.7">
+    /
+    <animate attributeName="opacity" values="0.7;0.35;0.7" dur="2.5s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- === MAIN LOGO TEXT - CASKIUZ === -->
+  <text x="256" y="230" font-family="'Segoe UI', 'Geist Sans', system-ui, sans-serif" font-size="62" font-weight="800"
+        text-anchor="middle" letter-spacing="6"
+        fill="none" stroke="#6c5ce7" stroke-width="1.5" filter="url(#neonCyan)">
+    <animate attributeName="stroke" values="#6c5ce7;#00d2ff;#6c5ce7" dur="4s" repeatCount="indefinite"/>
+    CASKIUZ
+  </text>
+
+  <!-- Overlay text for fill - slightly offset for 3D effect -->
+  <text x="256" y="230" font-family="'Segoe UI', 'Geist Sans', system-ui, sans-serif" font-size="62" font-weight="800"
+        text-anchor="middle" letter-spacing="6"
+        fill="rgba(255,255,255,0.9)">
+    <animate attributeName="fill" values="rgba(255,255,255,0.9);rgba(224,224,235,0.7);rgba(255,255,255,0.9)" dur="4s" repeatCount="indefinite"/>
+    CASKIUZ
+  </text>
+
+  <!-- === SUBTITLE === -->
+  <text x="256" y="280" font-family="'Fira Code', 'Courier New', monospace" font-size="16" font-weight="500"
+        text-anchor="middle" letter-spacing="4"
+        fill="none" stroke="#00d2ff" stroke-width="0.8" filter="url(#neonCyan)" opacity="0.85">
+    <animate attributeName="opacity" values="0.85;0.5;0.85" dur="3s" repeatCount="indefinite"/>
+    FULL-STACK DEVELOPER
+  </text>
+
+  <!-- === DECORATIVE LINES === -->
+
+  <!-- Top line -->
+  <line x1="130" y1="150" x2="382" y2="150" stroke="#6c5ce7" stroke-width="0.8" opacity="0.3" filter="url(#neonPurple)">
+    <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- Bottom line -->
+  <line x1="130" y1="360" x2="382" y2="360" stroke="#00d2ff" stroke-width="0.8" opacity="0.3" filter="url(#neonCyan)">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- === CODE SNIPPET DECORATION === -->
+  <text x="160" y="345" font-family="'Fira Code', 'Courier New', monospace" font-size="10" font-weight="400"
+        fill="rgba(108,92,231,0.4)" letter-spacing="1">
+    <animate attributeName="fill" values="rgba(108,92,231,0.4);rgba(0,210,255,0.25);rgba(108,92,231,0.4)" dur="5s" repeatCount="indefinite"/>
+    const build = (dreams) => reality
+  </text>
+
+  <!-- === GEAR ICON (engineering symbol) === -->
+  <g transform="translate(90, 105) scale(0.55)" opacity="0.25">
+    <path d="M50 25 L55 15 L65 18 L70 9 L80 13 L80 24 L92 30 L92 40 L83 45 L85 56 L75 58 L68 48 L57 46 L50 25Z"
+          fill="none" stroke="#6c5ce7" stroke-width="2.5" filter="url(#neonPurple)">
+      <animateTransform attributeName="transform" type="rotate" from="0 55 40" to="360 55 40" dur="20s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="55" cy="40" r="6" fill="none" stroke="#00d2ff" stroke-width="2" filter="url(#neonCyan)">
+      <animateTransform attributeName="transform" type="rotate" from="360 55 40" to="0 55 40" dur="20s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Small gear on the right -->
+  <g transform="translate(345, 320) scale(0.45)" opacity="0.25">
+    <path d="M50 25 L55 15 L65 18 L70 9 L80 13 L80 24 L92 30 L92 40 L83 45 L85 56 L75 58 L68 48 L57 46 L50 25Z"
+          fill="none" stroke="#00d2ff" stroke-width="2.5" filter="url(#neonCyan)">
+      <animateTransform attributeName="transform" type="rotate" from="0 55 40" to="360 55 40" dur="15s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="55" cy="40" r="6" fill="none" stroke="#6c5ce7" stroke-width="2" filter="url(#neonPurple)">
+      <animateTransform attributeName="transform" type="rotate" from="360 55 40" to="0 55 40" dur="15s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- === PULSING DOTS === -->
+
+  <!-- Top right dot -->
+  <circle cx="390" cy="105" r="3" fill="#00d2ff" filter="url(#neonCyan)">
+    <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Bottom left dot -->
+  <circle cx="115" cy="395" r="3" fill="#6c5ce7" filter="url(#neonPurple)">
+    <animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="3;5;3" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Middle right dot -->
+  <circle cx="405" cy="310" r="2" fill="#ff6b6b" filter="url(#neonCoral)">
+    <animate attributeName="opacity" values="0.5;0.15;0.5" dur="3s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- === TERMINAL CURSOR BLINK === -->
+  <rect x="438" y="270" width="3" height="18" rx="1.5" fill="#00d2ff" filter="url(#neonCyan)">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+</svg>

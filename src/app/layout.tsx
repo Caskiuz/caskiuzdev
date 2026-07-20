@@ -35,6 +35,10 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Caskiuz" }],
   creator: "Caskiuz",
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
   openGraph: {
     type: "website",
     locale: "es_ES",
@@ -42,6 +46,21 @@ export const metadata: Metadata = {
     title: "Caskiuz | Full-Stack Developer & Software Architect",
     description:
       "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 512,
+        height: 512,
+        alt: "Caskiuz Logo - Full-Stack Developer neon",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Caskiuz | Full-Stack Developer & Software Architect",
+    description:
+      "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
+    images: ["/logo.svg"],
   },
   metadataBase: new URL("https://caskiuz.dev"),
 };
