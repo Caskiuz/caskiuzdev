@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { getSiteConfig } from "@/lib/site-config";
+import { JsonLd } from "@/components/seo/json-ld";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +17,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const BASE_URL = "https://caskiuz.vercel.app";
 
 export const metadata: Metadata = {
   title: "Caskiuz | Full-Stack Developer & Software Architect",
@@ -32,12 +35,21 @@ export const metadata: Metadata = {
     "desarrollo web",
     "web development",
     "freelance",
+    "desarrollador web",
+    "programador",
+    "portfolio",
   ],
   authors: [{ name: "Caskiuz" }],
   creator: "Caskiuz",
   icons: {
     icon: "/favicon.svg",
     apple: "/favicon.svg",
+  },
+  alternates: {
+    canonical: BASE_URL,
+  },
+  verification: {
+    google: "REEMPLAZA_CON_TU_CODIGO_GOOGLE_SEARCH_CONSOLE",
   },
   openGraph: {
     type: "website",
@@ -46,6 +58,7 @@ export const metadata: Metadata = {
     title: "Caskiuz | Full-Stack Developer & Software Architect",
     description:
       "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
+    url: BASE_URL,
     images: [
       {
         url: "/api/og",
@@ -62,7 +75,7 @@ export const metadata: Metadata = {
       "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL. Construyo aplicaciones web y mobile que escalan tu negocio.",
     images: ["/api/og"],
   },
-  metadataBase: new URL("https://caskiuz.vercel.app"),
+  metadataBase: new URL(BASE_URL),
 };
 
 export default async function RootLayout({
@@ -77,6 +90,47 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6c5ce7" />
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                name: "Caskiuz Portfolio",
+                url: BASE_URL,
+                description:
+                  "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL.",
+                inLanguage: "es",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: `${BASE_URL}/?s={search_term_string}`,
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              },
+              {
+                "@type": "Person",
+                name: "Caskiuz",
+                url: BASE_URL,
+                jobTitle: "Full-Stack Developer & Software Architect",
+                knowsAbout: [
+                  "React",
+                  "Next.js",
+                  "Node.js",
+                  "MySQL",
+                  "TypeScript",
+                  "TailwindCSS",
+                ],
+              },
+            ],
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider
           attribute="class"

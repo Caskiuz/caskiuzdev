@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
+import { getAllBlogSlugs } from "@/lib/blog-data";
 
-const BASE_URL = "https://caskiuz.dev";
+const BASE_URL = "https://caskiuz.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ["", "/blog"].map((route) => ({
@@ -10,12 +11,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "" ? 1 : 0.8,
   }));
 
-  const blogPosts = [
-    "nextjs-mejor-framework-freelancers",
-    "prisma-orm-mysql-guia-completa",
-  ];
+  const slugs = getAllBlogSlugs();
 
-  const blogRoutes = blogPosts.map((slug) => ({
+  const blogRoutes = slugs.map((slug) => ({
     url: `${BASE_URL}/blog/${slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

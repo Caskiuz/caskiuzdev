@@ -1,0 +1,19 @@
+{
+  "name": "Caskiuz | Full-Stack Developer",
+  "short_name": "Caskiuz",
+  "description": "Full-Stack Developer especializado en React, Next.js, Node.js y MySQL.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#6c5ce7",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "lang": "es",
+  "categories": ["portfolio", "development", "technology"]
+}

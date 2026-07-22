@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/api/"],
     },
-    sitemap: "https://caskiuz.dev/sitemap.xml",
+    sitemap: "https://caskiuz.vercel.app/sitemap.xml",
   };
 }

@@ -1,53 +1,32 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
+import { blogPosts } from "@/lib/blog-data";
 
-const blogPosts = [
-  {
-    title: "Por qué Next.js es el mejor framework para freelancers en 2025",
-    slug: "nextjs-mejor-framework-freelancers",
-    excerpt:
-      "Descubre por qué Next.js se ha convertido en la herramienta favorita de los desarrolladores freelance para construir aplicaciones web modernas, rápidas y con SEO imbatible.",
-    date: "2025-07-15",
-    readTime: "6 min",
-    tags: ["Next.js", "React", "Freelance"],
+export const metadata: Metadata = {
+  title: "Blog | Caskiuz - Full-Stack Developer",
+  description:
+    "Artículos sobre desarrollo web, React, Next.js, Node.js, MySQL, arquitectura de software y vida freelance por Caskiuz.",
+  alternates: {
+    canonical: "https://caskiuz.vercel.app/blog",
   },
-  {
-    title: "Guía completa de Prisma ORM con MySQL para proyectos reales",
-    slug: "prisma-orm-mysql-guia-completa",
-    excerpt:
-      "Aprende a configurar Prisma con MySQL desde cero, con ejemplos prácticos de migraciones, relaciones, consultas avanzadas y mejores prácticas para producción.",
-    date: "2025-06-28",
-    readTime: "10 min",
-    tags: ["Prisma", "MySQL", "Backend"],
+  openGraph: {
+    title: "Blog | Caskiuz - Full-Stack Developer",
+    description:
+      "Artículos sobre desarrollo web, React, Next.js, Node.js, MySQL, arquitectura de software y vida freelance.",
+    url: "https://caskiuz.vercel.app/blog",
+    type: "website",
+    siteName: "Caskiuz Portfolio",
+    images: [
+      {
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Caskiuz Blog - Artículos de desarrollo web",
+      },
+    ],
   },
-  {
-    title: "Arquitectura limpia en Node.js: cómo estructurar tus APIs",
-    slug: "arquitectura-limpia-nodejs-apis",
-    excerpt:
-      "Un enfoque práctico para aplicar Clean Architecture en tus proyectos Node.js/Express, con separación de responsabilidades, inyección de dependencias y testing.",
-    date: "2025-06-10",
-    readTime: "8 min",
-    tags: ["Node.js", "API", "Arquitectura"],
-  },
-  {
-    title: "10 patrones de React que todo desarrollador debería conocer",
-    slug: "10-patrones-react-esenciales",
-    excerpt:
-      "Explora patrones avanzados de React como Compound Components, Render Props, Higher-Order Components, Custom Hooks y cómo aplicarlos en proyectos reales.",
-    date: "2025-05-20",
-    readTime: "12 min",
-    tags: ["React", "TypeScript", "Patrones"],
-  },
-  {
-    title: "Cómo conseguir clientes internacionales siendo freelancer latino",
-    slug: "clientes-internacionales-freelance-latino",
-    excerpt:
-      "Estrategias probadas para posicionarte en el mercado global, construir tu marca personal, y conseguir clientes en USA y Europa desde Latinoamérica.",
-    date: "2025-05-05",
-    readTime: "7 min",
-    tags: ["Freelance", "Negocios", "Carrera"],
-  },
-];
+};
 
 export default function BlogPage() {
   return (
@@ -69,7 +48,7 @@ export default function BlogPage() {
 
         {/* Posts grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {blogPosts.map((post, i) => (
+          {blogPosts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
