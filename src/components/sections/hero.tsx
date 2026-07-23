@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink } from "lucide-react";
+import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink, MessageCircle, Users } from "lucide-react";
 import Link from "next/link";
 
 interface HeroProps {
@@ -137,6 +137,17 @@ export function Hero({ config = {} }: HeroProps) {
           {c("hero_subtitle", "Construyo aplicaciones web y mobile de alto rendimiento que elevan tu negocio al siguiente nivel. Especializado en React, Next.js, Node.js y arquitecturas escalables en la nube.")}
         </motion.p>
 
+        {/* Availability indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-6"
+        >
+          <Users className="w-4 h-4" />
+          🔥 Aceptando solo 2 proyectos este mes — Quedan cupos limitados
+        </motion.div>
+
         {/* CTA buttons */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -145,11 +156,13 @@ export function Hero({ config = {} }: HeroProps) {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
-            href="#contact"
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5"
+            href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:-translate-y-0.5"
           >
-            <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
-            {c("hero_cta_primary", "¡Trabajemos juntos!")}
+            <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            {c("hero_cta_primary", "Escríbeme por WhatsApp")}
           </Link>
           <Link
             href="#projects"

@@ -17,6 +17,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
+import { MessageCircle, Clock, ExternalLink } from "lucide-react";
 import {
   type ServiceItem,
   defaultServices,
@@ -146,9 +147,20 @@ export function Services({ config = {} }: ServicesProps) {
                           {service.description}
                         </p>
 
-                        {/* Price */}
-                        <div className="text-2xl font-bold gradient-text mb-4">
-                          {service.price}
+                        {/* Price — formatted as investment */}
+                        <div className="mb-3">
+                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                            💰 Inversión
+                          </span>
+                          <div className="text-2xl font-bold gradient-text">
+                            {service.price}
+                          </div>
+                          {service.deliveryTime && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              <span>Entrega: {service.deliveryTime}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Features */}
@@ -161,17 +173,33 @@ export function Services({ config = {} }: ServicesProps) {
                           ))}
                         </ul>
 
-                        {/* CTA */}
-                        <Link
-                          href="#contact"
-                          className={`block w-full text-center py-2.5 text-sm font-medium rounded-full transition-all duration-200 ${
-                            service.popular
-                              ? "text-white bg-primary hover:bg-primary-hover shadow-lg shadow-primary/25"
-                              : "text-foreground bg-muted hover:bg-muted/80 border border-border"
-                          }`}
-                        >
-                          Solicitar servicio
-                        </Link>
+                        {/* CTAs — WhatsApp primary, form secondary */}
+                        <div className="space-y-2">
+                          <a
+                            href={`https://wa.me/584262931869?text=${encodeURIComponent(`Hola Caskiuz! 👋 Me interesa: ${service.title} (${service.price}). ¿Podemos conversar?`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block w-full text-center py-2.5 text-sm font-medium rounded-full transition-all duration-200 ${
+                              service.popular
+                                ? "text-white bg-[#25D366] hover:bg-[#22c55e] shadow-lg shadow-[#25D366]/25"
+                                : "text-white bg-[#25D366] hover:bg-[#22c55e] shadow-md shadow-[#25D366]/15"
+                            }`}
+                          >
+                            <MessageCircle className="w-4 h-4 inline mr-1.5" />
+                            Cotizar por WhatsApp
+                          </a>
+                          <Link
+                            href="#contact"
+                            className={`block w-full text-center py-2 text-xs font-medium rounded-full transition-all duration-200 ${
+                              service.popular
+                                ? "text-primary border border-primary/30 hover:bg-primary/5"
+                                : "text-muted-foreground border border-border hover:border-primary/30 hover:text-primary"
+                            }`}
+                          >
+                            <ExternalLink className="w-3 h-3 inline mr-1" />
+                            Formulario de contacto
+                          </Link>
+                        </div>
                       </div>
                     </motion.div>
                   );
@@ -180,6 +208,37 @@ export function Services({ config = {} }: ServicesProps) {
             </div>
           );
         })}
+
+        {/* Lead magnet CTA banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 p-8 sm:p-10 text-center">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+            <h3 className="text-2xl sm:text-3xl font-bold mb-3">
+              🎁 ¿No sabes qué necesita tu proyecto?
+            </h3>
+            <p className="text-muted-foreground max-w-xl mx-auto mb-6">
+              Solicita una <span className="text-primary font-semibold">consultoría gratuita de 15 minutos</span> por WhatsApp. 
+              Analizamos tu idea juntos y te doy un plan de acción claro, sin compromiso.
+            </p>
+            <a
+              href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! Quiero mi consultoría gratuita de 15 min 🎁")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:-translate-y-0.5"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Quiero mi consultoría gratis
+            </a>
+            <p className="text-xs text-muted-foreground mt-4">
+              ⚡ Cupos limitados esta semana — Sin compromiso, sin letra pequeña
+            </p>
+          </div>
+        </motion.div>
 
         {/* Additional info */}
         <motion.div
@@ -190,12 +249,14 @@ export function Services({ config = {} }: ServicesProps) {
         >
           <p className="text-muted-foreground text-sm">
             ¿Necesitas algo más específico?{" "}
-            <Link
-              href="#contact"
-              className="text-primary font-medium hover:underline"
+            <a
+              href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! Tengo un proyecto personalizado y quiero conversar contigo.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#25D366] font-medium hover:underline"
             >
-              Conversemos sobre tu proyecto
-            </Link>
+              Conversemos por WhatsApp
+            </a>
           </p>
         </motion.div>
       </div>
