@@ -209,6 +209,28 @@ export function Services({ config = {} }: ServicesProps) {
           );
         })}
 
+        {/* Payment policy banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-16"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/5 via-primary/5 to-emerald-500/5 border border-emerald-500/10 p-6 text-center">
+            <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold">
+              <span>💳</span>
+              <span>Todos los proyectos inician con el</span>
+              <span className="gradient-text font-bold">50% de anticipo</span>
+              <span>y el</span>
+              <span className="gradient-text font-bold">50% restante al finalizar</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Para servicios recurrentes aplica facturación mensual. Pagos seguros vía transferencia, PayPal, Binance o MercadoPago.
+            </p>
+          </div>
+        </motion.div>
+
         {/* Lead magnet CTA banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
