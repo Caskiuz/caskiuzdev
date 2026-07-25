@@ -58,6 +58,19 @@ model Project {
   @@map("projects")
 }
 
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String?
+  company   String?
+  content   String   @db.Text
+  rating    Int      @default(5)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("testimonials")
+}
+
 model SiteConfig {
   id    Int    @id @default(autoincrement())
   key   String @unique

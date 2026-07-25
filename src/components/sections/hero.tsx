@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink, MessageCircle, Users } from "lucide-react";
+import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 interface HeroProps {
@@ -134,19 +134,8 @@ export function Hero({ config = {} }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          {c("hero_subtitle", "Construyo aplicaciones web y mobile de alto rendimiento que elevan tu negocio al siguiente nivel. Especializado en React, Next.js, Node.js y arquitecturas escalables en la nube.")}
+          {c("hero_subtitle", "Full-Stack Developer con dominio en React, Next.js, TypeScript, Node.js, Python, FastAPI, MySQL, PostgreSQL, MongoDB, Docker, AWS, Vercel y APIs con IA integrada. Construyo productos digitales completos: desde el frontend y backend hasta la infraestructura en la nube.")}
         </motion.p>
-
-        {/* Availability indicator */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-6"
-        >
-          <Users className="w-4 h-4" />
-          🔥 Aceptando solo 2 proyectos este mes — Quedan cupos limitados
-        </motion.div>
 
         {/* CTA buttons */}
         <motion.div
