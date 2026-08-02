@@ -95,7 +95,7 @@ export function CVViewer({ isOpen, onClose, pdfUrl }: CVViewerProps) {
                 src={pdfUrl}
                 title="Currículum de Caskiuz"
                 className="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin"
+                allow="fullscreen"
               />
             </div>
           </motion.div>
