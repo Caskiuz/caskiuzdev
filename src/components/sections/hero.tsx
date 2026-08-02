@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink, MessageCircle, FileDown } from "lucide-react";
 import Link from "next/link";
+import { CVViewer } from "@/components/ui/cv-viewer";
 
 interface HeroProps {
   config?: Record<string, string>;
@@ -11,6 +12,7 @@ interface HeroProps {
 
 export function Hero({ config = {} }: HeroProps) {
   const c = (key: string, fallback: string) => config[key] || fallback;
+  const [isCVViewerOpen, setIsCVViewerOpen] = useState(false);
 
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -144,16 +146,13 @@ export function Hero({ config = {} }: HeroProps) {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a
-            href="/images/cv-caskiuz.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-foreground bg-surface hover:bg-surface-hover border border-border rounded-full transition-all duration-200 hover:-translate-y-0.5"
+          <button
+            onClick={() => setIsCVViewerOpen(true)}
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-foreground bg-surface hover:bg-surface-hover border border-border rounded-full transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
           >
             <FileDown className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            {c("hero_cta_cv", "Descargar CV")}
-          </a>
+            {c("hero_cta_cv", "Ver CV")}
+          </button>
           <Link
             href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.")}`}
             target="_blank"
@@ -211,6 +210,13 @@ export function Hero({ config = {} }: HeroProps) {
           <ArrowDown className="w-6 h-6" />
         </motion.div>
       </motion.div>
+
+      {/* CV Viewer Modal */}
+      <CVViewer
+        isOpen={isCVViewerOpen}
+        onClose={() => setIsCVViewerOpen(false)}
+        pdfUrl="/images/cv-caskiuz.pdf"
+      />
     </section>
   );
 }
