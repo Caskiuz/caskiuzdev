@@ -24,7 +24,7 @@ import {
   serviceCategories as categories,
   mergeServices,
 } from "@/lib/services-defaults";
-import { getPagoMovil, formatPagoMovil } from "@/lib/payments";
+import { getClientPaymentMethods } from "@/lib/payments";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Globe, Smartphone, Server, Zap, Rocket, ShoppingCart, BarChart3, Bot, Headset,
@@ -47,7 +47,8 @@ interface ServicesProps {
 
 export function Services({ config = {} }: ServicesProps) {
   const c = (key: string, fallback: string) => config[key] || fallback;
-  const pagoMovil = getPagoMovil(config);
+  const paymentMethods = getClientPaymentMethods(config);
+  const paymentDetails = paymentMethods.filter((m) => m.detail);
 
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -229,13 +230,14 @@ export function Services({ config = {} }: ServicesProps) {
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Para servicios recurrentes aplica facturación mensual. Pagos seguros vía{" "}
-              Pago Móvil (Venezuela), transferencia, PayPal, Binance o MercadoPago.
+              Pago Móvil (Venezuela), Zelle, PayPal, Western Union, Binance o cripto
+              (USDT/USDC/BTC).
             </p>
-            {pagoMovil.enabled && (
-              <p className="text-xs text-emerald-500 mt-2 font-medium">
-                📲 Pago Móvil: {formatPagoMovil(pagoMovil)}
+            {paymentDetails.map((method) => (
+              <p key={method.id} className="text-xs text-emerald-500 mt-1.5 font-medium">
+                💳 {method.label}: {method.detail}
               </p>
-            )}
+            ))}
           </div>
         </motion.div>
 

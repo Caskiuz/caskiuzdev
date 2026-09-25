@@ -31,7 +31,7 @@ export const AFFILIATE_FAQS: FaqItem[] = [
   },
   {
     q: "¿Cómo pagan los clientes que refiero?",
-    a: "Los clientes pueden pagar con Pago Móvil (Venezuela), transferencia bancaria, PayPal, Binance o MercadoPago, con el esquema 50% de anticipo y 50% al finalizar. Esto les da facilidad de pago a tus referidos; tu comisión se te paga aparte, en USDT, USDC, BTC o Binance Pay.",
+    a: "Los clientes pueden pagar con Pago Móvil (Venezuela), Zelle, PayPal, Western Union, Binance o envíos cripto (USDT, USDC o BTC) a las wallets de Caskiuz, con el esquema 50% de anticipo y 50% al finalizar. Los datos de pago aparecen en la landing de afiliados y en tu panel. Tu comisión se te paga aparte, en USDT, USDC, BTC o Binance Pay.",
   },
   {
     q: "¿Puedo comprar para mí mismo y cobrar la comisión?",

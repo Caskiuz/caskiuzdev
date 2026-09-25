@@ -3,7 +3,7 @@
 import { Suspense, lazy, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Sparkles, ShieldCheck, Wallet } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, Wallet, Smartphone } from "lucide-react";
 import { containerVariants, itemVariants } from "../variants";
 
 const Hero3D = lazy(() => import("../hero-3d"));
@@ -62,7 +62,8 @@ export function AffiliateHero() {
           <motion.p variants={itemVariants} className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
             Únete gratis, comparte tu link único y cobra comisiones en{" "}
             <strong className="text-foreground">USDT, USDC, Bitcoin o Binance Pay</strong> por
-            cada venta de desarrollo web, apps, e-commerce y SEO que refieras.
+            cada venta de desarrollo web, apps, e-commerce y SEO que refieras. Tus clientes
+            pueden pagar con <strong className="text-foreground">Pago Móvil</strong>.
           </motion.p>
 
           <motion.div variants={itemVariants} className="mt-8 flex flex-wrap gap-4">
@@ -93,7 +94,13 @@ export function AffiliateHero() {
             ))}
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mt-8 flex flex-wrap gap-5 text-sm text-muted-foreground">
+          <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan">
+              <Smartphone className="w-3.5 h-3.5" /> Pago Móvil (Venezuela) para tus clientes
+            </span>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-5 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-aff-cyan" /> Pagos verificados
             </span>

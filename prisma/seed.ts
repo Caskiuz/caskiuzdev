@@ -179,11 +179,21 @@ async function main() {
     { key: "affiliates_min_withdrawal", value: "30", group: "affiliates" },
     { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
 
-    // ─── MÉTODOS DE PAGO (Pago Móvil Venezuela — configurables en el admin) ───
+    // ─── MÉTODOS DE PAGO (clientes — configurables en el admin) ───
     { key: "payments_pago_movil_phone", value: "", group: "payments" },
     { key: "payments_pago_movil_bank", value: "", group: "payments" },
     { key: "payments_pago_movil_holder", value: "", group: "payments" },
     { key: "payments_pago_movil_id", value: "", group: "payments" },
+    { key: "payments_zelle", value: "", group: "payments" },
+    { key: "payments_paypal", value: "", group: "payments" },
+    { key: "payments_binance", value: "", group: "payments" },
+    { key: "payments_western_union_name", value: "", group: "payments" },
+    { key: "payments_western_union_country", value: "", group: "payments" },
+    { key: "payments_wallet_usdt_trc20", value: "", group: "payments" },
+    { key: "payments_wallet_usdt_bep20", value: "", group: "payments" },
+    { key: "payments_wallet_usdc_trc20", value: "", group: "payments" },
+    { key: "payments_wallet_btc", value: "", group: "payments" },
+    { key: "payments_wallet_extra", value: "", group: "payments" },
   ];
 
   for (const config of configs) {

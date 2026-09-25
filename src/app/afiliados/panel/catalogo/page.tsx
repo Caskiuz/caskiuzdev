@@ -2,16 +2,17 @@ import { requireAffiliate } from "@/lib/affiliate-auth";
 import { getSiteConfigByGroup } from "@/lib/site-config";
 import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 import { getTierInfo, formatUsd } from "@/lib/affiliate";
-import { getPagoMovil, formatPagoMovil, CLIENT_PAYMENT_METHODS } from "@/lib/payments";
-import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard } from "lucide-react";
+import { getClientPaymentMethods } from "@/lib/payments";
+import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard, Globe } from "lucide-react";
 import Link from "next/link";
 
 const METHOD_ICONS: Record<string, typeof Smartphone> = {
-  "Pago Móvil (Venezuela)": Smartphone,
-  "Transferencia bancaria": Landmark,
-  PayPal: Wallet,
-  Binance: Coins,
-  MercadoPago: CreditCard,
+  "pago-movil": Smartphone,
+  "zelle": Landmark,
+  "paypal": Wallet,
+  "binance": Coins,
+  "western-union": Globe,
+  "crypto": CreditCard,
 };
 
 function extractPrice(price: string): number | null {
@@ -25,7 +26,8 @@ export default async function CatalogPage() {
 
   const groups = await getSiteConfigByGroup();
   const servicesData = groups["affiliates"]?.["services_data"];
-  const pagoMovil = getPagoMovil(groups["payments"] ?? {});
+  const paymentMethods = getClientPaymentMethods(groups["payments"] ?? {});
+  const paymentDetails = paymentMethods.filter((m) => m.detail);
   let services: ServiceItem[] = [];
   try {
     services = mergeServices(servicesData ? JSON.parse(servicesData) : []);
@@ -50,12 +52,12 @@ export default async function CatalogPage() {
       <div className="metal-card rounded-2xl p-5">
         <p className="text-sm font-bold mb-3">💳 ¿Cómo pagan tus clientes?</p>
         <div className="flex flex-wrap gap-2">
-          {CLIENT_PAYMENT_METHODS.map((method) => {
-            const Icon = METHOD_ICONS[method] ?? CreditCard;
-            const isPagoMovil = method.startsWith("Pago Móvil");
+          {paymentMethods.map((method) => {
+            const Icon = METHOD_ICONS[method.id] ?? CreditCard;
+            const isPagoMovil = method.id === "pago-movil";
             return (
               <span
-                key={method}
+                key={method.id}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
                   isPagoMovil
                     ? "border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan"
@@ -63,20 +65,24 @@ export default async function CatalogPage() {
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
-                {method}
+                {method.label}
               </span>
             );
           })}
         </div>
-        {pagoMovil.enabled && (
-          <p className="text-xs text-aff-cyan mt-3">
-            📲 Pago Móvil: {formatPagoMovil(pagoMovil)} — comparte estos datos con tus
-            referidos en Venezuela para que paguen el anticipo al instante.
-          </p>
+        {paymentDetails.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            {paymentDetails.map((method) => (
+              <p key={method.id} className="text-xs text-aff-cyan break-all">
+                💳 {method.label}: {method.detail}
+              </p>
+            ))}
+          </div>
         )}
         <p className="text-xs text-muted-foreground mt-3">
-          El esquema es 50% de anticipo y 50% al finalizar. Tu comisión se te paga aparte,
-          en USDT, USDC, BTC o Binance Pay.
+          El esquema es 50% de anticipo y 50% al finalizar. Comparte estos datos con tus
+          referidos para que paguen al instante. Tu comisión se te paga aparte, en USDT,
+          USDC, BTC o Binance Pay.
         </p>
       </div>
 

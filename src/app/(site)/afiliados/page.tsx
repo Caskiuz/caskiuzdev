@@ -9,7 +9,7 @@ import { AffiliateFaq } from "@/components/affiliates/landing/faq";
 import { FinalCta } from "@/components/affiliates/landing/cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getSiteConfigByGroup } from "@/lib/site-config";
-import { getPagoMovil } from "@/lib/payments";
+import { getClientPaymentMethods } from "@/lib/payments";
 import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 
 const BASE_URL = "https://caskiuz.vercel.app";
@@ -95,7 +95,7 @@ export default async function AffiliatesPage() {
   }
 
   const c = (key: string, fallback: string) => affiliateConfig[key] || fallback;
-  const pagoMovil = getPagoMovil(groups["payments"] ?? {});
+  const paymentMethods = getClientPaymentMethods(groups["payments"] ?? {});
 
   return (
     <div className="aff-glow">
@@ -104,7 +104,7 @@ export default async function AffiliatesPage() {
       <HowItWorks />
       <Tiers />
       <Catalog services={services} />
-      <ClientPayments pagoMovil={pagoMovil} />
+      <ClientPayments methods={paymentMethods} />
       <Benefits />
       <AffiliateFaq />
       <FinalCta />
