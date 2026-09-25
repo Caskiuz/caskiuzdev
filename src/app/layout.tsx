@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { WhatsAppButton } from "@/components/ui/whatsapp-button";
-import { getSiteConfig } from "@/lib/site-config";
 import { JsonLd } from "@/components/seo/json-ld";
 import "./globals.css";
 
@@ -78,12 +74,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
 };
 
-export default async function RootLayout({
+/**
+ * Layout raíz: solo provee el documento HTML, fuentes y tema.
+ * El chrome del sitio público (header/footer) vive en (site)/layout.tsx
+ * y el panel de afiliados/admin define su propio layout, de modo que
+ * no se solapan el navbar público con los paneles internos.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const config = await getSiteConfig();
   return (
     <html
       lang="es"
@@ -131,17 +132,14 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
         >
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer config={config} />
-          <WhatsAppButton config={config} />
+          {children}
         </ThemeProvider>
       </body>
     </html>

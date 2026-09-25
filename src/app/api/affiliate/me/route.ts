@@ -27,6 +27,7 @@ export async function GET() {
     email: affiliate.email,
     country: affiliate.country,
     phone: affiliate.phone,
+    avatar: affiliate.avatar,
     status: affiliate.status,
     tier: affiliate.tier,
     referralCode: affiliate.referralCode,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, Save } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, AlertCircle, CheckCircle2, Save, Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const inputClass =
@@ -15,6 +15,38 @@ interface ProfileData {
   tier: string;
   referralCode: string;
   emailVerified: boolean;
+  avatar: string | null;
+}
+
+/** Recorta en cuadrado centrado y redimensiona a 256px (JPEG ~40KB) */
+function resizeImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const size = 256;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("sin contexto 2d");
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2;
+          const sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        } catch (error) {
+          reject(error);
+        }
+      };
+      img.onerror = () => reject(new Error("imagen inválida"));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error("no se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
 }
 
 export function ProfileClient({ profile }: { profile: ProfileData }) {
@@ -22,14 +54,41 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
   const [name, setName] = useState(profile.name);
   const [country, setCountry] = useState(profile.country);
   const [phone, setPhone] = useState(profile.phone ?? "");
+  const [avatar, setAvatar] = useState<string | null>(profile.avatar);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 
   function flash(type: "ok" | "error", text: string) {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      flash("error", "Selecciona una imagen (JPG, PNG o WebP).");
+      return;
+    }
+    try {
+      const resized = await resizeImage(file);
+      setAvatar(resized);
+      flash("ok", "Foto lista. Pulsa «Guardar cambios» para aplicarla.");
+    } catch {
+      flash("error", "No se pudo procesar la imagen.");
+    } finally {
+      e.target.value = "";
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,6 +103,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           name,
           country,
           phone: phone || null,
+          avatar,
           currentPassword: currentPassword || undefined,
           newPassword: newPassword || undefined,
         }),
@@ -86,6 +146,49 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
       <div className="grid lg:grid-cols-3 gap-8 items-start">
         <form onSubmit={handleSubmit} className="lg:col-span-2 metal-card rounded-2xl p-6 space-y-5">
           <h2 className="font-bold">Datos de la cuenta</h2>
+
+          {/* Foto de perfil */}
+          <div className="flex items-center gap-5 pb-2">
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-aff-blue-deep to-aff-sky flex items-center justify-center border-2 border-glass-border shrink-0">
+              {avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatar} alt="Foto de perfil" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-bold text-2xl">{initials || "C"}</span>
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-2">Foto de perfil</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-xl border border-border hover:bg-surface-hover transition-colors"
+                >
+                  <Camera className="w-3.5 h-3.5" /> {avatar ? "Cambiar foto" : "Subir foto"}
+                </button>
+                {avatar && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatar(null)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-xl text-accent border border-accent/20 bg-accent/5 hover:bg-accent/10 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Quitar
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                JPG, PNG o WebP. Se recorta en cuadrado automáticamente.
+              </p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFile}
+              className="hidden"
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1.5">Email (no editable)</label>

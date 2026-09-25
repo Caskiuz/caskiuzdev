@@ -13,9 +13,15 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, country, phone, currentPassword, newPassword } = body;
+    const { name, country, phone, avatar, currentPassword, newPassword } = body;
 
-    const data: { name?: string; country?: string; phone?: string | null; passwordHash?: string } = {};
+    const data: {
+      name?: string;
+      country?: string;
+      phone?: string | null;
+      avatar?: string | null;
+      passwordHash?: string;
+    } = {};
 
     if (name !== undefined) {
       const trimmed = String(name).trim();
@@ -29,6 +35,21 @@ export async function PUT(request: NextRequest) {
     }
     if (phone !== undefined) {
       data.phone = phone ? String(phone).trim().slice(0, 40) : null;
+    }
+    if (avatar !== undefined) {
+      if (avatar === null || avatar === "") {
+        data.avatar = null;
+      } else if (typeof avatar === "string" && avatar.startsWith("data:image/")) {
+        if (avatar.length > 400_000) {
+          return NextResponse.json(
+            { error: "La imagen es demasiado grande. Máximo ~300KB." },
+            { status: 400 }
+          );
+        }
+        data.avatar = avatar;
+      } else {
+        return NextResponse.json({ error: "Formato de imagen inválido." }, { status: 400 });
+      }
     }
     if (newPassword) {
       if (!currentPassword || !verifyPassword(String(currentPassword), affiliate.passwordHash)) {

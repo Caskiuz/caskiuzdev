@@ -58,16 +58,33 @@ export default async function AdminAffiliateDetailPage({
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{affiliate.name}</h1>
-          <p className="text-muted-foreground flex items-center gap-2 mt-1">
-            <Mail className="w-4 h-4" /> {affiliate.email} · {affiliate.country}
-            {affiliate.phone ? ` · ${affiliate.phone}` : ""}
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Código: <code className="font-mono text-aff-cyan">{affiliate.referralCode}</code> · Link:{" "}
-            <code className="font-mono">caskiuz.vercel.app/r/{affiliate.referralCode}</code>
-          </p>
+        <div className="flex items-start gap-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-aff-blue-deep to-aff-sky flex items-center justify-center border border-border shrink-0">
+            {affiliate.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={affiliate.avatar} alt={affiliate.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-xl">
+                {affiliate.name
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((p) => p[0]?.toUpperCase())
+                  .join("")}
+              </span>
+            )}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">{affiliate.name}</h1>
+            <p className="text-muted-foreground flex items-center gap-2 mt-1">
+              <Mail className="w-4 h-4" /> {affiliate.email} · {affiliate.country}
+              {affiliate.phone ? ` · ${affiliate.phone}` : ""}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Código: <code className="font-mono text-aff-cyan">{affiliate.referralCode}</code> · Link:{" "}
+              <code className="font-mono">caskiuz.vercel.app/r/{affiliate.referralCode}</code>
+            </p>
+          </div>
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-aff-cyan">

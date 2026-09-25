@@ -66,13 +66,13 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* Desktop nav (desde lg para evitar solapes con el CTA en tablets) */}
+          <div className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-hover transition-all duration-200"
+                className="px-2.5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-hover transition-all duration-200 whitespace-nowrap"
               >
                 {link.label}
               </Link>
@@ -80,7 +80,7 @@ export function Header() {
           </div>
 
           {/* Desktop actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -96,14 +96,14 @@ export function Header() {
             )}
             <Link
               href="/#contact"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-primary/40"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-primary/40 whitespace-nowrap"
             >
               ¡Hablemos!
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -139,7 +139,7 @@ export function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border bg-glass backdrop-blur-xl"
+            className="lg:hidden border-t border-border bg-glass backdrop-blur-xl"
           >
             <div className="px-4 py-4 space-y-1">
               {navLinks.map((link, i) => (

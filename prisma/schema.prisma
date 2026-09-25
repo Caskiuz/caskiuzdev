@@ -109,6 +109,7 @@ model Affiliate {
   name           String
   country        String
   phone          String?
+  avatar         String?        @db.LongText
   status         AffiliateStatus @default(PENDING)
   tier           AffiliateTier  @default(SILVER)
   referralCode   String         @unique

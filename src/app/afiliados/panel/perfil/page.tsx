@@ -21,6 +21,7 @@ export default async function ProfilePage() {
           tier: affiliate.tier,
           referralCode: affiliate.referralCode,
           emailVerified: affiliate.emailVerified,
+          avatar: affiliate.avatar,
         }}
       />
     </div>

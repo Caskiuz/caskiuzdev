@@ -23,6 +23,7 @@ export default async function AffiliatePanelLayout({
         name={affiliate.name}
         tier={affiliate.tier}
         referralCode={affiliate.referralCode}
+        avatarUrl={affiliate.avatar}
       />
       <div className="lg:pl-64">
         {/* Barra superior (solo desktop; en móvil la navegación vive en el drawer) */}

@@ -50,7 +50,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-24">
+    <div className="min-h-screen pt-10 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">
