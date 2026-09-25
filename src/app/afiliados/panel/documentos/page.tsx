@@ -27,7 +27,8 @@ export default async function DocumentsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Documentos</h1>
         <p className="text-muted-foreground mt-1">
-          Verificación de identidad, formularios fiscales y contrato. Requisito para retirar.
+          Verifica tu identidad para habilitar los retiros. El contrato y los términos los
+          aceptaste al crear tu cuenta.
         </p>
       </div>
       <DocumentsClient initialDocuments={initialDocuments} />

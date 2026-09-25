@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "Caskiuz Portfolio",
     images: [
       {
-        url: "/api/og",
+        url: "/api/og?title=Blog%20de%20desarrollo%20web&subtitle=React%20%C2%B7%20Next.js%20%C2%B7%20Node.js%20%C2%B7%20Freelancing",
         width: 1200,
         height: 630,
         alt: "Caskiuz Blog - Artículos de desarrollo web",

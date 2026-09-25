@@ -26,6 +26,9 @@ export async function generateMetadata({
   }
 
   const description = post.excerpt;
+  const ogImage = `/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(
+    post.tags.slice(0, 3).join(" · ") || "Blog de Caskiuz"
+  )}`;
 
   return {
     title: `${post.title} | Caskiuz Blog`,
@@ -44,7 +47,7 @@ export async function generateMetadata({
       siteName: "Caskiuz Portfolio",
       images: [
         {
-          url: "/api/og",
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: post.title,
@@ -56,7 +59,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: post.title,
       description,
-      images: ["/api/og"],
+      images: [ogImage],
     },
   };
 }

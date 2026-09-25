@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Zap, Globe, Briefcase, MessageSquare, Mail, Heart } from "lucide-react";
+import { Globe, Briefcase, MessageSquare, Mail, Heart } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface FooterProps {
   config?: Record<string, string>;
@@ -39,10 +40,8 @@ export function Footer({ config = {} }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link href="/#home" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
+            <Link href="/#home" className="flex items-center gap-2.5 mb-4">
+              <BrandLogo size={32} />
               <span className="font-bold text-lg">
                 <span className="gradient-text">Caskiuz</span>
               </span>

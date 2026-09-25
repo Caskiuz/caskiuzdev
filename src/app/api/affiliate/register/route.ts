@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
         phone: phone ? String(phone).trim().slice(0, 40) : null,
         referralCode,
         status: "ACTIVE",
+        // El contrato del programa se celebra al aceptar los T&C en el registro
+        termsAcceptedAt: new Date(),
       },
     });
 

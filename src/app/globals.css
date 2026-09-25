@@ -319,6 +319,20 @@ body {
   }
 }
 
+/* Nodo de datos orbitando el logo de la marca */
+@keyframes brand-orbit {
+  from {
+    transform: rotate(0deg) translateX(var(--orbit-r, 22px));
+  }
+  to {
+    transform: rotate(360deg) translateX(var(--orbit-r, 22px));
+  }
+}
+
+.brand-orbit {
+  animation: brand-orbit 4.5s linear infinite;
+}
+
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }

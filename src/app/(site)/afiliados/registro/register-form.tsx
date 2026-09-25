@@ -159,6 +159,10 @@ export function RegisterForm() {
           </Link>{" "}
           del programa de afiliados y la política de privacidad.{" "}
           <span className="text-accent">*</span>
+          <span className="block text-xs text-muted-foreground mt-1">
+            Al crear tu cuenta se celebra el contrato del programa de afiliados, que rige
+            comisiones, niveles y pagos.
+          </span>
         </span>
       </label>
 

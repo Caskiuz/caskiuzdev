@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -45,22 +46,9 @@ export function Header() {
           {/* Logo */}
           <Link
             href="/#home"
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-2.5 group"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 32 32"
-                width={32}
-                height={32}
-                className="w-8 h-8"
-                aria-label="Caskiuz Logo"
-              >
-                <rect width="32" height="32" rx="6" fill="transparent" />
-                <text x="16" y="22" fontFamily="'Segoe UI', 'Geist Sans', system-ui, sans-serif" fontSize="18" fontWeight="800"
-                      textAnchor="middle" fill="white">C</text>
-              </svg>
-            </div>
+            <BrandLogo size={34} />
             <span className="font-bold text-lg tracking-tight">
               <span className="gradient-text">Caskiuz</span>
             </span>

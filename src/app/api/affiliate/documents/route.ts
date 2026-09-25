@@ -4,7 +4,7 @@ import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_TYPES = ["ID", "TAX_FORM", "CONTRACT"];
+const ALLOWED_TYPES = ["ID"]; // solo verificación de identidad; el contrato se acepta en el registro
 const MAX_BASE64_LENGTH = 2_800_000; // ~2MB
 
 export async function GET() {

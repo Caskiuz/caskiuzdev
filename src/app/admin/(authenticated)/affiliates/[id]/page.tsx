@@ -84,6 +84,11 @@ export default async function AdminAffiliateDetailPage({
               Código: <code className="font-mono text-aff-cyan">{affiliate.referralCode}</code> · Link:{" "}
               <code className="font-mono">caskiuz.vercel.app/r/{affiliate.referralCode}</code>
             </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {affiliate.termsAcceptedAt
+                ? `Contrato y términos aceptados el ${new Date(affiliate.termsAcceptedAt).toLocaleDateString("es-ES")}`
+                : "Sin registro de aceptación de términos"}
+            </p>
           </div>
         </div>
         <div className="text-right">

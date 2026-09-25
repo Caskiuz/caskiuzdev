@@ -115,6 +115,7 @@ model Affiliate {
   referralCode   String         @unique
   lifetimeRevenue Float          @default(0)
   emailVerified  Boolean        @default(false)
+  termsAcceptedAt DateTime?     @map("terms_accepted_at")
   lastLoginAt    DateTime?
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AffiliateBrandHeader } from "@/components/affiliates/brand-header";
 import Link from "next/link";
 import { AFFILIATE_TERMS } from "@/lib/affiliate-content";
 
@@ -14,9 +15,7 @@ export default function TermsPage() {
     <div className="aff-glow min-h-screen py-28">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <Link href="/afiliados" className="inline-block">
-            <span className="metal-text text-2xl font-bold tracking-tight">CASKIUZ AFFILIATES</span>
-          </Link>
+          <AffiliateBrandHeader />
           <h1 className="mt-4 text-4xl font-bold">Términos y Condiciones</h1>
           <p className="mt-3 text-muted-foreground">
             Programa de afiliados de Caskiuz · Última actualización: {new Date().getFullYear()}

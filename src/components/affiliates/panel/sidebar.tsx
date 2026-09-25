@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierInfo } from "@/lib/affiliate";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 const navItems = [
   { href: "/afiliados/panel", label: "Dashboard", icon: LayoutDashboard },
@@ -70,9 +71,7 @@ export function PanelSidebar({
 
   const brand = (
     <Link href="/afiliados/panel" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-aff-blue-deep to-aff-sky flex items-center justify-center">
-        <span className="text-white font-bold">C</span>
-      </div>
+      <BrandLogo size={36} />
       <div>
         <p className="font-bold leading-none metal-text">Caskiuz</p>
         <p className="text-[10px] text-muted-foreground mt-0.5">Red de afiliados</p>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AffiliateBrandHeader } from "@/components/affiliates/brand-header";
 import { ForgotForm } from "./forgot-form";
 
 export const metadata: Metadata = {
@@ -13,9 +13,7 @@ export default function ForgotPage() {
     <div className="min-h-screen aff-glow flex items-center justify-center px-4 py-28">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/afiliados" className="inline-block">
-            <span className="metal-text text-2xl font-bold tracking-tight">CASKIUZ AFFILIATES</span>
-          </Link>
+          <AffiliateBrandHeader />
           <h1 className="mt-4 text-3xl font-bold">Recuperar contraseña</h1>
           <p className="mt-2 text-muted-foreground">
             Te enviaremos un enlace para restablecerla
