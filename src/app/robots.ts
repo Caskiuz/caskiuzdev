@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin/", "/api/"],
+      disallow: ["/admin/", "/api/", "/afiliados/panel/", "/afiliados/recuperar", "/afiliados/restablecer", "/r/"],
     },
     sitemap: "https://caskiuz.vercel.app/sitemap.xml",
   };

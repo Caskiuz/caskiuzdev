@@ -45,6 +45,7 @@ export function Contact({ config = {} }: ContactProps) {
       email: formData.get("email") as string,
       service: formData.get("service") as string,
       message: formData.get("message") as string,
+      refCode: formData.get("refCode") as string,
     };
 
     try {
@@ -300,6 +301,22 @@ export function Contact({ config = {} }: ContactProps) {
                       <option value="consulting">Consultoría</option>
                       <option value="other">Otro</option>
                     </select>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="refCode"
+                      className="block text-sm font-medium mb-2"
+                    >
+                      Código de referido{" "}
+                      <span className="text-muted-foreground">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="refCode"
+                      name="refCode"
+                      placeholder="¿Te recomendó alguien? Escribe su código"
+                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm uppercase"
+                    />
                   </div>
                   <div>
                     <label

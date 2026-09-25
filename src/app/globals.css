@@ -14,6 +14,13 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
+  --color-aff-blue: var(--aff-blue);
+  --color-aff-blue-deep: var(--aff-blue-deep);
+  --color-aff-sky: var(--aff-sky);
+  --color-aff-cyan: var(--aff-cyan);
+  --color-metal-hi: var(--metal-hi);
+  --color-metal-mid: var(--metal-mid);
+  --color-metal-low: var(--metal-low);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
@@ -38,6 +45,13 @@
   --muted-foreground: #71717a;
   --glass: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.3);
+  --aff-blue: #1d4ed8;
+  --aff-blue-deep: #1e3a8a;
+  --aff-sky: #0284c7;
+  --aff-cyan: #38bdf8;
+  --metal-hi: #e2e8f0;
+  --metal-mid: #94a3b8;
+  --metal-low: #334155;
 }
 
 .dark {
@@ -54,6 +68,13 @@
   --muted-foreground: #8888a0;
   --glass: rgba(19, 19, 26, 0.7);
   --glass-border: rgba(255, 255, 255, 0.06);
+  --aff-blue: #3b82f6;
+  --aff-blue-deep: #1e3a8a;
+  --aff-sky: #0ea5e9;
+  --aff-cyan: #38bdf8;
+  --metal-hi: #f8fafc;
+  --metal-mid: #9aa7b8;
+  --metal-low: #64748b;
 }
 
 * {
@@ -132,6 +153,111 @@ body {
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+}
+
+/* ─── Red de Afiliados: acero cromado + azul ─── */
+
+/* Texto cromado con barrido metálico */
+.metal-text {
+  background: linear-gradient(
+    110deg,
+    var(--metal-hi) 0%,
+    var(--metal-mid) 25%,
+    var(--metal-low) 50%,
+    var(--metal-hi) 75%,
+    var(--metal-mid) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3.5s ease-in-out infinite;
+}
+
+/* Borde cromado animado (máscara igual a .gradient-border) */
+.metal-border {
+  position: relative;
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.metal-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 1rem;
+  padding: 1.5px;
+  background: linear-gradient(
+    120deg,
+    var(--metal-hi),
+    var(--aff-cyan),
+    var(--metal-low),
+    var(--aff-blue),
+    var(--metal-hi)
+  );
+  background-size: 300% auto;
+  animation: shimmer 5s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Tarjeta cromada sobre vidrio */
+.metal-card {
+  background: linear-gradient(160deg, var(--surface-hover) 0%, var(--surface) 100%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(30, 58, 138, 0.12);
+}
+
+/* Barrido de brillo para botones/badges metálicos */
+.metal-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.metal-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 250% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Botón primario azul de la red */
+.btn-aff {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--aff-blue-deep), var(--aff-blue) 55%, var(--aff-sky));
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 24px rgba(29, 78, 216, 0.35);
+}
+
+.btn-aff:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.35);
+}
+
+/* Orbes azules de fondo para la sección de afiliados */
+.aff-glow {
+  background:
+    radial-gradient(ellipse at top, rgba(59, 130, 246, 0.16), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(56, 189, 248, 0.1), transparent 50%);
 }
 
 /* Keyframes */

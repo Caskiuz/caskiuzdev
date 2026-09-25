@@ -8,14 +8,19 @@ datasource db {
 }
 
 model Contact {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  service   String?
-  message   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  read      Boolean  @default(false)
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String
+  service     String?
+  message     String    @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  read        Boolean   @default(false)
+  affiliateId Int?
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  clickId     Int?
+  sales       Sale[]
 
+  @@index([affiliateId])
   @@map("contacts")
 }
 
@@ -78,4 +83,189 @@ model SiteConfig {
   group String
 
   @@map("site_config")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Red de Afiliados
+// ─────────────────────────────────────────────────────────────
+
+enum AffiliateStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum AffiliateTier {
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+model Affiliate {
+  id             Int            @id @default(autoincrement())
+  email          String         @unique
+  passwordHash   String
+  name           String
+  country        String
+  phone          String?
+  status         AffiliateStatus @default(PENDING)
+  tier           AffiliateTier  @default(SILVER)
+  referralCode   String         @unique
+  lifetimeRevenue Float          @default(0)
+  emailVerified  Boolean        @default(false)
+  lastLoginAt    DateTime?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  clicks         Click[]
+  payoutMethods  PayoutMethod[]
+  documents      AffiliateDocument[]
+  sales          Sale[]
+  commissions    Commission[]
+  withdrawals    Withdrawal[]
+  tickets        SupportTicket[]
+  contacts       Contact[]
+
+  @@map("affiliates")
+}
+
+model Click {
+  id          Int      @id @default(autoincrement())
+  affiliateId Int
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  subId       String?
+  ip          String?
+  userAgent   String?   @db.VarChar(500)
+  referrer    String?   @db.VarChar(500)
+  destination String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  convertedAt DateTime?
+  saleId      Int?
+
+  @@index([affiliateId, createdAt])
+  @@map("affiliate_clicks")
+}
+
+model PayoutMethod {
+  id            Int      @id @default(autoincrement())
+  affiliateId   Int
+  affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  type          String // BINANCE_PAY | WALLET
+  binanceId     String?
+  binanceEmail  String?
+  currency      String // USDT | USDC | BTC
+  network       String? // TRC20 | ERC20 | BEP20 | SOLANA | POLYGON | ARBITRUM
+  address       String?
+  label         String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  withdrawals   Withdrawal[]
+
+  @@index([affiliateId])
+  @@map("affiliate_payout_methods")
+}
+
+model AffiliateDocument {
+  id          Int      @id @default(autoincrement())
+  affiliateId Int
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  type        String // ID | TAX_FORM | CONTRACT
+  fileName    String?
+  fileData    String   @db.LongText // base64, max ~2MB
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  reviewedAt  DateTime?
+
+  @@index([affiliateId])
+  @@map("affiliate_documents")
+}
+
+model Sale {
+  id              Int       @id @default(autoincrement())
+  affiliateId     Int
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  contactId       Int?
+  contact         Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  serviceTitle    String
+  amount          Float
+  currency        String    @default("USD")
+  status          String    @default("LEAD") // LEAD | DEPOSIT_PAID | FULLY_PAID | REFUNDED
+  commissionRate  Float     @default(0.1)
+  commissionTotal Float     @default(0)
+  collectedAmount Float     @default(0)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  paidAt          DateTime?
+
+  commissions     Commission[]
+
+  @@index([affiliateId, status])
+  @@map("affiliate_sales")
+}
+
+model Commission {
+  id           Int      @id @default(autoincrement())
+  saleId       Int
+  sale         Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  affiliateId  Int
+  affiliate    Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount       Float
+  status       String   @default("HOLD") // HOLD | AVAILABLE | PAID | REVERSED
+  availableAt  DateTime?
+  withdrawalId Int?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([affiliateId, status])
+  @@map("affiliate_commissions")
+}
+
+model Withdrawal {
+  id             Int      @id @default(autoincrement())
+  affiliateId    Int
+  affiliate      Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  payoutMethodId Int
+  payoutMethod   PayoutMethod @relation(fields: [payoutMethodId], references: [id], onDelete: Restrict)
+  amount         Float
+  fee            Float    @default(0)
+  netAmount      Float
+  status         String   @default("REQUESTED") // REQUESTED | APPROVED | PAID | REJECTED
+  txHash         String?  @db.VarChar(255)
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  reviewedAt     DateTime?
+  paidAt         DateTime?
+
+  @@index([affiliateId, status])
+  @@map("affiliate_withdrawals")
+}
+
+model SupportTicket {
+  id          Int      @id @default(autoincrement())
+  affiliateId Int
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  subject     String
+  message     String   @db.Text
+  status      String   @default("OPEN") // OPEN | CLOSED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  replies     TicketReply[]
+
+  @@index([affiliateId, status])
+  @@map("affiliate_tickets")
+}
+
+model TicketReply {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author    String // AFFILIATE | ADMIN
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("affiliate_ticket_replies")
 }

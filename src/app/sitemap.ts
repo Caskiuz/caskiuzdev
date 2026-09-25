@@ -4,12 +4,14 @@ import { getAllBlogSlugs } from "@/lib/blog-data";
 const BASE_URL = "https://caskiuz.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes = ["", "/blog"].map((route) => ({
-    url: `${BASE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: route === "" ? 1 : 0.8,
-  }));
+  const staticRoutes = ["", "/blog", "/afiliados", "/afiliados/faq", "/afiliados/terminos"].map(
+    (route) => ({
+      url: `${BASE_URL}${route}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: route === "" ? 1 : route === "/afiliados" ? 0.9 : 0.7,
+    })
+  );
 
   const slugs = getAllBlogSlugs();
 

@@ -6,6 +6,10 @@ import {
   MessageSquare,
   LogOut,
   Home,
+  Users,
+  ShoppingCart,
+  Wallet,
+  Headphones,
 } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 
@@ -33,6 +37,28 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             href="/admin/messages"
             icon={<MessageSquare className="w-5 h-5" />}
             label="Mensajes"
+          />
+
+          <div className="pt-4 pb-2">
+            <span className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Red de Afiliados
+            </span>
+          </div>
+
+          <SidebarLink
+            href="/admin/affiliates"
+            icon={<Users className="w-5 h-5" />}
+            label="Afiliados"
+          />
+          <SidebarLink
+            href="/admin/sales"
+            icon={<ShoppingCart className="w-5 h-5" />}
+            label="Ventas"
+          />
+          <SidebarLink
+            href="/admin/withdrawals"
+            icon={<Wallet className="w-5 h-5" />}
+            label="Retiros"
           />
 
           <div className="pt-4 pb-2">

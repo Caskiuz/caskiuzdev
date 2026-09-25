@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/#tech-stack", label: "Stack" },
   { href: "/#about", label: "Sobre mí" },
   { href: "/blog", label: "Blog" },
+  { href: "/afiliados", label: "Afiliados" },
   { href: "/#contact", label: "Contacto" },
 ];
 

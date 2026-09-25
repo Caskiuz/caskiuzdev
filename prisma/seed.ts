@@ -171,6 +171,13 @@ async function main() {
     { key: "social_instagram_label", value: "Instagram", group: "social" },
     { key: "footer_copyright", value: "© 2024 Caskiuz. Todos los derechos reservados.", group: "social" },
     { key: "footer_built_with", value: "Built with Next.js, TailwindCSS & ❤️", group: "social" },
+
+    // ─── RED DE AFILIADOS ───
+    { key: "affiliates_tagline", value: "Gana hasta 40% de comisión vendiendo servicios digitales", group: "affiliates" },
+    { key: "affiliates_hero_title", value: "Convierte tu audiencia en ingresos", group: "affiliates" },
+    { key: "affiliates_hero_subtitle", value: "Únete gratis, comparte tu link único y cobra en USDT, USDC, BTC o Binance Pay por cada venta que refieras.", group: "affiliates" },
+    { key: "affiliates_min_withdrawal", value: "30", group: "affiliates" },
+    { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
   ];
 
   for (const config of configs) {
