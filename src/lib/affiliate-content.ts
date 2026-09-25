@@ -30,6 +30,10 @@ export const AFFILIATE_FAQS: FaqItem[] = [
     a: "Tu link coloca una cookie de 30 días en el navegador del visitante. Si esa persona se contacta y contrata, la venta se atribuye a ti. También puedes darle a tu cliente tu código de referido para que lo ingrese al contactar.",
   },
   {
+    q: "¿Cómo pagan los clientes que refiero?",
+    a: "Los clientes pueden pagar con Pago Móvil (Venezuela), transferencia bancaria, PayPal, Binance o MercadoPago, con el esquema 50% de anticipo y 50% al finalizar. Esto les da facilidad de pago a tus referidos; tu comisión se te paga aparte, en USDT, USDC, BTC o Binance Pay.",
+  },
+  {
     q: "¿Puedo comprar para mí mismo y cobrar la comisión?",
     a: "No. La auto-compra y las compras de familiares directos están prohibidas por los términos del programa y son motivo de suspensión de la cuenta.",
   },

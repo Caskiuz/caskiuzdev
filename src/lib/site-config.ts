@@ -6,7 +6,8 @@ export type ConfigGroup =
   | "services"
   | "about"
   | "social"
-  | "footer";
+  | "footer"
+  | "payments";
 
 export interface SiteConfigRecord {
   key: string;

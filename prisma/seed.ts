@@ -178,6 +178,12 @@ async function main() {
     { key: "affiliates_hero_subtitle", value: "Únete gratis, comparte tu link único y cobra en USDT, USDC, BTC o Binance Pay por cada venta que refieras.", group: "affiliates" },
     { key: "affiliates_min_withdrawal", value: "30", group: "affiliates" },
     { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
+
+    // ─── MÉTODOS DE PAGO (Pago Móvil Venezuela — configurables en el admin) ───
+    { key: "payments_pago_movil_phone", value: "", group: "payments" },
+    { key: "payments_pago_movil_bank", value: "", group: "payments" },
+    { key: "payments_pago_movil_holder", value: "", group: "payments" },
+    { key: "payments_pago_movil_id", value: "", group: "payments" },
   ];
 
   for (const config of configs) {

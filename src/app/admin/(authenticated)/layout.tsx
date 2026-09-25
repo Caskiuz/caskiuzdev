@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   Wallet,
   Headphones,
+  CreditCard,
 } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 
@@ -86,6 +87,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             href="/admin/settings/contact"
             icon={<Settings className="w-5 h-5" />}
             label="Contacto"
+          />
+          <SidebarLink
+            href="/admin/settings/payments"
+            icon={<CreditCard className="w-5 h-5" />}
+            label="Métodos de pago"
           />
           <SidebarLink
             href="/admin/settings/social"

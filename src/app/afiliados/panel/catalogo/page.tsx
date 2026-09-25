@@ -2,8 +2,17 @@ import { requireAffiliate } from "@/lib/affiliate-auth";
 import { getSiteConfigByGroup } from "@/lib/site-config";
 import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 import { getTierInfo, formatUsd } from "@/lib/affiliate";
-import { TrendingUp, Link2 } from "lucide-react";
+import { getPagoMovil, formatPagoMovil, CLIENT_PAYMENT_METHODS } from "@/lib/payments";
+import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard } from "lucide-react";
 import Link from "next/link";
+
+const METHOD_ICONS: Record<string, typeof Smartphone> = {
+  "Pago Móvil (Venezuela)": Smartphone,
+  "Transferencia bancaria": Landmark,
+  PayPal: Wallet,
+  Binance: Coins,
+  MercadoPago: CreditCard,
+};
 
 function extractPrice(price: string): number | null {
   const match = price.replace(/,/g, "").match(/\$(\d+(?:\.\d+)?)/);
@@ -16,6 +25,7 @@ export default async function CatalogPage() {
 
   const groups = await getSiteConfigByGroup();
   const servicesData = groups["affiliates"]?.["services_data"];
+  const pagoMovil = getPagoMovil(groups["payments"] ?? {});
   let services: ServiceItem[] = [];
   try {
     services = mergeServices(servicesData ? JSON.parse(servicesData) : []);
@@ -33,6 +43,40 @@ export default async function CatalogPage() {
             {tier.emoji} {Math.round(tier.rate * 100)}%
           </strong>{" "}
           sobre el monto cobrado. Sube de nivel con más ventas referidas.
+        </p>
+      </div>
+
+      {/* Métodos de pago que aceptamos de tus clientes */}
+      <div className="metal-card rounded-2xl p-5">
+        <p className="text-sm font-bold mb-3">💳 ¿Cómo pagan tus clientes?</p>
+        <div className="flex flex-wrap gap-2">
+          {CLIENT_PAYMENT_METHODS.map((method) => {
+            const Icon = METHOD_ICONS[method] ?? CreditCard;
+            const isPagoMovil = method.startsWith("Pago Móvil");
+            return (
+              <span
+                key={method}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                  isPagoMovil
+                    ? "border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {method}
+              </span>
+            );
+          })}
+        </div>
+        {pagoMovil.enabled && (
+          <p className="text-xs text-aff-cyan mt-3">
+            📲 Pago Móvil: {formatPagoMovil(pagoMovil)} — comparte estos datos con tus
+            referidos en Venezuela para que paguen el anticipo al instante.
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground mt-3">
+          El esquema es 50% de anticipo y 50% al finalizar. Tu comisión se te paga aparte,
+          en USDT, USDC, BTC o Binance Pay.
         </p>
       </div>
 
