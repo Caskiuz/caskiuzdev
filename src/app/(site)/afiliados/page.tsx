@@ -77,7 +77,7 @@ const FAQ_JSON_LD = {
       name: "¿Cómo pagan las comisiones?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin o vía Binance Pay. El retiro mínimo es de $30 USD.",
+        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin o vía Binance Pay. Los afiliados en Venezuela pueden cobrar en bolívares por Pago Móvil. El retiro mínimo es de $30 USD.",
       },
     },
   ],

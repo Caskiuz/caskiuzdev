@@ -1,33 +1,13 @@
 /**
- * Métodos de pago que el DUEÑO del sitio acepta de los CLIENTES.
- * Configurables desde el admin (Ajustes → Métodos de pago):
- * Pago Móvil (Venezuela), Zelle, PayPal, Binance, Western Union y
- * envíos cripto a wallets USDT/USDC/BTC.
+ * Métodos de pago que el DUEÑO del sitio acepta de los CLIENTES
+ * (configurables en el admin → Ajustes → Métodos de pago):
+ * Zelle, PayPal, Binance, Western Union y envíos cripto a wallets
+ * USDT/USDC/BTC.
+ *
+ * El Pago Móvil NO es método de clientes: es un método de COBRO de
+ * comisiones exclusivo de los afiliados en Venezuela (se configura en
+ * el panel del afiliado, sección Retiros).
  */
-
-export interface PagoMovilInfo {
-  enabled: boolean;
-  phone: string;
-  bank: string;
-  holder: string;
-  id: string;
-}
-
-export function getPagoMovil(config: Record<string, string>): PagoMovilInfo {
-  const phone = (config["payments_pago_movil_phone"] || "").trim();
-  return {
-    enabled: Boolean(phone),
-    phone,
-    bank: (config["payments_pago_movil_bank"] || "").trim(),
-    holder: (config["payments_pago_movil_holder"] || "").trim(),
-    id: (config["payments_pago_movil_id"] || "").trim(),
-  };
-}
-
-export function formatPagoMovil(info: PagoMovilInfo): string {
-  const parts = [info.phone, info.bank, info.holder, info.id].filter(Boolean);
-  return parts.join(" · ");
-}
 
 export interface PaymentMethodInfo {
   id: string;
@@ -49,7 +29,6 @@ function readWallets(config: Record<string, string>): string[] {
     const address = (config[key] || "").trim();
     if (address) wallets.push(`${label}: ${address}`);
   }
-  // Otras redes en texto libre (una por línea)
   const extra = (config["payments_wallet_extra"] || "").trim();
   if (extra) {
     extra
@@ -62,14 +41,12 @@ function readWallets(config: Record<string, string>): string[] {
 }
 
 /**
- * Lista completa de métodos de pago de clientes que acepta Caskiuz.
- * Todos aparecen siempre; los que tienen datos configurados incluyen
- * el detalle para que afiliados y clientes sepan cómo pagar.
+ * Lista de métodos de pago de clientes que acepta Caskiuz.
+ * Los que tienen datos configurados incluyen el detalle público.
  */
 export function getClientPaymentMethods(
   config: Record<string, string>
 ): PaymentMethodInfo[] {
-  const pagoMovil = getPagoMovil(config);
   const zelle = (config["payments_zelle"] || "").trim();
   const paypal = (config["payments_paypal"] || "").trim();
   const binance = (config["payments_binance"] || "").trim();
@@ -78,11 +55,6 @@ export function getClientPaymentMethods(
   const wallets = readWallets(config);
 
   return [
-    {
-      id: "pago-movil",
-      label: "Pago Móvil (Venezuela)",
-      detail: pagoMovil.enabled ? formatPagoMovil(pagoMovil) : null,
-    },
     { id: "zelle", label: "Zelle", detail: zelle || null },
     { id: "paypal", label: "PayPal", detail: paypal || null },
     { id: "binance", label: "Binance", detail: binance || null },
@@ -97,4 +69,24 @@ export function getClientPaymentMethods(
       detail: wallets.length > 0 ? wallets.join("  ·  ") : null,
     },
   ];
+}
+
+/**
+ * Tasa de cambio USD → Bs configurada por el dueño para pagar las
+ * comisiones de afiliados venezolanos por Pago Móvil.
+ * Retorna null si no está configurada.
+ */
+export function getUsdVesRate(config: Record<string, string>): number | null {
+  const raw = (config["payments_usd_ves_rate"] || "").trim().replace(",", ".");
+  const rate = Number(raw);
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+}
+
+export function formatVes(amount: number): string {
+  return new Intl.NumberFormat("es-VE", {
+    style: "currency",
+    currency: "VES",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }

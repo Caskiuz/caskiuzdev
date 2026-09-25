@@ -19,6 +19,10 @@ interface WithdrawalRow {
     address: string | null;
     binanceId: string | null;
     binanceEmail: string | null;
+    pagoMovilPhone?: string | null;
+    pagoMovilBank?: string | null;
+    pagoMovilHolder?: string | null;
+    pagoMovilId?: string | null;
   };
 }
 
@@ -36,7 +40,13 @@ const STATUS_LABELS: Record<string, string> = {
   REJECTED: "Rechazado",
 };
 
-export function WithdrawalsManager({ withdrawals }: { withdrawals: WithdrawalRow[] }) {
+export function WithdrawalsManager({
+  withdrawals,
+  usdVesRate,
+}: {
+  withdrawals: WithdrawalRow[];
+  usdVesRate: number | null;
+}) {
   const [items, setItems] = useState(withdrawals);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [txInputs, setTxInputs] = useState<Record<number, string>>({});
@@ -91,8 +101,13 @@ export function WithdrawalsManager({ withdrawals }: { withdrawals: WithdrawalRow
             const method =
               w.payoutMethod.type === "BINANCE_PAY"
                 ? `Binance Pay — ${w.payoutMethod.binanceId || w.payoutMethod.binanceEmail}`
-                : `${w.payoutMethod.currency} (${w.payoutMethod.network}) — ${w.payoutMethod.address}`;
+                : w.payoutMethod.type === "PAGO_MOVIL"
+                  ? `Pago Móvil (BOLÍVARES) — ${w.payoutMethod.pagoMovilPhone} · ${w.payoutMethod.pagoMovilBank} · ${w.payoutMethod.pagoMovilHolder} · ${w.payoutMethod.pagoMovilId}`
+                  : `${w.payoutMethod.currency} (${w.payoutMethod.network}) — ${w.payoutMethod.address}`;
             const pending = w.status === "REQUESTED" || w.status === "APPROVED";
+            const isPagoMovil = w.payoutMethod.type === "PAGO_MOVIL";
+            const vesEquivalent =
+              isPagoMovil && usdVesRate ? w.netAmount * usdVesRate : null;
 
             return (
               <div key={w.id} className="rounded-2xl border border-border bg-surface p-5">
@@ -104,6 +119,23 @@ export function WithdrawalsManager({ withdrawals }: { withdrawals: WithdrawalRow
                         (solicitado: ${w.amount.toFixed(2)})
                       </span>
                     </p>
+                    {isPagoMovil && (
+                      <p className="text-sm font-semibold text-aff-cyan mt-0.5">
+                        📲 Pagar en bolívares
+                        {vesEquivalent ? (
+                          <>
+                            : ≈ Bs {vesEquivalent.toLocaleString("es-VE", { maximumFractionDigits: 2 })}{" "}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              (tasa {usdVesRate?.toLocaleString("es-VE")} Bs/USD)
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-normal text-muted-foreground">
+                            {" "}(configura la tasa Bs/USD en Ajustes → Métodos de pago)
+                          </span>
+                        )}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground mt-0.5">
                       {w.affiliate.name} · {w.affiliate.email}
                     </p>

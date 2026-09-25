@@ -48,6 +48,7 @@ export default async function WithdrawalsPage() {
         </p>
       </div>
       <WithdrawalsClient
+        country={affiliate.country}
         initialBalanceAvailable={byStatus("AVAILABLE")}
         initialBalancePending={byStatus("HOLD") + byStatus("WITHDRAWING")}
         initialKycApproved={Boolean(kycDoc)}

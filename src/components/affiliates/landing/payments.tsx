@@ -2,12 +2,11 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Smartphone, Landmark, Wallet, Coins, CreditCard, Globe, Info } from "lucide-react";
+import { Landmark, Wallet, Coins, CreditCard, Globe, Info } from "lucide-react";
 import type { PaymentMethodInfo } from "@/lib/payments";
 import { containerVariants, itemVariants } from "../variants";
 
-const METHOD_ICONS: Record<string, typeof Smartphone> = {
-  "pago-movil": Smartphone,
+const METHOD_ICONS: Record<string, typeof Landmark> = {
   "zelle": Landmark,
   "paypal": Wallet,
   "binance": Coins,
@@ -17,16 +16,15 @@ const METHOD_ICONS: Record<string, typeof Smartphone> = {
 
 /**
  * Métodos de pago que acepta Caskiuz de los CLIENTES que refieren los
- * afiliados: Pago Móvil (Venezuela), Zelle, PayPal, Binance, Western
- * Union y cripto (USDT/USDC/BTC). Los datos públicos se muestran solo
- * para los métodos que el dueño configuró en el admin.
+ * afiliados: Zelle, PayPal, Binance, Western Union y cripto
+ * (USDT/USDC/BTC). Los datos públicos se muestran solo para los métodos
+ * que el dueño configuró en el admin.
  */
 export function ClientPayments({ methods }: { methods: PaymentMethodInfo[] }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const withDetail = methods.filter((m) => m.detail);
-  const pagoMovil = methods.find((m) => m.id === "pago-movil");
 
   return (
     <section className="py-24 relative" id="pagos-clientes">
@@ -58,11 +56,7 @@ export function ClientPayments({ methods }: { methods: PaymentMethodInfo[] }) {
                 <motion.div
                   key={method.id}
                   variants={itemVariants}
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold border ${
-                    method.id === "pago-movil"
-                      ? "border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan"
-                      : "border-glass-border glass-card"
-                  }`}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold border border-glass-border glass-card"
                 >
                   <Icon className="w-4 h-4" />
                   {method.label}
@@ -94,19 +88,17 @@ export function ClientPayments({ methods }: { methods: PaymentMethodInfo[] }) {
               className="mt-6 text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5"
             >
               <Info className="w-3.5 h-3.5" /> El dueño del sitio publica aquí los datos de pago
-              (teléfono Pago Móvil, Zelle, PayPal, wallets) desde su panel de administración.
-            </motion.p>
-          )}
-
-          {pagoMovil?.detail && (
-            <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-muted-foreground">
-              📲 Ideal para clientes en Venezuela: comparte los datos de Pago Móvil y el pago
-              del anticipo queda confirmado en minutos.
+              (Zelle, PayPal, wallets) desde su panel de administración.
             </motion.p>
           )}
 
           <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-muted-foreground">
-            💡 Tu comisión se paga aparte, siempre en USDT, USDC, BTC o Binance Pay.
+            📲 ¿Eres afiliado en Venezuela? Cobra tus comisiones en bolívares por Pago Móvil
+            desde tu panel → Retiros.
+          </motion.p>
+
+          <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-muted-foreground">
+            💡 Tu comisión se paga en USDT, USDC, BTC o Binance Pay.
           </motion.p>
         </motion.div>
       </div>

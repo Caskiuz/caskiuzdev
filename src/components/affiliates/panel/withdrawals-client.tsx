@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins, Smartphone } from "lucide-react";
 import { SUPPORTED_CURRENCIES, NETWORK_LABELS, MIN_WITHDRAWAL, formatUsd } from "@/lib/affiliate";
 import { getWithdrawalStatusLabel } from "@/lib/affiliate-queries";
 import Link from "next/link";
@@ -16,6 +16,10 @@ interface PayoutMethod {
   address: string | null;
   label: string | null;
   isDefault: boolean;
+  pagoMovilPhone?: string | null;
+  pagoMovilBank?: string | null;
+  pagoMovilHolder?: string | null;
+  pagoMovilId?: string | null;
 }
 
 interface Withdrawal {
@@ -39,6 +43,7 @@ interface Withdrawal {
 }
 
 interface WithdrawalsProps {
+  country: string;
   initialBalanceAvailable: number;
   initialBalancePending: number;
   initialKycApproved: boolean;
@@ -49,7 +54,8 @@ interface WithdrawalsProps {
 type MethodForm =
   | { mode: "closed" }
   | { mode: "binance" }
-  | { mode: "wallet" };
+  | { mode: "wallet" }
+  | { mode: "pago-movil" };
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all text-sm";
@@ -62,12 +68,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function WithdrawalsClient({
+  country,
   initialBalanceAvailable,
   initialBalancePending,
   initialKycApproved,
   initialMethods,
   initialWithdrawals,
 }: WithdrawalsProps) {
+  const isVenezuela = country === "Venezuela";
   const [balanceAvailable, setBalanceAvailable] = useState(initialBalanceAvailable);
   const balancePending = initialBalancePending;
   const kycApproved = initialKycApproved;
@@ -83,6 +91,10 @@ export function WithdrawalsClient({
   const [currency, setCurrency] = useState("USDT");
   const [network, setNetwork] = useState("");
   const [address, setAddress] = useState("");
+  const [pmPhone, setPmPhone] = useState("");
+  const [pmBank, setPmBank] = useState("");
+  const [pmHolder, setPmHolder] = useState("");
+  const [pmId, setPmId] = useState("");
 
   // Formulario de retiro
   const [withdrawMethod, setWithdrawMethod] = useState<string>("");
@@ -105,7 +117,15 @@ export function WithdrawalsClient({
               binanceId: binanceType === "BINANCE_ID" ? binanceField : null,
               binanceEmail: binanceType === "BINANCE_EMAIL" ? binanceField : null,
             }
-          : { type: "WALLET", currency, network, address };
+          : form.mode === "pago-movil"
+            ? {
+                type: "PAGO_MOVIL",
+                pagoMovilPhone: pmPhone,
+                pagoMovilBank: pmBank,
+                pagoMovilHolder: pmHolder,
+                pagoMovilId: pmId,
+              }
+            : { type: "WALLET", currency, network, address };
 
       const res = await fetch("/api/affiliate/payout-methods", {
         method: "POST",
@@ -122,6 +142,10 @@ export function WithdrawalsClient({
       setForm({ mode: "closed" });
       setBinanceField("");
       setAddress("");
+      setPmPhone("");
+      setPmBank("");
+      setPmHolder("");
+      setPmId("");
     } catch {
       flash("error", "Error de conexión.");
     } finally {
@@ -205,7 +229,8 @@ export function WithdrawalsClient({
           <div>
             <p className="font-semibold">Pagos en cripto y Binance Pay</p>
             <p className="text-xs text-muted-foreground mt-1">
-              USDT · USDC (6 redes) · BTC · Binance ID/email · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
+              USDT · USDC (6 redes) · BTC · Binance ID/email
+              {isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""} · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
             </p>
           </div>
         </div>
@@ -252,7 +277,9 @@ export function WithdrawalsClient({
                     <option key={m.id} value={m.id}>
                       {m.type === "BINANCE_PAY"
                         ? `Binance Pay — ${m.binanceId || m.binanceEmail}`
-                        : `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`}
+                        : m.type === "PAGO_MOVIL"
+                          ? `Pago Móvil — ${m.pagoMovilPhone} (${m.pagoMovilBank})`
+                          : `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`}
                     </option>
                   ))}
                 </select>
@@ -292,7 +319,11 @@ export function WithdrawalsClient({
                       <p className="font-semibold">{formatUsd(w.netAmount)}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(w.createdAt).toLocaleDateString("es-ES")} ·{" "}
-                        {w.payoutMethod.type === "BINANCE_PAY" ? "Binance Pay" : `${w.payoutMethod.currency} ${w.payoutMethod.network}`}
+                        {w.payoutMethod.type === "BINANCE_PAY"
+                          ? "Binance Pay"
+                          : w.payoutMethod.type === "PAGO_MOVIL"
+                            ? "Pago Móvil (bolívares)"
+                            : `${w.payoutMethod.currency} ${w.payoutMethod.network}`}
                         {w.txHash && ` · ${w.txHash.slice(0, 18)}…`}
                       </p>
                       {w.notes && <p className="text-xs text-muted-foreground">{w.notes}</p>}
@@ -323,7 +354,9 @@ export function WithdrawalsClient({
                     <p className="text-xs text-muted-foreground truncate">
                       {m.type === "BINANCE_PAY"
                         ? `Binance Pay (${m.binanceId ? `ID ${m.binanceId}` : m.binanceEmail})`
-                        : `${m.currency} · ${NETWORK_LABELS[m.network ?? ""] ?? m.network} · ${m.address}`}
+                        : m.type === "PAGO_MOVIL"
+                          ? `Pago Móvil · ${m.pagoMovilPhone} · ${m.pagoMovilBank}`
+                          : `${m.currency} · ${NETWORK_LABELS[m.network ?? ""] ?? m.network} · ${m.address}`}
                     </p>
                   </div>
                 </div>
@@ -339,7 +372,7 @@ export function WithdrawalsClient({
           </ul>
 
           {/* Selector de tipo */}
-          <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className={`grid gap-3 mb-5 ${isVenezuela ? "grid-cols-3" : "grid-cols-2"}`}>
             <button
               onClick={() => {
                 setForm({ mode: "binance" });
@@ -361,7 +394,72 @@ export function WithdrawalsClient({
               <Wallet className="w-5 h-5 mx-auto mb-2" />
               Wallet cripto
             </button>
+            {isVenezuela && (
+              <button
+                onClick={() => setForm({ mode: "pago-movil" })}
+                className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                  form.mode === "pago-movil" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                }`}
+              >
+                <Smartphone className="w-5 h-5 mx-auto mb-2" />
+                Pago Móvil 🇻🇪
+              </button>
+            )}
           </div>
+
+          {form.mode === "pago-movil" && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                📲 Cobra tus comisiones en bolívares directamente a tu cuenta bancaria
+                venezolana. Exclusivo para afiliados en Venezuela.
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Teléfono Pago Móvil</label>
+                <input
+                  value={pmPhone}
+                  onChange={(e) => setPmPhone(e.target.value)}
+                  required
+                  placeholder="0412-1234567"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Banco</label>
+                <input
+                  value={pmBank}
+                  onChange={(e) => setPmBank(e.target.value)}
+                  required
+                  placeholder="Banco de Venezuela (0102)"
+                  className={inputClass}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Titular</label>
+                  <input
+                    value={pmHolder}
+                    onChange={(e) => setPmHolder(e.target.value)}
+                    required
+                    placeholder="Tu nombre"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Cédula</label>
+                  <input
+                    value={pmId}
+                    onChange={(e) => setPmId(e.target.value)}
+                    required
+                    placeholder="V-12345678"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Pago Móvil"}
+              </button>
+            </form>
+          )}
 
           {form.mode === "binance" && (
             <form onSubmit={addMethod} className="space-y-4">

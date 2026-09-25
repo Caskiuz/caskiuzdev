@@ -4,28 +4,7 @@ import { SettingsEditor } from "@/components/admin/settings-editor";
 export const dynamic = "force-dynamic";
 
 const fields = [
-  // ─── Pago Móvil (Venezuela) ───
-  {
-    key: "payments_pago_movil_phone",
-    label: "📲 Pago Móvil — Teléfono (04XX-XXXXXXX)",
-    placeholder: "0412-1234567",
-  },
-  {
-    key: "payments_pago_movil_bank",
-    label: "📲 Pago Móvil — Banco",
-    placeholder: "Banco de Venezuela (0102)",
-  },
-  {
-    key: "payments_pago_movil_holder",
-    label: "📲 Pago Móvil — Titular",
-    placeholder: "Ricardo Agelvis",
-  },
-  {
-    key: "payments_pago_movil_id",
-    label: "📲 Pago Móvil — Cédula / RIF",
-    placeholder: "V-12345678",
-  },
-  // ─── Métodos internacionales ───
+  // ─── Métodos internacionales (clientes) ───
   {
     key: "payments_zelle",
     label: "🇺🇸 Zelle — Email o teléfono registrado",
@@ -78,6 +57,12 @@ const fields = [
     type: "textarea" as const,
     placeholder: "USDT (ERC20): 0x…\nUSDC (Solana): …",
   },
+  // ─── Pago Móvil para AFILIADOS venezolanos ───
+  {
+    key: "payments_usd_ves_rate",
+    label: "📲 Tasa de cambio USD → Bs (para pagar comisiones por Pago Móvil)",
+    placeholder: "38.50",
+  },
 ];
 
 export default async function PaymentsSettingsPage() {
@@ -86,7 +71,7 @@ export default async function PaymentsSettingsPage() {
     <SettingsEditor
       group="payments"
       title="Métodos de pago"
-      description="Configura los métodos de pago que aceptas de tus CLIENTES: Pago Móvil (Venezuela), Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Los datos que dejes en blanco no se muestran en la web. Estos datos aparecen en la página principal, la landing de afiliados y el panel de cada afiliado."
+      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). La tasa USD → Bs se usa para pagar las comisiones de afiliados venezolanos por Pago Móvil (ellos registran su propio teléfono y banco desde su panel). Los datos que dejes en blanco no se muestran en la web."
       fields={fields}
       initialData={config}
     />

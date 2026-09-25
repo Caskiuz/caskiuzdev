@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma/client";
 import { releaseMaturedCommissions } from "@/lib/commissions";
 import { serialize } from "@/lib/affiliate-queries";
+import { getSiteConfig } from "@/lib/site-config";
+import { getUsdVesRate } from "@/lib/payments";
 import { WithdrawalsManager } from "@/components/admin/withdrawals-manager";
 import { Wallet } from "lucide-react";
 
@@ -9,15 +11,19 @@ export const dynamic = "force-dynamic";
 export default async function AdminWithdrawalsPage() {
   await releaseMaturedCommissions();
 
-  const withdrawals = await prisma.withdrawal.findMany({
-    include: {
-      affiliate: { select: { id: true, name: true, email: true } },
-      payoutMethod: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+  const [config, withdrawals] = await Promise.all([
+    getSiteConfig(),
+    prisma.withdrawal.findMany({
+      include: {
+        affiliate: { select: { id: true, name: true, email: true } },
+        payoutMethod: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    }),
+  ]);
 
+  const usdVesRate = getUsdVesRate(config);
   const pending = withdrawals.filter((w) => w.status === "REQUESTED").length;
 
   return (
@@ -28,11 +34,13 @@ export default async function AdminWithdrawalsPage() {
         </h1>
         <p className="text-muted-foreground mt-1">
           Proceso de pago: paga manualmente desde Binance o tu wallet, pega el hash/TranId y
-          marca como pagado. El afiliado recibe una notificación por email.
+          marca como pagado. Los retiros por Pago Móvil se pagan en bolívares al afiliado
+          venezolano. El afiliado recibe una notificación por email.
         </p>
       </div>
 
       <WithdrawalsManager
+        usdVesRate={usdVesRate}
         withdrawals={serialize(
           withdrawals.map((w) => ({
             id: w.id,
@@ -50,6 +58,10 @@ export default async function AdminWithdrawalsPage() {
               address: w.payoutMethod.address,
               binanceId: w.payoutMethod.binanceId,
               binanceEmail: w.payoutMethod.binanceEmail,
+              pagoMovilPhone: w.payoutMethod.pagoMovilPhone,
+              pagoMovilBank: w.payoutMethod.pagoMovilBank,
+              pagoMovilHolder: w.payoutMethod.pagoMovilHolder,
+              pagoMovilId: w.payoutMethod.pagoMovilId,
             },
           }))
         )}

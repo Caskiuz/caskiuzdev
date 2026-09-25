@@ -61,9 +61,10 @@ export function AffiliateHero() {
 
           <motion.p variants={itemVariants} className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
             Únete gratis, comparte tu link único y cobra comisiones en{" "}
-            <strong className="text-foreground">USDT, USDC, Bitcoin o Binance Pay</strong> por
-            cada venta de desarrollo web, apps, e-commerce y SEO que refieras. Tus clientes
-            pueden pagar con <strong className="text-foreground">Pago Móvil</strong>.
+            <strong className="text-foreground">
+              USDT, USDC, Bitcoin, Binance Pay o Pago Móvil (para los afiliados venezolanos)
+            </strong>{" "}
+            por cada venta de desarrollo web, apps, e-commerce y SEO que refieras.
           </motion.p>
 
           <motion.div variants={itemVariants} className="mt-8 flex flex-wrap gap-4">
@@ -96,7 +97,7 @@ export function AffiliateHero() {
 
           <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan">
-              <Smartphone className="w-3.5 h-3.5" /> Pago Móvil (Venezuela) para tus clientes
+              <Smartphone className="w-3.5 h-3.5" /> Pago Móvil para afiliados venezolanos 🇻🇪
             </span>
           </motion.div>
 

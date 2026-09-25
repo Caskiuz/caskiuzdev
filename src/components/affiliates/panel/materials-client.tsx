@@ -15,7 +15,7 @@ const SWIPES: Swipe[] = [
     id: "wa1",
     icon: MessageCircle,
     channel: "WhatsApp",
-    text: "🚀 ¿Tienes un negocio y necesitas página web, app o tienda online?\n\nTrabajo con Caskiuz, un desarrollador que entrega proyectos en tiempo récord y con calidad profesional. Web Apps desde $349, tiendas online desde $999.\n\nPuedes pagar con Pago Móvil (Venezuela), Zelle, PayPal, Western Union, Binance o cripto (USDT/USDC/BTC), 50% para empezar.\n\nTe dejo el enlace con más info 👇\n[TU LINK]",
+    text: "🚀 ¿Tienes un negocio y necesitas página web, app o tienda online?\n\nTrabajo con Caskiuz, un desarrollador que entrega proyectos en tiempo récord y con calidad profesional. Web Apps desde $349, tiendas online desde $999.\n\nPuedes pagar con Zelle, PayPal, Western Union, Binance o cripto (USDT/USDC/BTC), 50% para empezar.\n\nTe dejo el enlace con más info 👇\n[TU LINK]",
   },
   {
     id: "ig1",

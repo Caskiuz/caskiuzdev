@@ -230,8 +230,7 @@ export function Services({ config = {} }: ServicesProps) {
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Para servicios recurrentes aplica facturación mensual. Pagos seguros vía{" "}
-              Pago Móvil (Venezuela), Zelle, PayPal, Western Union, Binance o cripto
-              (USDT/USDC/BTC).
+              Zelle, PayPal, Western Union, Binance o cripto (USDT/USDC/BTC).
             </p>
             {paymentDetails.map((method) => (
               <p key={method.id} className="text-xs text-emerald-500 mt-1.5 font-medium">

@@ -31,7 +31,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { type, binanceId, binanceEmail, currency, network, address, label } = body;
+    const {
+      type,
+      binanceId,
+      binanceEmail,
+      currency,
+      network,
+      address,
+      label,
+      pagoMovilPhone,
+      pagoMovilBank,
+      pagoMovilHolder,
+      pagoMovilId,
+    } = body;
 
     const count = await prisma.payoutMethod.count({ where: { affiliateId: affiliate.id } });
     if (count >= MAX_METHODS) {
@@ -60,6 +72,52 @@ export async function POST(request: NextRequest) {
           network: null,
           address: null,
           label: label ? String(label).slice(0, 40) : "Binance Pay",
+          isDefault: count === 0,
+        },
+      });
+      return NextResponse.json({ success: true, method }, { status: 201 });
+    }
+
+    // Pago Móvil: cobro de comisiones EXCLUSIVO para afiliados en Venezuela
+    if (type === "PAGO_MOVIL") {
+      if (affiliate.country !== "Venezuela") {
+        return NextResponse.json(
+          { error: "Pago Móvil es exclusivo para afiliados en Venezuela. Si estás en Venezuela, actualiza tu país en el perfil." },
+          { status: 403 }
+        );
+      }
+      const phone = String(pagoMovilPhone || "").trim();
+      const bank = String(pagoMovilBank || "").trim();
+      const holder = String(pagoMovilHolder || "").trim();
+      const docId = String(pagoMovilId || "").trim();
+
+      if (!/^0(412|414|416|424|426)[-\s]?\d{7}$/.test(phone)) {
+        return NextResponse.json(
+          { error: "Teléfono Pago Móvil inválido. Formato: 04XX-XXXXXXX (operadora venezolana)." },
+          { status: 400 }
+        );
+      }
+      if (!bank || !holder || !docId) {
+        return NextResponse.json(
+          { error: "Banco, titular y cédula son obligatorios para Pago Móvil." },
+          { status: 400 }
+        );
+      }
+
+      const method = await prisma.payoutMethod.create({
+        data: {
+          affiliateId: affiliate.id,
+          type: "PAGO_MOVIL",
+          binanceId: null,
+          binanceEmail: null,
+          currency: "VES",
+          network: null,
+          address: null,
+          pagoMovilPhone: phone,
+          pagoMovilBank: bank.slice(0, 80),
+          pagoMovilHolder: holder.slice(0, 120),
+          pagoMovilId: docId.slice(0, 40),
+          label: label ? String(label).slice(0, 40) : "Pago Móvil (Venezuela)",
           isDefault: count === 0,
         },
       });

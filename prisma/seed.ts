@@ -180,10 +180,6 @@ async function main() {
     { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
 
     // ─── MÉTODOS DE PAGO (clientes — configurables en el admin) ───
-    { key: "payments_pago_movil_phone", value: "", group: "payments" },
-    { key: "payments_pago_movil_bank", value: "", group: "payments" },
-    { key: "payments_pago_movil_holder", value: "", group: "payments" },
-    { key: "payments_pago_movil_id", value: "", group: "payments" },
     { key: "payments_zelle", value: "", group: "payments" },
     { key: "payments_paypal", value: "", group: "payments" },
     { key: "payments_binance", value: "", group: "payments" },
@@ -194,6 +190,7 @@ async function main() {
     { key: "payments_wallet_usdc_trc20", value: "", group: "payments" },
     { key: "payments_wallet_btc", value: "", group: "payments" },
     { key: "payments_wallet_extra", value: "", group: "payments" },
+    { key: "payments_usd_ves_rate", value: "", group: "payments" },
   ];
 
   for (const config of configs) {

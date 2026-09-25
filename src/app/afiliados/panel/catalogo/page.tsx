@@ -7,7 +7,6 @@ import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard, Glo
 import Link from "next/link";
 
 const METHOD_ICONS: Record<string, typeof Smartphone> = {
-  "pago-movil": Smartphone,
   "zelle": Landmark,
   "paypal": Wallet,
   "binance": Coins,

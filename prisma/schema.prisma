@@ -153,13 +153,17 @@ model PayoutMethod {
   id            Int      @id @default(autoincrement())
   affiliateId   Int
   affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  type          String // BINANCE_PAY | WALLET
+  type          String // BINANCE_PAY | WALLET | PAGO_MOVIL
   binanceId     String?
   binanceEmail  String?
-  currency      String // USDT | USDC | BTC
+  currency      String // USDT | USDC | BTC | VES
   network       String? // TRC20 | ERC20 | BEP20 | SOLANA | POLYGON | ARBITRUM
   address       String?
   label         String?
+  pagoMovilPhone  String?
+  pagoMovilBank   String?
+  pagoMovilHolder String?
+  pagoMovilId     String?
   isDefault     Boolean  @default(false)
   createdAt     DateTime @default(now()) @map("created_at")
 

@@ -143,7 +143,9 @@ export default async function AdminAffiliateDetailPage({
                   <li key={m.id} className="text-sm p-3 rounded-lg bg-surface-hover border border-border">
                     {m.type === "BINANCE_PAY"
                       ? `Binance Pay — ${m.binanceId || m.binanceEmail}`
-                      : `${m.currency} (${m.network}) — ${m.address}`}
+                      : m.type === "PAGO_MOVIL"
+                        ? `Pago Móvil (bolívares) — ${m.pagoMovilPhone} · ${m.pagoMovilBank} · ${m.pagoMovilHolder} · ${m.pagoMovilId}`
+                        : `${m.currency} (${m.network}) — ${m.address}`}
                   </li>
                 ))}
               </ul>
