@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierInfo } from "@/lib/affiliate";
@@ -25,6 +26,7 @@ import { BrandLogo } from "@/components/ui/brand-logo";
 
 const navItems = [
   { href: "/afiliados/panel", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/afiliados/panel/leads", label: "Mis leads", icon: Users },
   { href: "/afiliados/panel/enlaces", label: "Mis enlaces", icon: Link2 },
   { href: "/afiliados/panel/catalogo", label: "Catálogo", icon: Store },
   { href: "/afiliados/panel/materiales", label: "Materiales", icon: Megaphone },

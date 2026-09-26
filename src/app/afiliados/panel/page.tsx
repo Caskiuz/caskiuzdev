@@ -39,6 +39,7 @@ export default async function AffiliateDashboardPage() {
       value: stats.totalLeads.toLocaleString("en-US"),
       sub: `${stats.conversionRate.toFixed(1)}% conversión`,
       icon: Users,
+      href: "/afiliados/panel/leads",
     },
     {
       label: "Ventas atribuidas",
@@ -98,16 +99,31 @@ export default async function AffiliateDashboardPage() {
 
       {/* Stat cards */}
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {cards.map((card) => (
-          <div key={card.label} className="metal-card rounded-2xl p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{card.label}</p>
-              <card.icon className="w-4 h-4 text-aff-cyan" />
+        {cards.map((card) => {
+          const content = (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{card.label}</p>
+                <card.icon className="w-4 h-4 text-aff-cyan" />
+              </div>
+              <p className="text-2xl font-bold mt-2">{card.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+            </>
+          );
+          return "href" in card && card.href ? (
+            <Link
+              key={card.label}
+              href={card.href}
+              className="metal-card rounded-2xl p-5 hover:bg-surface-hover transition-colors"
+            >
+              {content}
+            </Link>
+          ) : (
+            <div key={card.label} className="metal-card rounded-2xl p-5">
+              {content}
             </div>
-            <p className="text-2xl font-bold mt-2">{card.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Clics últimos 30 días */}
