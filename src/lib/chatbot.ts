@@ -90,30 +90,37 @@ export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
 
   let lastError = "sin respuesta";
 
-  for (const model of GEMINI_MODELS) {
-    let res = await callGemini(apiKey, model, history, true);
-
-    // Si el modelo no soporta thinkingConfig, reintenta sin esa opción
-    if (!res.ok && res.status === 400 && /thinking/i.test(res.data?.error?.message || "")) {
-      res = await callGemini(apiKey, model, history, false);
+  // Dos rondas: si Google está saturado (503/429), esperamos y reintentamos
+  for (let round = 0; round < 2; round++) {
+    if (round > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
 
-    if (res.ok) {
-      const reply = res.data.candidates?.[0]?.content?.parts
-        ?.map((p) => p.text ?? "")
-        .join("")
-        .trim();
-      if (reply) return reply;
-      lastError = "respuesta vacía";
-    } else {
-      lastError = res.data?.error?.message || `HTTP ${res.status}`;
-      // Saturación temporal de Google: espera breve y prueba el siguiente modelo
-      if (res.status === 429 || res.status >= 500) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
+    for (const model of GEMINI_MODELS) {
+      let res = await callGemini(apiKey, model, history, true);
+
+      // Si el modelo no soporta thinkingConfig, reintenta sin esa opción
+      if (!res.ok && res.status === 400 && /thinking/i.test(res.data?.error?.message || "")) {
+        res = await callGemini(apiKey, model, history, false);
+      }
+
+      if (res.ok) {
+        const reply = res.data.candidates?.[0]?.content?.parts
+          ?.map((p) => p.text ?? "")
+          .join("")
+          .trim();
+        if (reply) return reply;
+        lastError = "respuesta vacía";
+      } else {
+        lastError = res.data?.error?.message || `HTTP ${res.status}`;
+        // Saturación temporal de Google: espera breve y prueba el siguiente modelo
+        if (res.status === 429 || res.status >= 500) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        }
       }
     }
   }
 
-  console.error("Error de Gemini (todos los modelos):", lastError);
+  console.error("Error de Gemini (todos los intentos):", lastError);
   throw new Error("El asistente no está disponible en este momento.");
 }
