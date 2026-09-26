@@ -3,7 +3,9 @@
  * Sin GEMINI_API_KEY el chat se desactiva limpiamente (el widget se oculta).
  */
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+/** Cascada de modelos: si el principal está saturado o no existe, usa el alias estable */
+const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, "gemini-flash-latest"]));
 const GEMINI_URL = (model: string, key: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
@@ -47,13 +49,23 @@ interface GeminiResponse {
   error?: { message?: string };
 }
 
-export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Chat no configurado");
+async function callGemini(
+  apiKey: string,
+  model: string,
+  history: ChatMessage[],
+  withThinkingConfig: boolean
+): Promise<{ ok: boolean; status: number; data: GeminiResponse }> {
+  const generationConfig: Record<string, unknown> = {
+    temperature: 0.5,
+    maxOutputTokens: 1200,
+  };
+  // Los modelos con "pensamiento" consumen el presupuesto de salida en el
+  // razonamiento interno y cortan la respuesta; lo desactivamos para el chat.
+  if (withThinkingConfig) {
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
-  const res = await fetch(GEMINI_URL(GEMINI_MODEL, apiKey), {
+  const res = await fetch(GEMINI_URL(model, apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -62,23 +74,46 @@ export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.content.slice(0, 1500) }],
       })),
-      generationConfig: {
-        temperature: 0.5,
-        maxOutputTokens: 400,
-      },
+      generationConfig,
     }),
   });
 
   const data = (await res.json()) as GeminiResponse;
+  return { ok: res.ok, status: res.status, data };
+}
 
-  if (!res.ok) {
-    console.error("Error de Gemini:", data?.error?.message || res.status);
-    throw new Error("El asistente no está disponible en este momento.");
+export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Chat no configurado");
   }
 
-  const reply = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
-  if (!reply) {
-    throw new Error("El asistente no pudo generar una respuesta.");
+  let lastError = "sin respuesta";
+
+  for (const model of GEMINI_MODELS) {
+    let res = await callGemini(apiKey, model, history, true);
+
+    // Si el modelo no soporta thinkingConfig, reintenta sin esa opción
+    if (!res.ok && res.status === 400 && /thinking/i.test(res.data?.error?.message || "")) {
+      res = await callGemini(apiKey, model, history, false);
+    }
+
+    if (res.ok) {
+      const reply = res.data.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text ?? "")
+        .join("")
+        .trim();
+      if (reply) return reply;
+      lastError = "respuesta vacía";
+    } else {
+      lastError = res.data?.error?.message || `HTTP ${res.status}`;
+      // Saturación temporal de Google: espera breve y prueba el siguiente modelo
+      if (res.status === 429 || res.status >= 500) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
+    }
   }
-  return reply;
+
+  console.error("Error de Gemini (todos los modelos):", lastError);
+  throw new Error("El asistente no está disponible en este momento.");
 }
