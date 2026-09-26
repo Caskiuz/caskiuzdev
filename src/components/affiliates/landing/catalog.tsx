@@ -83,11 +83,6 @@ export function Catalog({ services }: { services: ServiceItem[] }) {
                       </p>
                     </div>
                   )}
-                  {service.deliveryTime && (
-                    <p className="text-[11px] text-muted-foreground">
-                      ⏱️ Entrega: {service.deliveryTime}
-                    </p>
-                  )}
                 </div>
               </motion.div>
             );
