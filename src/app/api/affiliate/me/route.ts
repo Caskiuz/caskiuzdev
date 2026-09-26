@@ -31,6 +31,7 @@ export async function GET() {
     status: affiliate.status,
     tier: affiliate.tier,
     referralCode: affiliate.referralCode,
+    slug: affiliate.slug,
     lifetimeRevenue: affiliate.lifetimeRevenue,
     emailVerified: affiliate.emailVerified,
     balanceAvailable: byStatus("AVAILABLE"),

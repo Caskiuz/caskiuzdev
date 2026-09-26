@@ -14,6 +14,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import Link from "next/link";
+import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 interface ContactProps {
   config?: Record<string, string>;
@@ -29,8 +30,12 @@ export function Contact({ config = {} }: ContactProps) {
   >("idle");
 
   const phoneNumber = c("contact_whatsapp", "584262931869");
+  const referralCode = useReferralCode();
   const whatsappMessage = encodeURIComponent(
-    c("contact_whatsapp_message", "¡Hola Caskiuz! 👋 Me gustaría conversar sobre un proyecto.")
+    appendReferralCode(
+      c("contact_whatsapp_message", "¡Hola Caskiuz! 👋 Me gustaría conversar sobre un proyecto."),
+      referralCode
+    )
   );
   const email = c("contact_email", "rijarwow@gmail.com");
   const linkedinUrl = c("contact_linkedin_url", "https://www.linkedin.com/in/ricardo-agelvis-9489a9370");

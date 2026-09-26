@@ -89,6 +89,30 @@ export function generateReferralCode(length = 8): string {
   return code;
 }
 
+/** Cookie legible (JS) con el código del afiliado para enriquecer mensajes de WhatsApp */
+export const REFERRAL_CODE_COOKIE = "cask_ref_code";
+
+/**
+ * Convierte un nombre en un slug de link: minúsculas, sin acentos,
+ * espacios y símbolos → guiones. Ej: "Ricardo Agelvis" → "ricardo-agelvis".
+ * Retorna "" si el nombre no produce caracteres válidos.
+ */
+export function slugifyName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-")
+    .slice(0, 40);
+}
+
+/** Link de referido público (prefiere el slug bonito, cae al código) */
+export function affiliateRef(slug: string | null, referralCode: string): string {
+  return slug || referralCode;
+}
+
 // ─── Redes y monedas soportadas ───
 export const SUPPORTED_CURRENCIES = [
   { code: "USDT", label: "USDT (Tether)", networks: ["TRC20", "ERC20", "BEP20", "SOLANA", "POLYGON", "ARBITRUM"] },

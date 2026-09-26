@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { hashPassword } from "@/lib/password";
-import { generateReferralCode } from "@/lib/affiliate";
+import { generateReferralCode, slugifyName, affiliateRef } from "@/lib/affiliate";
 import { createPurposeToken } from "@/lib/affiliate-auth";
 import { sendEmail, emailShell } from "@/lib/email";
 
@@ -53,6 +53,21 @@ export async function POST(request: NextRequest) {
       referralCode = generateReferralCode();
     }
 
+    // Slug bonito derivado del nombre (ej: ricardo-agelvis), con sufijo si está ocupado
+    let slug: string | null = null;
+    const baseSlug = slugifyName(String(name));
+    if (baseSlug.length >= 3) {
+      let candidate = baseSlug.slice(0, 30);
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const clash = await prisma.affiliate.findUnique({ where: { slug: candidate } });
+        if (!clash) {
+          slug = candidate;
+          break;
+        }
+        candidate = `${baseSlug.slice(0, 27)}-${attempt + 2}`;
+      }
+    }
+
     const affiliate = await prisma.affiliate.create({
       data: {
         email: emailLower,
@@ -61,6 +76,7 @@ export async function POST(request: NextRequest) {
         country: String(country).trim().slice(0, 80),
         phone: phone ? String(phone).trim().slice(0, 40) : null,
         referralCode,
+        slug,
         status: "ACTIVE",
         // El contrato del programa se celebra al aceptar los T&C en el registro
         termsAcceptedAt: new Date(),
@@ -68,6 +84,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Email de bienvenida + verificación (si Resend está configurado)
+    const ref = affiliateRef(affiliate.slug, affiliate.referralCode);
     const verifyToken = await createPurposeToken(affiliate.email, "verify");
     const verifyUrl = `https://caskiuz.vercel.app/api/affiliate/verify-email?token=${verifyToken}`;
     await sendEmail({
@@ -77,7 +94,7 @@ export async function POST(request: NextRequest) {
         <h2 style="margin:0 0 12px;">¡Bienvenido, ${escapeHtml(affiliate.name)}!</h2>
         <p>Tu cuenta de afiliado fue creada correctamente.</p>
         <p><strong>Tu código de referido:</strong> <code style="background:#1c1c28;padding:4px 8px;border-radius:6px;">${affiliate.referralCode}</code></p>
-        <p>Tu link único: <a href="https://caskiuz.vercel.app/r/${affiliate.referralCode}" style="color:#38bdf8;">caskiuz.vercel.app/r/${affiliate.referralCode}</a></p>
+        <p>Tu link único: <a href="https://caskiuz.vercel.app/r/${ref}" style="color:#38bdf8;">caskiuz.vercel.app/r/${ref}</a></p>
         <p>Confirma tu email aquí: <a href="${verifyUrl}" style="color:#38bdf8;">Verificar email</a></p>
       `),
     });
@@ -87,6 +104,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         referralCode: affiliate.referralCode,
+        slug: affiliate.slug,
         message: "Cuenta creada. Ya puedes iniciar sesión.",
       },
       { status: 201 }

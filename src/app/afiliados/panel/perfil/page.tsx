@@ -20,6 +20,7 @@ export default async function ProfilePage() {
           phone: affiliate.phone,
           tier: affiliate.tier,
           referralCode: affiliate.referralCode,
+          slug: affiliate.slug,
           emailVerified: affiliate.emailVerified,
           avatar: affiliate.avatar,
         }}

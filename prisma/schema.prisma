@@ -113,6 +113,7 @@ model Affiliate {
   status         AffiliateStatus @default(PENDING)
   tier           AffiliateTier  @default(SILVER)
   referralCode   String         @unique
+  slug           String?        @unique
   lifetimeRevenue Float          @default(0)
   emailVerified  Boolean        @default(false)
   termsAcceptedAt DateTime?     @map("terms_accepted_at")

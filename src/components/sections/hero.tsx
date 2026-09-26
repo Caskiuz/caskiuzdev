@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Sparkles, Code2, Rocket, ExternalLink, MessageCircle, FileDown } from "lucide-react";
 import Link from "next/link";
 import { CVViewer } from "@/components/ui/cv-viewer";
+import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 interface HeroProps {
   config?: Record<string, string>;
@@ -13,6 +14,7 @@ interface HeroProps {
 export function Hero({ config = {} }: HeroProps) {
   const c = (key: string, fallback: string) => config[key] || fallback;
   const [isCVViewerOpen, setIsCVViewerOpen] = useState(false);
+  const referralCode = useReferralCode();
 
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -29,11 +31,6 @@ export function Hero({ config = {} }: HeroProps) {
     { Icon: Sparkles, className: "top-40 right-[15%] animate-float", delay: 2 },
     { Icon: Rocket, className: "bottom-32 left-[20%] animate-float", delay: 4 },
   ];
-
-  const phoneNumber = "584262931869";
-  const message = encodeURIComponent(
-    "¡Hola Caskiuz! 👋 Vi tu portfolio y me interesa trabajar contigo."
-  );
 
   return (
     <section
@@ -154,7 +151,7 @@ export function Hero({ config = {} }: HeroProps) {
             {c("hero_cta_cv", "Ver CV")}
           </button>
           <Link
-            href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.")}`}
+            href={`https://wa.me/584262931869?text=${encodeURIComponent(appendReferralCode("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.", referralCode))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:-translate-y-0.5"

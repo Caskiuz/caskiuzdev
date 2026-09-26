@@ -96,13 +96,14 @@ function NumberedSteps({ items }: { items: string[] }) {
 export default async function HelpPage() {
   const affiliate = await requireAffiliate();
   const baseUrl = "https://caskiuz.vercel.app";
-  const link = `${baseUrl}/r/${affiliate.referralCode}`;
+  const ref = affiliate.slug || affiliate.referralCode;
+  const link = `${baseUrl}/r/${ref}`;
 
   const campaignExamples = [
-    { channel: "Instagram", url: `${baseUrl}/r/${affiliate.referralCode}?subid=instagram` },
-    { channel: "WhatsApp", url: `${baseUrl}/r/${affiliate.referralCode}?subid=whatsapp` },
-    { channel: "TikTok", url: `${baseUrl}/r/${affiliate.referralCode}?subid=tiktok` },
-    { channel: "YouTube", url: `${baseUrl}/r/${affiliate.referralCode}?subid=youtube` },
+    { channel: "Instagram", url: `${baseUrl}/r/${ref}?subid=instagram` },
+    { channel: "WhatsApp", url: `${baseUrl}/r/${ref}?subid=whatsapp` },
+    { channel: "TikTok", url: `${baseUrl}/r/${ref}?subid=tiktok` },
+    { channel: "YouTube", url: `${baseUrl}/r/${ref}?subid=youtube` },
   ];
 
   return (

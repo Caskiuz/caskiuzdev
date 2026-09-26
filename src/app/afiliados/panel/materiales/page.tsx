@@ -1,4 +1,5 @@
 import { requireAffiliate } from "@/lib/affiliate-auth";
+import { affiliateRef } from "@/lib/affiliate";
 import { MaterialsClient } from "@/components/affiliates/panel/materials-client";
 
 export default async function MaterialsPage() {
@@ -12,7 +13,7 @@ export default async function MaterialsPage() {
           Copia, pega y comparte. Todo listo para promocionar con tu link único.
         </p>
       </div>
-      <MaterialsClient referralCode={affiliate.referralCode} />
+      <MaterialsClient referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)} />
     </div>
   );
 }

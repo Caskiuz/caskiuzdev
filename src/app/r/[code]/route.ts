@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma/client";
-import { REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from "@/lib/affiliate";
+import {
+  REFERRAL_COOKIE,
+  REFERRAL_COOKIE_DAYS,
+  REFERRAL_CODE_COOKIE,
+  affiliateRef,
+} from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Link de referido: registra el clic, fija la cookie de atribución (30 días)
- * y redirige al destino. Ejemplo: /r/ABC12345?subid=campaña-1&to=/blog
+ * y redirige al destino. Acepta el slug bonito (/r/ricardo-agelvis) o el
+ * código legado (/r/XARUX5YH). Ejemplo: /r/ricardo-agelvis?subid=instagram
  */
 export async function GET(
   request: NextRequest,
@@ -17,9 +23,10 @@ export async function GET(
   const subid = request.nextUrl.searchParams.get("subid");
   const to = request.nextUrl.searchParams.get("to");
 
-  const affiliate = await prisma.affiliate.findUnique({
-    where: { referralCode: code.trim().toUpperCase() },
-  });
+  const raw = decodeURIComponent(code).trim();
+  const affiliate =
+    (await prisma.affiliate.findFirst({ where: { slug: raw.toLowerCase() } })) ??
+    (await prisma.affiliate.findUnique({ where: { referralCode: raw.toUpperCase() } }));
 
   if (!affiliate || affiliate.status === "SUSPENDED") {
     return NextResponse.redirect(new URL("/", request.url));
@@ -58,6 +65,19 @@ export async function GET(
     path: "/",
     maxAge: 60 * 60 * 24 * REFERRAL_COOKIE_DAYS,
   });
+  // Cookie legible por JS: permite que los CTAs de WhatsApp incluyan
+  // automáticamente el código de referido en el mensaje del cliente.
+  response.cookies.set(
+    REFERRAL_CODE_COOKIE,
+    affiliateRef(affiliate.slug, affiliate.referralCode),
+    {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * REFERRAL_COOKIE_DAYS,
+    }
+  );
 
   return response;
 }

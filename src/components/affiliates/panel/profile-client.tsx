@@ -14,6 +14,7 @@ interface ProfileData {
   phone: string | null;
   tier: string;
   referralCode: string;
+  slug: string | null;
   emailVerified: boolean;
   avatar: string | null;
 }
@@ -55,11 +56,22 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
   const [country, setCountry] = useState(profile.country);
   const [phone, setPhone] = useState(profile.phone ?? "");
   const [avatar, setAvatar] = useState<string | null>(profile.avatar);
+  const [slug, setSlug] = useState(profile.slug ?? "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Vista previa del slug (misma normalización que el servidor)
+  const slugPreview =
+    slug
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 30) || profile.referralCode;
 
   const initials = name
     .split(" ")
@@ -104,6 +116,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           country,
           phone: phone || null,
           avatar,
+          slug: slug.trim() || undefined,
           currentPassword: currentPassword || undefined,
           newPassword: newPassword || undefined,
         }),
@@ -217,6 +230,30 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           </div>
 
           <div className="border-t border-border pt-5">
+            <label className="block text-sm font-medium mb-1.5">Tu link personalizado</label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground shrink-0 font-mono hidden sm:block">
+                caskiuz.vercel.app/r/
+              </span>
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="tu-nombre-y-apellido"
+                maxLength={40}
+                className={inputClass}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Vista previa:{" "}
+              <span className="text-aff-cyan font-mono">caskiuz.vercel.app/r/{slugPreview}</span>
+              <span className="block mt-0.5">
+                Más atractivo que un código: usa tu nombre y apellido (se convierte a
+                minúsculas y guiones). Tu código {profile.referralCode} sigue funcionando.
+              </span>
+            </p>
+          </div>
+
+          <div className="border-t border-border pt-5">
             <h3 className="font-bold text-sm mb-3">Cambiar contraseña (opcional)</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -252,12 +289,13 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
         {/* Resumen lateral */}
         <div className="space-y-4">
           <div className="metal-card rounded-2xl p-5">
-            <p className="text-sm text-muted-foreground">Tu código de referido</p>
-            <code className="block mt-2 px-3 py-2 rounded-lg bg-surface-hover border border-border font-mono text-aff-cyan">
-              {profile.referralCode}
+            <p className="text-sm text-muted-foreground">Tu link de referido</p>
+            <code className="block mt-2 px-3 py-2 rounded-lg bg-surface-hover border border-border font-mono text-aff-cyan text-xs break-all">
+              caskiuz.vercel.app/r/{slugPreview}
             </code>
             <p className="text-xs text-muted-foreground mt-2">
-              Nivel: <strong className="text-foreground">{profile.tier}</strong>
+              Código alternativo: <span className="font-mono">{profile.referralCode}</span> · Nivel:{" "}
+              <strong className="text-foreground">{profile.tier}</strong>
             </p>
           </div>
           <div className="glass-card rounded-2xl p-5 text-xs text-muted-foreground leading-relaxed">

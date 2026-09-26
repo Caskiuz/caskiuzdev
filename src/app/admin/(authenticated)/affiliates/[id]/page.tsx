@@ -81,8 +81,12 @@ export default async function AdminAffiliateDetailPage({
               {affiliate.phone ? ` · ${affiliate.phone}` : ""}
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              Código: <code className="font-mono text-aff-cyan">{affiliate.referralCode}</code> · Link:{" "}
-              <code className="font-mono">caskiuz.vercel.app/r/{affiliate.referralCode}</code>
+              Link: <code className="font-mono text-aff-cyan">caskiuz.vercel.app/r/{affiliate.slug || affiliate.referralCode}</code>
+              {affiliate.slug ? (
+                <> · Código: <code className="font-mono">{affiliate.referralCode}</code></>
+              ) : (
+                <> · Sin slug personalizado</>
+              )}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {affiliate.termsAcceptedAt

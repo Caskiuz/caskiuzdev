@@ -25,6 +25,7 @@ import {
   mergeServices,
 } from "@/lib/services-defaults";
 import { getClientPaymentMethods } from "@/lib/payments";
+import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Globe, Smartphone, Server, Zap, Rocket, ShoppingCart, BarChart3, Bot, Headset,
@@ -49,6 +50,10 @@ export function Services({ config = {} }: ServicesProps) {
   const c = (key: string, fallback: string) => config[key] || fallback;
   const paymentMethods = getClientPaymentMethods(config);
   const paymentDetails = paymentMethods.filter((m) => m.detail);
+  const referralCode = useReferralCode();
+  // Link de WhatsApp con el código de referido del visitante (si llegó por un afiliado)
+  const wa = (message: string) =>
+    `https://wa.me/584262931869?text=${encodeURIComponent(appendReferralCode(message, referralCode))}`;
 
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -179,7 +184,7 @@ export function Services({ config = {} }: ServicesProps) {
                         {/* CTAs — WhatsApp primary, form secondary */}
                         <div className="space-y-2">
                           <a
-                            href={`https://wa.me/584262931869?text=${encodeURIComponent(`Hola Caskiuz! 👋 Me interesa: ${service.title} (${service.price}). ¿Podemos conversar?`)}`}
+                            href={wa(`Hola Caskiuz! 👋 Me interesa: ${service.title} (${service.price}). ¿Podemos conversar?`)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`block w-full text-center py-2.5 text-sm font-medium rounded-full transition-all duration-200 ${
@@ -257,7 +262,7 @@ export function Services({ config = {} }: ServicesProps) {
               Analizamos tu idea juntos y te doy un plan de acción claro, sin compromiso.
             </p>
             <a
-              href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! Quiero mi consultoría gratuita de 15 min 🎁")}`}
+              href={wa("Hola Caskiuz! Quiero mi consultoría gratuita de 15 min 🎁")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:-translate-y-0.5"
@@ -281,7 +286,7 @@ export function Services({ config = {} }: ServicesProps) {
           <p className="text-muted-foreground text-sm">
             ¿Necesitas algo más específico?{" "}
             <a
-              href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! Tengo un proyecto personalizado y quiero conversar contigo.")}`}
+              href={wa("Hola Caskiuz! Tengo un proyecto personalizado y quiero conversar contigo.")}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#25D366] font-medium hover:underline"

@@ -59,7 +59,7 @@ export function RegisterForm() {
         setState("error");
         return;
       }
-      setReferralCode(json.referralCode || "");
+      setReferralCode(json.slug || json.referralCode || "");
       setState("success");
       setTimeout(() => router.push(`/afiliados/login?registrado=1`), 2200);
     } catch {
@@ -78,9 +78,9 @@ export function RegisterForm() {
         <CheckCircle2 className="w-14 h-14 text-aff-cyan mx-auto mb-4" />
         <h2 className="text-2xl font-bold mb-2">¡Cuenta creada! 🎉</h2>
         <p className="text-muted-foreground mb-4">
-          Tu código de referido es{" "}
+          Tu link personalizado es{" "}
           <code className="px-2 py-1 rounded bg-surface-hover border border-border font-mono text-aff-cyan">
-            {referralCode}
+            caskiuz.vercel.app/r/{referralCode}
           </code>
         </p>
         <p className="text-sm text-muted-foreground">Redirigiendo al inicio de sesión…</p>

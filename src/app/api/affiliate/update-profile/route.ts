@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { slugifyName } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
 
@@ -13,15 +14,37 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, country, phone, avatar, currentPassword, newPassword } = body;
+    const { name, country, phone, avatar, slug, currentPassword, newPassword } = body;
 
     const data: {
       name?: string;
       country?: string;
       phone?: string | null;
       avatar?: string | null;
+      slug?: string;
       passwordHash?: string;
     } = {};
+
+    if (slug !== undefined && slug !== null && String(slug).trim() !== "") {
+      const candidate = slugifyName(String(slug)).slice(0, 30);
+      if (!/^[a-z0-9][a-z0-9-]{2,29}$/.test(candidate)) {
+        return NextResponse.json(
+          {
+            error:
+              "El link personalizado debe tener entre 3 y 30 caracteres (letras, números y guiones). Ej: ricardo-agelvis",
+          },
+          { status: 400 }
+        );
+      }
+      const clash = await prisma.affiliate.findUnique({ where: { slug: candidate } });
+      if (clash && clash.id !== affiliate.id) {
+        return NextResponse.json(
+          { error: "Ese link ya está en uso. Prueba con otro (ej: agrega tu segundo apellido)." },
+          { status: 409 }
+        );
+      }
+      data.slug = candidate;
+    }
 
     if (name !== undefined) {
       const trimmed = String(name).trim();

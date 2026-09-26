@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireAffiliate } from "@/lib/affiliate-auth";
+import { affiliateRef } from "@/lib/affiliate";
 import { PanelSidebar } from "@/components/affiliates/panel/sidebar";
 import { LogoutButton } from "@/components/affiliates/panel/logout-button";
 
@@ -22,7 +23,7 @@ export default async function AffiliatePanelLayout({
       <PanelSidebar
         name={affiliate.name}
         tier={affiliate.tier}
-        referralCode={affiliate.referralCode}
+        referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)}
         avatarUrl={affiliate.avatar}
       />
       <div className="lg:pl-64">

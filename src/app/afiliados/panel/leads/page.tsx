@@ -71,8 +71,10 @@ export default async function LeadsPage() {
           <UserPlus className="w-12 h-12 text-aff-cyan/50 mx-auto mb-4" />
           <p className="font-semibold mb-2">Aún no tienes leads</p>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-            Cada persona que haga clic en tu link y se contacte por el formulario o con tu
-            código de referido aparecerá aquí automáticamente.
+            Cada persona que haga clic en tu link y luego se contacte aparecerá aquí: si usa
+            el <strong className="text-foreground">formulario</strong> se registra automático, y si
+            escribe por <strong className="text-foreground">WhatsApp</strong> tu código de referido
+            se agrega solo al mensaje para que quede a tu nombre.
           </p>
           <Link href="/afiliados/panel/enlaces" className="btn-aff metal-shine px-6 py-3 text-sm inline-flex">
             Copiar mi link

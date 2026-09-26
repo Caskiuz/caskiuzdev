@@ -1,5 +1,6 @@
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { prisma } from "@/lib/prisma/client";
+import { affiliateRef } from "@/lib/affiliate";
 import { LinkBuilder } from "@/components/affiliates/panel/link-builder";
 
 export default async function LinksPage() {
@@ -26,14 +27,30 @@ export default async function LinksPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Mis enlaces</h1>
         <p className="text-muted-foreground mt-1">
-          Tu código de referido:{" "}
+          Tu link personalizado:{" "}
           <code className="px-2 py-0.5 rounded bg-surface-hover border border-border font-mono text-aff-cyan">
-            {affiliate.referralCode}
+            /r/{affiliateRef(affiliate.slug, affiliate.referralCode)}
           </code>
+          {affiliate.slug ? (
+            <span className="block text-xs mt-1">
+              Código alternativo: <span className="font-mono">{affiliate.referralCode}</span> · puedes
+              cambiar tu link en{" "}
+              <a href="/afiliados/panel/perfil" className="text-aff-cyan hover:underline">
+                Perfil
+              </a>
+            </span>
+          ) : (
+            <span className="block text-xs mt-1">
+              💡 Personaliza tu link con tu nombre en{" "}
+              <a href="/afiliados/panel/perfil" className="text-aff-cyan hover:underline">
+                Perfil
+              </a>
+            </span>
+          )}
         </p>
       </div>
 
-      <LinkBuilder referralCode={affiliate.referralCode} />
+      <LinkBuilder referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)} />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Clics recientes */}
