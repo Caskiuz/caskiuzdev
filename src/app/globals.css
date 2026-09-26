@@ -111,251 +111,253 @@ body {
   color: white;
 }
 
-/* Glass card utility */
-.glass-card {
-  background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
-}
-
-/* Gradient text utility */
-.gradient-text {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-coral {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Animated gradient border */
-.gradient-border {
-  position: relative;
-  border-radius: 1rem;
-  background: var(--surface);
-}
-
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 1rem;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* ─── Red de Afiliados: acero cromado + azul ─── */
-
-/* Texto cromado con barrido metálico */
-.metal-text {
-  background: linear-gradient(
-    110deg,
-    var(--metal-hi) 0%,
-    var(--metal-mid) 25%,
-    var(--metal-low) 50%,
-    var(--metal-hi) 75%,
-    var(--metal-mid) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 3.5s ease-in-out infinite;
-}
-
-/* Borde cromado animado (máscara igual a .gradient-border) */
-.metal-border {
-  position: relative;
-  border-radius: 1rem;
-  background: var(--surface);
-}
-
-.metal-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 1rem;
-  padding: 1.5px;
-  background: linear-gradient(
-    120deg,
-    var(--metal-hi),
-    var(--aff-cyan),
-    var(--metal-low),
-    var(--aff-blue),
-    var(--metal-hi)
-  );
-  background-size: 300% auto;
-  animation: shimmer 5s ease-in-out infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Tarjeta cromada sobre vidrio */
-.metal-card {
-  background: linear-gradient(160deg, var(--surface-hover) 0%, var(--surface) 100%);
-  border: 1px solid var(--glass-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 8px 32px rgba(30, 58, 138, 0.12);
-}
-
-/* Barrido de brillo para botones/badges metálicos */
-.metal-shine {
-  position: relative;
-  overflow: hidden;
-}
-
-.metal-shine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.18) 50%,
-    transparent 60%
-  );
-  background-size: 250% 100%;
-  animation: shimmer 3s ease-in-out infinite;
-  pointer-events: none;
-}
-
-/* Botón primario azul de la red */
-.btn-aff {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--aff-blue-deep), var(--aff-blue) 55%, var(--aff-sky));
-  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 24px rgba(29, 78, 216, 0.35);
-}
-
-.btn-aff:hover {
-  filter: brightness(1.12);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.35);
-}
-
-/* Orbes azules de fondo para la sección de afiliados */
-.aff-glow {
-  background:
-    radial-gradient(ellipse at top, rgba(59, 130, 246, 0.16), transparent 55%),
-    radial-gradient(ellipse at bottom right, rgba(56, 189, 248, 0.1), transparent 50%);
-}
-
-/* Keyframes */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(108, 92, 231, 0.3), 0 0 60px rgba(108, 92, 231, 0.1);
+@layer components {
+  /* Glass card utility */
+  .glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
   }
-  50% {
-    box-shadow: 0 0 40px rgba(108, 92, 231, 0.5), 0 0 80px rgba(108, 92, 231, 0.2);
-  }
-}
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+  /* Gradient text utility */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .gradient-text-coral {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-}
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+    border-radius: 1rem;
+    background: var(--surface);
   }
-  to {
-    opacity: 1;
+
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
-}
 
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
+  /* ─── Red de Afiliados: acero cromado + azul ─── */
+
+  /* Texto cromado con barrido metálico */
+  .metal-text {
+    background: linear-gradient(
+      110deg,
+      var(--metal-hi) 0%,
+      var(--metal-mid) 25%,
+      var(--metal-low) 50%,
+      var(--metal-hi) 75%,
+      var(--metal-mid) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3.5s ease-in-out infinite;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  /* Borde cromado animado (máscara igual a .gradient-border) */
+  .metal-border {
+    position: relative;
+    border-radius: 1rem;
+    background: var(--surface);
   }
-}
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
+  .metal-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1rem;
+    padding: 1.5px;
+    background: linear-gradient(
+      120deg,
+      var(--metal-hi),
+      var(--aff-cyan),
+      var(--metal-low),
+      var(--aff-blue),
+      var(--metal-hi)
+    );
+    background-size: 300% auto;
+    animation: shimmer 5s ease-in-out infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
-  50% {
-    transform: translateY(-20px);
+
+  /* Tarjeta cromada sobre vidrio */
+  .metal-card {
+    background: linear-gradient(160deg, var(--surface-hover) 0%, var(--surface) 100%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 32px rgba(30, 58, 138, 0.12);
   }
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+  /* Barrido de brillo para botones/badges metálicos */
+  .metal-shine {
+    position: relative;
+    overflow: hidden;
   }
-  100% {
-    background-position: 200% 0;
+
+  .metal-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 60%
+    );
+    background-size: 250% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
   }
-}
 
-/* Nodo de datos orbitando el logo de la marca */
-@keyframes brand-orbit {
-  from {
-    transform: rotate(0deg) translateX(var(--orbit-r, 22px));
+  /* Botón primario azul de la red */
+  .btn-aff {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--aff-blue-deep), var(--aff-blue) 55%, var(--aff-sky));
+    transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 24px rgba(29, 78, 216, 0.35);
   }
-  to {
-    transform: rotate(360deg) translateX(var(--orbit-r, 22px));
+
+  .btn-aff:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(56, 189, 248, 0.35);
   }
-}
 
-.brand-orbit {
-  animation: brand-orbit 4.5s linear infinite;
-}
+  /* Orbes azules de fondo para la sección de afiliados */
+  .aff-glow {
+    background:
+      radial-gradient(ellipse at top, rgba(59, 130, 246, 0.16), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(56, 189, 248, 0.1), transparent 50%);
+  }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
+  /* Keyframes */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(108, 92, 231, 0.3), 0 0 60px rgba(108, 92, 231, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(108, 92, 231, 0.5), 0 0 80px rgba(108, 92, 231, 0.2);
+    }
+  }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
-}
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-.animate-fade-in {
-  animation: fade-in 0.8s ease-out forwards;
-}
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
-.animate-slide-in-right {
-  animation: slide-in-right 0.5s ease-out forwards;
-}
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
 
-/* Stagger delays for children */
-.stagger-1 { animation-delay: 0.1s; opacity: 0; }
-.stagger-2 { animation-delay: 0.2s; opacity: 0; }
-.stagger-3 { animation-delay: 0.3s; opacity: 0; }
-.stagger-4 { animation-delay: 0.4s; opacity: 0; }
-.stagger-5 { animation-delay: 0.5s; opacity: 0; }
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Nodo de datos orbitando el logo de la marca */
+  @keyframes brand-orbit {
+    from {
+      transform: rotate(0deg) translateX(var(--orbit-r, 22px));
+    }
+    to {
+      transform: rotate(360deg) translateX(var(--orbit-r, 22px));
+    }
+  }
+
+  .brand-orbit {
+    animation: brand-orbit 4.5s linear infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.5s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Stagger delays for children */
+  .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+  .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+  .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+  .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+  .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+}
