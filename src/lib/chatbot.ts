@@ -3,9 +3,12 @@
  * Sin GEMINI_API_KEY el chat se desactiva limpiamente (el widget se oculta).
  */
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-/** Cascada de modelos: si el principal está saturado o no existe, usa el alias estable */
-const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, "gemini-flash-latest"]));
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+/**
+ * Cascada de modelos verificados: 2.5-flash es el más rápido y estable,
+ * 3.6-flash entra como respaldo ante saturación del primero.
+ */
+const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, "gemini-2.5-flash", "gemini-3.6-flash"]));
 const GEMINI_URL = (model: string, key: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
