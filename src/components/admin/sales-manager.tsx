@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, CheckCircle2, AlertCircle, Plus, X, Search, UserCheck } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Plus,
+  X,
+  Search,
+  UserCheck,
+  UserPlus,
+} from "lucide-react";
 import { getTierInfo } from "@/lib/affiliate";
 
 interface ContactOption {
@@ -73,6 +82,120 @@ function parseAffiliateQuery(raw: string): string {
   return raw.trim();
 }
 
+function affiliateLabel(a: AffiliateOption): string {
+  const tier = getTierInfo(a.tier);
+  return `${tier.emoji} ${tier.name} · ${Math.round(tier.rate * 100)}%`;
+}
+
+/**
+ * Buscador/resolutor de afiliados: pega el código o el mensaje completo de
+ * WhatsApp y resuelve el afiliado solo; o busca por nombre, email o código.
+ */
+function AffiliatePicker({
+  affiliates,
+  selected,
+  onSelect,
+  hint,
+}: {
+  affiliates: AffiliateOption[];
+  selected: AffiliateOption | null;
+  onSelect: (a: AffiliateOption | null, rawQuery: string) => void;
+  hint?: string;
+}) {
+  const [query, setQuery] = useState("");
+
+  const codeQuery = parseAffiliateQuery(query);
+  const resolved = codeQuery
+    ? affiliates.find(
+        (a) =>
+          a.referralCode.toUpperCase() === codeQuery.toUpperCase() ||
+          (a.slug ?? "").toLowerCase() === codeQuery.toLowerCase()
+      )
+    : undefined;
+  const suggestions =
+    query.trim() && !resolved
+      ? affiliates
+          .filter((a) => {
+            const q = query.trim().toLowerCase();
+            return (
+              a.name.toLowerCase().includes(q) ||
+              a.email.toLowerCase().includes(q) ||
+              a.referralCode.toLowerCase().includes(q) ||
+              (a.slug ?? "").includes(q)
+            );
+          })
+          .slice(0, 6)
+      : [];
+
+  function handleChange(value: string) {
+    setQuery(value);
+    const code = parseAffiliateQuery(value);
+    const found = code
+      ? affiliates.find(
+          (a) =>
+            a.referralCode.toUpperCase() === code.toUpperCase() ||
+            (a.slug ?? "").toLowerCase() === code.toLowerCase()
+        )
+      : undefined;
+    onSelect(found ?? null, value);
+  }
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1.5">
+        Código de referido o mensaje de WhatsApp
+      </label>
+      <textarea
+        value={query}
+        onChange={(e) => handleChange(e.target.value)}
+        rows={2}
+        placeholder={'Pega el mensaje completo (detecta "Código de referido: X") o busca por nombre, email o código…'}
+        className={inputClass}
+      />
+      <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
+        <Search className="w-3.5 h-3.5" />
+        Funciona con el mensaje entero pegado: el sistema extrae el código solo.
+      </p>
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+
+      {selected && (
+        <div className="mt-2 flex items-center gap-2 text-sm rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-2">
+          <UserCheck className="w-4 h-4 text-green-500 shrink-0" />
+          <span className="font-medium">{selected.name}</span>
+          <span className="text-xs text-muted-foreground">
+            {selected.slug || selected.referralCode} · {affiliateLabel(selected)}
+          </span>
+        </div>
+      )}
+
+      {suggestions.length > 0 && (
+        <ul className="mt-2 rounded-lg border border-border divide-y divide-border overflow-hidden">
+          {suggestions.map((a) => (
+            <li key={a.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery(a.slug || a.referralCode);
+                  onSelect(a, a.slug || a.referralCode);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-surface-hover"
+              >
+                <span className="font-medium">{a.name}</span>{" "}
+                <span className="text-xs text-muted-foreground">
+                  {a.slug || a.referralCode} · {a.email}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {query.trim() && !resolved && suggestions.length === 0 && (
+        <p className="text-xs text-accent mt-1.5">Sin coincidencias. Revisa el código o busca por nombre.</p>
+      )}
+    </div>
+  );
+}
+
 export function SalesManager({
   sales,
   contacts,
@@ -84,13 +207,15 @@ export function SalesManager({
 }) {
   const [items, setItems] = useState(sales);
   const [showForm, setShowForm] = useState(false);
+  const [showLeadForm, setShowLeadForm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
-  // Formulario
+  // Formulario de venta
   const [mode, setMode] = useState<"contact" | "manual">("contact");
   const [contactId, setContactId] = useState("");
-  const [affiliateQuery, setAffiliateQuery] = useState("");
+  const [selectedAffiliate, setSelectedAffiliate] = useState<AffiliateOption | null>(null);
+  const [affiliateRawQuery, setAffiliateRawQuery] = useState("");
   const [channel, setChannel] = useState<"WHATSAPP" | "MANUAL">("WHATSAPP");
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -98,57 +223,37 @@ export function SalesManager({
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("LEAD");
 
+  // Formulario de lead
+  const [leadAffiliate, setLeadAffiliate] = useState<AffiliateOption | null>(null);
+  const [leadRawQuery, setLeadRawQuery] = useState("");
+  const [leadName, setLeadName] = useState("");
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadService, setLeadService] = useState("");
+  const [leadNote, setLeadNote] = useState("");
+
   function flash(type: "ok" | "error", text: string) {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
   }
-
-  // Resolución del afiliado por código pegado o por búsqueda
-  const codeQuery = parseAffiliateQuery(affiliateQuery);
-  const resolvedAffiliate = codeQuery
-    ? affiliates.find(
-        (a) =>
-          a.referralCode.toUpperCase() === codeQuery.toUpperCase() ||
-          (a.slug ?? "").toLowerCase() === codeQuery.toLowerCase()
-      )
-    : undefined;
-  const suggestions =
-    affiliateQuery.trim() && !resolvedAffiliate
-      ? affiliates
-          .filter((a) => {
-            const q = affiliateQuery.trim().toLowerCase();
-            return (
-              a.name.toLowerCase().includes(q) ||
-              a.email.toLowerCase().includes(q) ||
-              a.referralCode.toLowerCase().includes(q) ||
-              (a.slug ?? "").includes(q)
-            );
-          })
-          .slice(0, 6)
-      : [];
 
   const selectedContact = contacts.find((c) => c.id === Number(contactId));
   const contactAffiliate = selectedContact?.affiliateId
     ? affiliates.find((a) => a.id === selectedContact.affiliateId)
     : undefined;
 
-  function affiliateLabel(a: AffiliateOption): string {
-    const tier = getTierInfo(a.tier);
-    return `${tier.emoji} ${tier.name} · ${Math.round(tier.rate * 100)}%`;
-  }
-
   async function createSale(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     const affId =
-      mode === "contact" ? String(selectedContact?.affiliateId ?? "") : String(resolvedAffiliate?.id ?? "");
+      mode === "contact" ? String(selectedContact?.affiliateId ?? "") : String(selectedAffiliate?.id ?? "");
     try {
       const res = await fetch("/api/admin/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           affiliateId: Number(affId) || undefined,
-          affiliateCode: mode === "manual" && !resolvedAffiliate ? codeQuery : undefined,
+          affiliateCode:
+            mode === "manual" && !selectedAffiliate ? parseAffiliateQuery(affiliateRawQuery) : undefined,
           contactId: mode === "contact" ? Number(contactId) : null,
           clientName: mode === "manual" ? clientName : undefined,
           clientEmail: mode === "manual" ? clientEmail : undefined,
@@ -167,9 +272,47 @@ export function SalesManager({
       setShowForm(false);
       setServiceTitle("");
       setAmount("");
-      setAffiliateQuery("");
+      setSelectedAffiliate(null);
+      setAffiliateRawQuery("");
       setClientName("");
       setClientEmail("");
+      window.location.reload();
+    } catch {
+      flash("error", "Error de conexión.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createLead(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          affiliateId: leadAffiliate?.id,
+          affiliateCode: !leadAffiliate ? parseAffiliateQuery(leadRawQuery) : undefined,
+          name: leadName,
+          email: leadEmail,
+          service: leadService,
+          message: leadNote,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        flash("error", json.error || "No se pudo registrar el lead.");
+        return;
+      }
+      flash("ok", "Lead registrado. Ya aparece en «Mis leads» del afiliado.");
+      setShowLeadForm(false);
+      setLeadName("");
+      setLeadEmail("");
+      setLeadService("");
+      setLeadNote("");
+      setLeadAffiliate(null);
+      setLeadRawQuery("");
       window.location.reload();
     } catch {
       flash("error", "Error de conexión.");
@@ -209,15 +352,100 @@ export function SalesManager({
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-3">
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            setShowLeadForm(!showLeadForm);
+            setShowForm(false);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-border hover:bg-surface-hover"
+        >
+          {showLeadForm ? <X className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+          {showLeadForm ? "Cerrar" : "Registrar lead"}
+        </button>
+        <button
+          onClick={() => {
+            setShowForm(!showForm);
+            setShowLeadForm(false);
+          }}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-primary text-white hover:bg-primary-hover"
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {showForm ? "Cerrar" : "Nueva venta"}
         </button>
       </div>
+
+      {showLeadForm && (
+        <form onSubmit={createLead} className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+          <div>
+            <h3 className="font-bold">Registrar lead</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Para conversaciones de WhatsApp u otro canal: pega el código y los datos del cliente y el lead
+              aparece al instante en «Mis leads» del afiliado, sin crear una venta todavía.
+            </p>
+          </div>
+
+          <AffiliatePicker
+            affiliates={affiliates}
+            selected={leadAffiliate}
+            onSelect={(a, raw) => {
+              setLeadAffiliate(a);
+              setLeadRawQuery(raw);
+            }}
+          />
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Nombre del cliente</label>
+              <input
+                value={leadName}
+                onChange={(e) => setLeadName(e.target.value)}
+                required
+                placeholder="Ej: María Pérez"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Email del cliente (opcional)</label>
+              <input
+                type="email"
+                value={leadEmail}
+                onChange={(e) => setLeadEmail(e.target.value)}
+                placeholder="cliente@email.com"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Servicio de interés (opcional)</label>
+            <input
+              value={leadService}
+              onChange={(e) => setLeadService(e.target.value)}
+              placeholder="Ej: E-commerce"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Nota (opcional)</label>
+            <input
+              value={leadNote}
+              onChange={(e) => setLeadNote(e.target.value)}
+              placeholder="Ej: preguntó por una tienda online, presupuesto pendiente"
+              className={inputClass}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={busy}
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm rounded-lg bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
+          >
+            {busy && <Loader2 className="w-4 h-4 animate-spin" />} Registrar lead
+          </button>
+        </form>
+      )}
 
       {showForm && (
         <form onSubmit={createSale} className="rounded-2xl border border-border bg-surface p-6 space-y-4">
@@ -252,7 +480,7 @@ export function SalesManager({
               {contacts.length === 0 ? (
                 <p className="text-xs text-muted-foreground bg-surface-hover border border-border rounded-lg p-3">
                   Aún no hay leads. Un lead se crea cuando alguien entra por el link de un afiliado y llena el
-                  formulario de contacto. Para ventas de WhatsApp usa el modo manual.
+                  formulario de contacto, o cuando lo registras con el botón «Registrar lead».
                 </p>
               ) : (
                 <>
@@ -283,55 +511,14 @@ export function SalesManager({
             </div>
           ) : (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  Código de referido o mensaje de WhatsApp
-                </label>
-                <textarea
-                  value={affiliateQuery}
-                  onChange={(e) => setAffiliateQuery(e.target.value)}
-                  rows={2}
-                  placeholder={'Pega el mensaje completo (detecta "Código de referido: X") o busca por nombre, email o código…'}
-                  className={inputClass}
-                />
-                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5" />
-                  Funciona con el mensaje entero pegado: el sistema extrae el código solo.
-                </p>
-
-                {resolvedAffiliate && (
-                  <div className="mt-2 flex items-center gap-2 text-sm rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-2">
-                    <UserCheck className="w-4 h-4 text-green-500 shrink-0" />
-                    <span className="font-medium">{resolvedAffiliate.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {resolvedAffiliate.slug || resolvedAffiliate.referralCode} ·{" "}
-                      {affiliateLabel(resolvedAffiliate)}
-                    </span>
-                  </div>
-                )}
-
-                {suggestions.length > 0 && (
-                  <ul className="mt-2 rounded-lg border border-border divide-y divide-border overflow-hidden">
-                    {suggestions.map((a) => (
-                      <li key={a.id}>
-                        <button
-                          type="button"
-                          onClick={() => setAffiliateQuery(a.slug || a.referralCode)}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-surface-hover"
-                        >
-                          <span className="font-medium">{a.name}</span>{" "}
-                          <span className="text-xs text-muted-foreground">
-                            {a.slug || a.referralCode} · {a.email}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {affiliateQuery.trim() && !resolvedAffiliate && suggestions.length === 0 && (
-                  <p className="text-xs text-accent mt-1.5">Sin coincidencias. Revisa el código o busca por nombre.</p>
-                )}
-              </div>
+              <AffiliatePicker
+                affiliates={affiliates}
+                selected={selectedAffiliate}
+                onSelect={(a, raw) => {
+                  setSelectedAffiliate(a);
+                  setAffiliateRawQuery(raw);
+                }}
+              />
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>

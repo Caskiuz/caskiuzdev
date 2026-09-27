@@ -70,11 +70,21 @@ export default async function LeadsPage() {
         <div className="metal-card rounded-2xl p-10 text-center">
           <UserPlus className="w-12 h-12 text-aff-cyan/50 mx-auto mb-4" />
           <p className="font-semibold mb-2">Aún no tienes leads</p>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-            Cada persona que haga clic en tu link y luego se contacte aparecerá aquí: si usa
-            el <strong className="text-foreground">formulario</strong> se registra automático, y si
-            escribe por <strong className="text-foreground">WhatsApp</strong> tu código de referido
-            se agrega solo al mensaje para que quede a tu nombre.
+          <div className="text-sm text-muted-foreground max-w-lg mx-auto mb-3 text-left space-y-2">
+            <p>Cada persona que haga clic en tu link y luego se contacte aparecerá aquí:</p>
+            <p>
+              ✅ <strong className="text-foreground">Formulario de la web:</strong> se registra
+              automático, al instante.
+            </p>
+            <p>
+              📲 <strong className="text-foreground">WhatsApp:</strong> si te escriben por tu link de
+              WhatsApp o por los botones de la web, tu código viaja en el mensaje — el lead aparece
+              aquí cuando el equipo de Caskiuz lo registra.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground max-w-lg mx-auto mb-6">
+            💡 Tip: si alguien te escribe por WhatsApp, pídele que deje sus datos en el formulario de
+            la web para que aparezca al instante.
           </p>
           <Link href="/afiliados/panel/enlaces" className="btn-aff metal-shine px-6 py-3 text-sm inline-flex">
             Copiar mi link
@@ -134,7 +144,8 @@ export default async function LeadsPage() {
         <Link href="/afiliados/panel/comisiones" className="text-aff-cyan hover:underline">
           Comisiones
         </Link>{" "}
-        con su estado de cobro. Además recibes un correo con cada novedad.
+        con su estado de cobro. Además recibes un correo con cada novedad. Los contactos que llegan
+        por WhatsApp aparecen aquí cuando el equipo los registra desde su panel.
       </div>
     </div>
   );
