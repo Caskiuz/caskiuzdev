@@ -10,7 +10,8 @@ export default async function MaterialsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Materiales promocionales</h1>
         <p className="text-muted-foreground mt-1">
-          Copia, pega y comparte. Todo listo para promocionar con tu link único.
+          Copia, pega y comparte. Sin precios: tú generas el interés, Caskiuz cierra
+          la venta.
         </p>
       </div>
       <MaterialsClient referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)} />

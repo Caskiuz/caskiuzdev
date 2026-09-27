@@ -1,63 +1,89 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Copy, MessageCircle, Share2, Send, Video, Mail } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import {
+  Check,
+  Copy,
+  MessageCircle,
+  Share2,
+  Send,
+  Video,
+  Mail,
+  MessageSquare,
+  RefreshCw,
+  Shield,
+  Palette,
+  Lightbulb,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  MATERIAL_SECTIONS,
+  OBJECTIONS,
+  PROMO_BANNER,
+  PROMO_TIPS,
+} from "@/lib/affiliate-materials";
 
-interface Swipe {
-  id: string;
-  icon: typeof MessageCircle;
-  channel: string;
-  text: string;
+const emptySubscribe = () => () => {};
+
+/** Origen del sitio (solo en el navegador, sin desajuste de hidratación) */
+function useOrigin(): string {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => window.location.origin,
+    () => ""
+  );
 }
 
-const SWIPES: Swipe[] = [
-  {
-    id: "wa1",
-    icon: MessageCircle,
-    channel: "WhatsApp",
-    text: "🚀 ¿Tienes un negocio y necesitas página web, app o tienda online?\n\nTrabajo con Caskiuz, un desarrollador que entrega proyectos en tiempo récord y con calidad profesional. Web Apps desde $349, tiendas online desde $999.\n\nPuedes pagar con Zelle, PayPal, Western Union, Binance o cripto (USDT/USDC/BTC), 50% para empezar.\n\nTe dejo el enlace con más info 👇\n[TU LINK]",
-  },
-  {
-    id: "ig1",
-    icon: Share2,
-    channel: "Instagram / Facebook",
-    text: "💼 Convierte tu idea en un negocio digital.\n\nLanding pages desde $149 · E-commerce desde $999 · Apps desde $799 · SEO desde $199.\n\nLink en mi bio 👆 #desarrolloweb #emprendimiento #negociosdigitales",
-  },
-  {
-    id: "tw1",
-    icon: Send,
-    channel: "Twitter / X",
-    text: "Si tienes un negocio y todavía no tienes web, estás perdiendo clientes. 🧵\n\nCaskiuz desarrolla webs, apps y e-commerce con entrega rápida desde $149.\n\nMás info: [TU LINK]",
-  },
-  {
-    id: "yt1",
-    icon: Video,
-    channel: "YouTube / TikTok (guion)",
-    text: "🎬 Hook: \"Tu negocio pierde ventas todos los días por no tener web.\"\n\nCuerpo: muestra 3 ejemplos de lo que Caskiuz construye (web, e-commerce, SEO) con precios en pantalla.\n\nCTA: \"Link en la descripción para cotizar gratis.\"",
-  },
-  {
-    id: "email1",
-    icon: Mail,
-    channel: "Email frío",
-    text: "Hola [Nombre],\n\nNoté que [negocio] no tiene presencia online optimizada. Una landing page profesional desde $149 puede empezar a traerte clientes esta misma semana.\n\nTrabajo con Caskiuz, desarrollador full-stack con entregas rápidas y garantía de calidad.\n\n¿Te interesa una cotización gratis? 👉 [TU LINK]",
-  },
-];
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  whatsapp: MessageCircle,
+  instagram: Share2,
+  twitter: Send,
+  video: Video,
+  email: Mail,
+  dm: MessageSquare,
+  followup: RefreshCw,
+};
 
-const TIPS = [
-  "Publica en horarios de mayor actividad de tu audiencia (mañana 8-10am o noche 7-9pm).",
-  "Cuenta una historia personal: por qué confías en el servicio y qué resultado puede esperar tu cliente.",
-  "Usa un sub-ID distinto por red social para medir qué canal te da más ventas.",
-  "El 80% del resultado está en la constancia: publica al menos 3 veces por semana.",
-  "Comparte casos de éxito reales de proyectos terminados (los encuentras en la página principal).",
-];
+function CopyButton({
+  id,
+  text,
+  copied,
+  onCopy,
+}: {
+  id: string;
+  text: string;
+  copied: boolean;
+  onCopy: (id: string, text: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onCopy(id, text)}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-surface-hover transition-colors shrink-0"
+    >
+      {copied ? (
+        <>
+          <Check className="w-3.5 h-3.5 text-aff-cyan" /> Copiado
+        </>
+      ) : (
+        <>
+          <Copy className="w-3.5 h-3.5" /> Copiar
+        </>
+      )}
+    </button>
+  );
+}
 
 export function MaterialsClient({ referralCode }: { referralCode: string }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const link = `https://caskiuz.vercel.app/r/${referralCode}`;
+  const origin = useOrigin();
+
+  const link = origin ? `${origin}/r/${referralCode}` : "";
+  const withLink = (text: string) =>
+    link ? text.replaceAll("[TU LINK]", link) : text;
 
   async function copy(id: string, text: string) {
     try {
-      await navigator.clipboard.writeText(text.replace("[TU LINK]", link));
+      await navigator.clipboard.writeText(withLink(text));
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
@@ -66,64 +92,127 @@ export function MaterialsClient({ referralCode }: { referralCode: string }) {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Swipes */}
-      <div className="grid lg:grid-cols-2 gap-5">
-        {SWIPES.map((swipe) => (
-          <div key={swipe.id} className="metal-card rounded-2xl p-5 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold flex items-center gap-2">
-                <swipe.icon className="w-4 h-4 text-aff-cyan" /> {swipe.channel}
-              </p>
-              <button
-                onClick={() => copy(swipe.id, swipe.text)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-surface-hover transition-colors"
-              >
-                {copiedId === swipe.id ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-aff-cyan" /> Copiado
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" /> Copiar
-                  </>
-                )}
-              </button>
+    <div className="space-y-10">
+      {/* Materiales por canal */}
+      {MATERIAL_SECTIONS.map((section) => {
+        const Icon = SECTION_ICONS[section.icon] ?? MessageCircle;
+        return (
+          <section key={section.id}>
+            <div className="flex items-center gap-2 mb-1">
+              <Icon className="w-5 h-5 text-aff-cyan" />
+              <h2 className="text-lg font-bold">{section.title}</h2>
             </div>
-            <pre className="flex-1 whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed bg-surface-hover border border-border rounded-xl p-4 font-sans">
-              {swipe.text}
-            </pre>
-          </div>
-        ))}
-      </div>
+            {section.subtitle && (
+              <p className="text-sm text-muted-foreground mb-4">{section.subtitle}</p>
+            )}
+            <div className="grid lg:grid-cols-2 gap-5">
+              {section.materials.map((material) => (
+                <div
+                  key={material.id}
+                  className="metal-card rounded-2xl p-5 flex flex-col"
+                >
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-aff-blue/15 text-aff-cyan">
+                      {material.variant}
+                    </span>
+                    <CopyButton
+                      id={material.id}
+                      text={material.text}
+                      copied={copiedId === material.id}
+                      onCopy={copy}
+                    />
+                  </div>
+                  <pre className="flex-1 whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed bg-surface-hover border border-border rounded-xl p-4 font-sans">
+                    {withLink(material.text)}
+                  </pre>
+                </div>
+              ))}
+            </div>
+            {section.note && (
+              <p className="text-xs text-muted-foreground mt-3">{section.note}</p>
+            )}
+          </section>
+        );
+      })}
+
+      {/* Respuestas a objeciones */}
+      <section>
+        <div className="flex items-center gap-2 mb-1">
+          <Shield className="w-5 h-5 text-aff-cyan" />
+          <h2 className="text-lg font-bold">Respuestas a objeciones</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Qué responder cuando el prospecto pone una excusa. Nunca des precios por
+          chat: el presupuesto lo hace Caskiuz.
+        </p>
+        <div className="grid lg:grid-cols-2 gap-5">
+          {OBJECTIONS.map((objection) => (
+            <div key={objection.id} className="metal-card rounded-2xl p-5 flex flex-col">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <p className="text-sm font-semibold text-aff-cyan">
+                  Si te dicen: «{objection.objection}»
+                </p>
+                <CopyButton
+                  id={objection.id}
+                  text={objection.response}
+                  copied={copiedId === objection.id}
+                  onCopy={copy}
+                />
+              </div>
+              <pre className="flex-1 whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed bg-surface-hover border border-border rounded-xl p-4 font-sans">
+                {withLink(objection.response)}
+              </pre>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Banner guía */}
-      <div className="metal-card rounded-2xl p-6">
-        <h2 className="font-bold mb-3">🎨 Banner sugerido (HTML/CSS)</h2>
+      <section>
+        <div className="flex items-center gap-2 mb-1">
+          <Palette className="w-5 h-5 text-aff-cyan" />
+          <h2 className="text-lg font-bold">Banner sugerido (HTML/CSS)</h2>
+        </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Usa este estilo en tu web o blog. Solo reemplaza [TU LINK]:
+          Usa este estilo en tu web o blog. El link se inserta automáticamente al copiar:
         </p>
-        <pre className="whitespace-pre-wrap text-xs leading-relaxed bg-surface-hover border border-border rounded-xl p-4 font-mono text-aff-cyan overflow-x-auto">
-{`<a href="[TU LINK]" style="display:inline-block;padding:14px 28px;border-radius:12px;background:linear-gradient(135deg,#1e3a8a,#0ea5e9);color:#fff;font-weight:700;font-family:sans-serif;text-decoration:none;">
-  🚀 ¿Necesitas una web profesional? Cotiza gratis
-</a>`}
-        </pre>
-      </div>
+        <div className="metal-card rounded-2xl p-6">
+          <div className="flex justify-end mb-3">
+            <CopyButton
+              id="banner"
+              text={PROMO_BANNER}
+              copied={copiedId === "banner"}
+              onCopy={copy}
+            />
+          </div>
+          <pre className="whitespace-pre-wrap text-xs leading-relaxed bg-surface-hover border border-border rounded-xl p-4 font-mono text-aff-cyan overflow-x-auto">
+            {withLink(PROMO_BANNER)}
+          </pre>
+        </div>
+      </section>
 
       {/* Tips */}
-      <div className="glass-card rounded-2xl p-6">
-        <h2 className="font-bold mb-4">💡 Tips de promoción</h2>
-        <ul className="space-y-3">
-          {TIPS.map((tip, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-              <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">
-                {i + 1}
-              </span>
-              {tip}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Lightbulb className="w-5 h-5 text-aff-cyan" />
+          <h2 className="text-lg font-bold">Tips de promoción</h2>
+        </div>
+        <div className="glass-card rounded-2xl p-6">
+          <ul className="space-y-3">
+            {PROMO_TIPS.map((tip, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 text-sm text-muted-foreground"
+              >
+                <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">
+                  {i + 1}
+                </span>
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </div>
   );
 }
