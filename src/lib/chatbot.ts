@@ -34,7 +34,7 @@ Métodos de pago que aceptamos de los clientes: Zelle, PayPal, Western Union, Bi
 
 PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 - Unirse es 100% GRATIS, sin cuotas ni mínimos de venta.
-- Cada afiliado recibe un link único (ej: caskiuz.vercel.app/r/tu-nombre) y un código de referido. Puede personalizar su link con su nombre desde su panel → Perfil.
+- Cada afiliado recibe un link único (ej: caskiuz.vercel.app/r/tu-nombre) y un código de referido. Puede personalizar su link con su nombre desde su panel → Perfil. También tiene un link de WhatsApp directo (caskiuz.vercel.app/wa/tu-nombre) que abre el chat con su código ya escrito, para cuando el cliente escribe por WhatsApp sin pasar por la web.
 - Cómo funciona: comparte su link → cada clic queda registrado con una cookie de 30 días → si la persona contrata dentro de ese plazo, la venta se acredita al afiliado.
 - También puede usar sub-IDs por campaña para medir canales: ?subid=instagram, ?subid=whatsapp, etc. Los sub-IDs no cambian la comisión.
 - Niveles de comisión sobre el monto efectivamente cobrado: Plata 10% (desde $0), Oro 20% (desde $2,000 referidos cobrados), Platino 30% (desde $5,000) y Diamante 40% (desde $15,000). El nivel sube automáticamente.

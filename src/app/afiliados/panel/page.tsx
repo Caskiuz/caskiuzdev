@@ -140,6 +140,31 @@ export default async function AffiliateDashboardPage() {
         <ClicksChart data={stats.clicksLast30} />
       </div>
 
+      {/* Cómo se te acredita una venta */}
+      <div className="glass-card rounded-2xl p-6">
+        <h2 className="font-bold mb-1">🔗 Cómo se te acredita una venta</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          Tu código de referido: <strong className="text-aff-cyan">{affiliate.slug || affiliate.referralCode}</strong>
+        </p>
+        <ul className="space-y-3 text-sm text-muted-foreground">
+          <li className="flex gap-3">
+            <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">1</span>
+            <span><strong className="text-foreground">Tu link + formulario:</strong> el cliente entra por tu link y llena el formulario → el lead queda a tu nombre automáticamente.</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">2</span>
+            <span><strong className="text-foreground">Tu link + WhatsApp de la web:</strong> si te escribe por los botones de WhatsApp de la web, tu código viaja solo en el mensaje.</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">3</span>
+            <span><strong className="text-foreground">Tu link de WhatsApp directo:</strong> compártelo en bio o estados (está en «Mis enlaces») y el cliente te escribe con tu código ya escrito, aunque no pase por la web.</span>
+          </li>
+        </ul>
+        <p className="text-xs text-aff-cyan mt-4">
+          💡 Regla de oro: si tu cliente te escribe por otro canal (DM, teléfono), pídele que mencione tu código de referido.
+        </p>
+      </div>
+
       {/* Accesos rápidos */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[

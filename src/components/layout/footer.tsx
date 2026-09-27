@@ -96,7 +96,7 @@ export function Footer({ config = {} }: FooterProps) {
               Cuéntame tu idea y la convertimos en realidad.
             </p>
             <a
-              href={`https://wa.me/584262931869?text=${encodeURIComponent("Hola Caskiuz! Vi tu web y quiero conversar sobre un proyecto 👋")}`}
+              href={`https://wa.me/${c("contact_whatsapp", "584262931869").replace(/\D/g, "")}?text=${encodeURIComponent(c("contact_whatsapp_message", "Hola Caskiuz! Vi tu web y quiero conversar sobre un proyecto 👋"))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-lg shadow-[#25D366]/25"

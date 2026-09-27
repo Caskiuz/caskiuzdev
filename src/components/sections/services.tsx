@@ -53,7 +53,7 @@ export function Services({ config = {} }: ServicesProps) {
   const referralCode = useReferralCode();
   // Link de WhatsApp con el código de referido del visitante (si llegó por un afiliado)
   const wa = (message: string) =>
-    `https://wa.me/584262931869?text=${encodeURIComponent(appendReferralCode(message, referralCode))}`;
+    `https://wa.me/${c("contact_whatsapp", "584262931869").replace(/\D/g, "")}?text=${encodeURIComponent(appendReferralCode(message, referralCode))}`;
 
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });

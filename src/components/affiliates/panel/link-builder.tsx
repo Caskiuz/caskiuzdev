@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Copy, Link2 } from "lucide-react";
+import { Check, Copy, Link2, MessageCircle } from "lucide-react";
 
 const DESTINATIONS = [
   { value: "/", label: "Página de inicio" },
@@ -14,6 +14,7 @@ export function LinkBuilder({ referralCode }: { referralCode: string }) {
   const [destination, setDestination] = useState("/#services");
   const [subid, setSubid] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copiedWa, setCopiedWa] = useState(false);
 
   const baseUrl = "https://caskiuz.vercel.app";
   const link = useMemo(() => {
@@ -24,11 +25,28 @@ export function LinkBuilder({ referralCode }: { referralCode: string }) {
     return `${baseUrl}/r/${referralCode}${qs ? `?${qs}` : ""}`;
   }, [referralCode, destination, subid]);
 
+  const whatsappLink = useMemo(() => {
+    const params = new URLSearchParams();
+    if (subid.trim()) params.set("subid", subid.trim().slice(0, 100));
+    const qs = params.toString();
+    return `${baseUrl}/wa/${referralCode}${qs ? `?${qs}` : ""}`;
+  }, [referralCode, subid]);
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API no disponible: fallback silencioso
+    }
+  }
+
+  async function copyWa() {
+    try {
+      await navigator.clipboard.writeText(whatsappLink);
+      setCopiedWa(true);
+      setTimeout(() => setCopiedWa(false), 2000);
     } catch {
       // Clipboard API no disponible: fallback silencioso
     }
@@ -48,6 +66,25 @@ export function LinkBuilder({ referralCode }: { referralCode: string }) {
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? "Copiado" : "Copiar"}
+          </button>
+        </div>
+      </div>
+
+      <div className="glass-card rounded-2xl p-6">
+        <p className="text-sm font-semibold flex items-center gap-2 mb-1">
+          <MessageCircle className="w-4 h-4 text-aff-cyan" /> Tu link de WhatsApp
+        </p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Compártelo cuando quieras que el cliente te escriba <strong className="text-foreground">directo por WhatsApp</strong>:
+          abre el chat con tu código ya escrito en el mensaje. Así la venta queda a tu nombre aunque el cliente no pase por la web.
+        </p>
+        <div className="flex items-center gap-3">
+          <code className="flex-1 px-4 py-3 rounded-xl bg-surface-hover border border-border text-sm font-mono text-aff-cyan truncate">
+            {whatsappLink}
+          </code>
+          <button onClick={copyWa} className="btn-aff metal-shine px-5 py-3 text-sm shrink-0">
+            {copiedWa ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copiedWa ? "Copiado" : "Copiar"}
           </button>
         </div>
       </div>
@@ -98,7 +135,8 @@ export function LinkBuilder({ referralCode }: { referralCode: string }) {
         Cada persona que haga clic en tu link recibe una cookie de 30 días. Si se
         contacta dentro de ese periodo (formulario o WhatsApp con tu código), el lead
         queda atribuido a ti. Si el proyecto se concreta, generas comisión sobre el
-        monto cobrado según tu nivel.
+        monto cobrado según tu nivel. El link de WhatsApp funciona incluso si el
+        cliente te escribe directo: tu código viaja en el mensaje.
       </div>
     </div>
   );

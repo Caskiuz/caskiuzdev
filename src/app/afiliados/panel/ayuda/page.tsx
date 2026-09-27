@@ -18,7 +18,7 @@ const QUICK_GUIDES = [
   {
     title: "Primeros pasos",
     steps: [
-      "Ve a 'Mis enlaces' y copia tu link único.",
+      "Ve a 'Mis enlaces' y copia tu link único (y tu link de WhatsApp directo).",
       "Elige un destino (recomendado: sección de servicios).",
       "Agrega un sub-ID para identificar tu campaña (ej: 'instagram').",
       "Comparte el link en tus redes y comunidades.",
@@ -177,15 +177,25 @@ export default async function HelpPage() {
       </SectionCard>
 
       {/* 3. Recorrido del cliente */}
-      <SectionCard icon={MousePointerClick} title="3. El recorrido de tu cliente">
+      <SectionCard icon={MousePointerClick} title="3. El recorrido de tu cliente (cómo se te acredita)">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Hay tres caminos para que una venta quede a tu nombre. El sistema captura el
+          primero automáticamente y el segundo casi solo; el tercero depende de que tu
+          cliente mencione tu código:
+        </p>
         <NumberedSteps
           items={[
-            "La persona hace clic en tu link y queda vinculada a ti por 30 días.",
-            "Llena el formulario de contacto (o escribe por WhatsApp y menciona tu código de referido).",
-            "Automáticamente ese contacto queda marcado como tuyo: es un lead tuyo.",
+            "Tu link + formulario (automático): la persona hace clic en tu link, queda vinculada a ti por 30 días y llena el formulario de contacto → el lead es tuyo al instante.",
+            "Tu link + WhatsApp de la web (automático): si te escribe por los botones de WhatsApp de la web, tu código viaja solo al final del mensaje.",
+            "Tu link de WhatsApp directo: compártelo en tu bio o estados (está en «Mis enlaces» y «Materiales»). Abre tu chat con el código ya escrito, aunque el cliente nunca pase por la web.",
             "En tu dashboard ves subir el contador «Leads referidos»: señal de que tu promoción funciona.",
           ]}
         />
+        <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+          💡 Regla de oro: si tu cliente te escribe por otro canal (DM de Instagram, teléfono,
+          un chat viejo), pídele que mencione tu código de referido. Con eso la venta queda a
+          tu nombre aunque no haya pasado por tu link.
+        </p>
       </SectionCard>
 
       {/* 4. La venta */}

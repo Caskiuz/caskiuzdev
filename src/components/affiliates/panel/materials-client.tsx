@@ -78,6 +78,7 @@ export function MaterialsClient({ referralCode }: { referralCode: string }) {
   const origin = useOrigin();
 
   const link = origin ? `${origin}/r/${referralCode}` : "";
+  const whatsappLink = origin ? `${origin}/wa/${referralCode}` : "";
   const withLink = (text: string) =>
     link ? text.replaceAll("[TU LINK]", link) : text;
 
@@ -93,6 +94,29 @@ export function MaterialsClient({ referralCode }: { referralCode: string }) {
 
   return (
     <div className="space-y-10">
+      {/* Link de WhatsApp */}
+      <div className="glass-card rounded-2xl p-6">
+        <p className="text-sm font-semibold flex items-center gap-2 mb-1">
+          <MessageCircle className="w-4 h-4 text-aff-cyan" /> Tu link de WhatsApp
+        </p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Para cuando quieras que el cliente te escriba <strong className="text-foreground">directo por WhatsApp</strong>:
+          abre el chat con tu código ya escrito. Úsalo en tu bio, historias o estados — la venta queda a tu nombre
+          aunque el cliente no pase por la web.
+        </p>
+        <div className="flex items-center gap-3">
+          <code className="flex-1 px-4 py-3 rounded-xl bg-surface-hover border border-border text-sm font-mono text-aff-cyan truncate">
+            {whatsappLink || "[TU LINK DE WHATSAPP]"}
+          </code>
+          <CopyButton
+            id="wa-link"
+            text={whatsappLink}
+            copied={copiedId === "wa-link"}
+            onCopy={copy}
+          />
+        </div>
+      </div>
+
       {/* Materiales por canal */}
       {MATERIAL_SECTIONS.map((section) => {
         const Icon = SECTION_ICONS[section.icon] ?? MessageCircle;

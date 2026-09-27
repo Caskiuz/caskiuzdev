@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import { Send, X, Loader2, Bot } from "lucide-react";
+import { Send, X, Loader2, Bot, MessageCircle } from "lucide-react";
+import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 const RobotCanvas = dynamic(() => import("./chat-robot-3d"), {
   ssr: false,
@@ -33,7 +34,11 @@ const STORAGE_KEY = "caskiuz_chat_history";
  * flotante de WhatsApp: robot 3D animado + mini aviso + panel de chat.
  * Se oculta solo si el chat no está configurado en el servidor.
  */
-export function AiChatWidget() {
+export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string }) {
+  const referralCode = useReferralCode();
+  const whatsappHref = `https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+    appendReferralCode("¡Hola Caskiuz! 👋 Vengo del asistente de la web y quiero conversar sobre un proyecto.", referralCode)
+  )}`;
   const [available, setAvailable] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
   const [banner, setBanner] = useState(false);
@@ -179,6 +184,14 @@ export function AiChatWidget() {
                           {q}
                         </button>
                       ))}
+                      <a
+                        href={whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> Hablar por WhatsApp
+                      </a>
                     </div>
                   </div>
                 )}
@@ -223,13 +236,22 @@ export function AiChatWidget() {
               </div>
 
               {/* Entrada */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  send(input);
-                }}
-                className="flex items-center gap-2 p-3 border-t border-border"
-              >
+              <div className="border-t border-border">
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-[#25D366] hover:bg-[#25D366]/10 transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> ¿Prefieres WhatsApp? Escríbenos aquí
+                </a>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    send(input);
+                  }}
+                  className="flex items-center gap-2 p-3 pt-0"
+                >
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -245,7 +267,8 @@ export function AiChatWidget() {
                 >
                   {typing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
-              </form>
+                </form>
+              </div>
             </div>
           </motion.div>
         )}

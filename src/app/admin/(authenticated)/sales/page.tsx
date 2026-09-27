@@ -22,7 +22,7 @@ export default async function AdminSalesPage() {
     }),
     prisma.affiliate.findMany({
       where: { status: { not: "SUSPENDED" } },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, referralCode: true, slug: true, tier: true },
       orderBy: { name: "asc" },
     }),
   ]);

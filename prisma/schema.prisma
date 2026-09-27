@@ -200,6 +200,7 @@ model Sale {
   amount          Float
   currency        String    @default("USD")
   status          String    @default("LEAD") // LEAD | DEPOSIT_PAID | FULLY_PAID | REFUNDED
+  source          String    @default("MANUAL") // FORM | WHATSAPP | MANUAL
   commissionRate  Float     @default(0.1)
   commissionTotal Float     @default(0)
   collectedAmount Float     @default(0)

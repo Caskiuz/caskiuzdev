@@ -19,13 +19,19 @@ const STATUS_STYLES: Record<string, { icon: typeof Clock; className: string }> =
   WITHDRAWING: { icon: Clock, className: "bg-aff-blue/10 text-aff-cyan" },
 };
 
+const SOURCE_LABELS: Record<string, string> = {
+  FORM: "Formulario web",
+  WHATSAPP: "WhatsApp",
+  MANUAL: "Manual",
+};
+
 export default async function CommissionsPage() {
   const affiliate = await requireAffiliate();
 
   const [commissions, methods, withdrawals, kycDoc, commissionAgg] = await Promise.all([
     prisma.commission.findMany({
       where: { affiliateId: affiliate.id },
-      include: { sale: { select: { serviceTitle: true, amount: true, status: true } } },
+      include: { sale: { select: { serviceTitle: true, amount: true, status: true, source: true } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
@@ -135,6 +141,9 @@ export default async function CommissionsPage() {
                       <td className="px-5 py-3.5 font-medium">{commission.sale.serviceTitle}</td>
                       <td className="px-5 py-3.5 text-muted-foreground">
                         {formatUsd(commission.sale.amount)} · {getSaleStatusLabel(commission.sale.status)}
+                        <span className="block text-[10px] uppercase tracking-wide text-muted-foreground/70 mt-0.5">
+                          Origen: {SOURCE_LABELS[commission.sale.source] ?? commission.sale.source}
+                        </span>
                       </td>
                       <td className="px-5 py-3.5 font-bold text-aff-cyan">{formatUsd(commission.amount)}</td>
                       <td className="px-5 py-3.5">

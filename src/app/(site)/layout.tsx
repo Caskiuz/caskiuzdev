@@ -18,7 +18,7 @@ export default async function SiteLayout({
       <Header />
       <main className="flex-1">{children}</main>
       <Footer config={config} />
-      <AiChatWidget />
+      <AiChatWidget whatsapp={config.contact_whatsapp || "584262931869"} />
     </div>
   );
 }

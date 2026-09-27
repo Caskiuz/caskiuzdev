@@ -151,7 +151,7 @@ export function Hero({ config = {} }: HeroProps) {
             {c("hero_cta_cv", "Ver CV")}
           </button>
           <Link
-            href={`https://wa.me/584262931869?text=${encodeURIComponent(appendReferralCode("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.", referralCode))}`}
+            href={`https://wa.me/${c("contact_whatsapp", "584262931869").replace(/\D/g, "")}?text=${encodeURIComponent(appendReferralCode("Hola Caskiuz! 👋 Vi tu portfolio y quiero conversar sobre un proyecto.", referralCode))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:-translate-y-0.5"
