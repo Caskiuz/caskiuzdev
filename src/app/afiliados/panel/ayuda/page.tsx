@@ -18,7 +18,7 @@ const QUICK_GUIDES = [
   {
     title: "Primeros pasos",
     steps: [
-      "Ve a 'Mis enlaces' y copia tu link único (y tu link de WhatsApp directo).",
+      "Ve a 'Mis enlaces' y copia tu link único.",
       "Elige un destino (recomendado: sección de servicios).",
       "Agrega un sub-ID para identificar tu campaña (ej: 'instagram').",
       "Comparte el link en tus redes y comunidades.",
@@ -179,15 +179,14 @@ export default async function HelpPage() {
       {/* 3. Recorrido del cliente */}
       <SectionCard icon={MousePointerClick} title="3. El recorrido de tu cliente (cómo se te acredita)">
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Hay tres caminos para que una venta quede a tu nombre. El sistema captura el
-          primero automáticamente y el segundo casi solo; el tercero depende de que tu
-          cliente mencione tu código:
+          Hay tres caminos para que una venta quede a tu nombre. Los dos primeros funcionan
+          solos (el sistema hace todo); el tercero depende de que tu cliente mencione tu código:
         </p>
         <NumberedSteps
           items={[
             "Tu link + formulario (automático): la persona hace clic en tu link, queda vinculada a ti por 30 días y llena el formulario de contacto → el lead es tuyo al instante.",
-            "Tu link + WhatsApp de la web (automático): si te escribe por los botones de WhatsApp de la web, tu código viaja solo al final del mensaje.",
-            "Tu link de WhatsApp directo: compártelo en tu bio o estados (está en «Mis enlaces» y «Materiales»). Abre tu chat con el código ya escrito, aunque el cliente nunca pase por la web.",
+            "Tu link + WhatsApp o chat de IA de la web (automático): si le escriben por los botones de WhatsApp de la web o por el asistente, tu código viaja solo al final del mensaje.",
+            "Si le escriben por otro canal (DM de Instagram, teléfono, un chat viejo): pídele que mencione tu código de referido. Con eso el equipo lo registra a tu nombre.",
             "En tu dashboard ves subir el contador «Leads referidos»: señal de que tu promoción funciona.",
           ]}
         />

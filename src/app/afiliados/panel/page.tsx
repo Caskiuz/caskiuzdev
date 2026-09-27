@@ -153,15 +153,15 @@ export default async function AffiliateDashboardPage() {
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">2</span>
-            <span><strong className="text-foreground">Tu link + WhatsApp de la web:</strong> si te escribe por los botones de WhatsApp de la web, tu código viaja solo en el mensaje.</span>
+            <span><strong className="text-foreground">Tu link + WhatsApp o chat de IA de la web:</strong> si le escriben por los botones de WhatsApp de la web o por el asistente, tu código viaja solo en el mensaje. No tienes que hacer nada.</span>
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">3</span>
-            <span><strong className="text-foreground">Tu link de WhatsApp directo:</strong> compártelo en bio o estados (está en «Mis enlaces») y el cliente te escribe con tu código ya escrito, aunque no pase por la web.</span>
+            <span><strong className="text-foreground">Si le escriben por otro canal</strong> (DM, teléfono, un chat viejo): pídele que mencione tu código de referido — el equipo lo registra a tu nombre.</span>
           </li>
         </ul>
         <p className="text-xs text-aff-cyan mt-4">
-          💡 Regla de oro: si tu cliente te escribe por otro canal (DM, teléfono), pídele que mencione tu código de referido.
+          💡 Todo empieza con tu link: compártelo y el sistema hace el resto. Tu link principal ya cubre la web completa.
         </p>
       </div>
 
