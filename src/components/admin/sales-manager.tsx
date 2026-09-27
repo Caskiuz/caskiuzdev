@@ -248,7 +248,7 @@ export function SalesManager({
 
           <p className="text-xs text-muted-foreground">
             💡 La comisión se devenga solo sobre lo cobrado: anticipo = 50% del monto, pagado
-            completo = 100%. Entra en retención de 30 días tras el cobro total.
+            completo = 100%. Queda disponible de inmediato para que el afiliado la retire.
           </p>
 
           <button

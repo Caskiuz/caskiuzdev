@@ -38,10 +38,10 @@ PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 - Cómo funciona: comparte su link → cada clic queda registrado con una cookie de 30 días → si la persona contrata dentro de ese plazo, la venta se acredita al afiliado.
 - También puede usar sub-IDs por campaña para medir canales: ?subid=instagram, ?subid=whatsapp, etc. Los sub-IDs no cambian la comisión.
 - Niveles de comisión sobre el monto efectivamente cobrado: Plata 10% (desde $0), Oro 20% (desde $2,000 referidos cobrados), Platino 30% (desde $5,000) y Diamante 40% (desde $15,000). El nivel sube automáticamente.
-- La comisión se calcula SOLO sobre dinero realmente cobrado al cliente (50% al anticipo, 100% al pagar completo) y entra en retención de 30 días (ventana de reembolsos). Luego pasa a saldo "Disponible".
+- La comisión se calcula SOLO sobre dinero realmente cobrado al cliente (50% al anticipo, 100% al pagar completo) y queda DISPONIBLE DE INMEDIATO, sin retención: el afiliado puede retirarla en cuanto el cliente paga.
 - Retiro mínimo: $30 USD. Requiere verificación de identidad (KYC) subiendo un documento en el panel → Documentos.
-- Métodos de pago de comisiones: USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay (Binance ID o email) y, para afiliados en VENEZUELA, Pago Móvil en bolívares (registra teléfono, banco, titular y cédula en el panel → Retiros).
-- El afiliado ve en su panel: dashboard con clics, leads, ventas, comisiones y EPC; sus leads; sus enlaces con rendimiento por campaña; catálogo con su comisión estimada; materiales listos para copiar; comisiones; retiros; documentos; perfil; soporte y una guía completa en Ayuda.
+- Métodos de pago de comisiones: USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay (Binance ID o email) y, para afiliados en VENEZUELA, Pago Móvil en bolívares (registra teléfono, banco, titular y cédula en el panel → Comisiones y retiros).
+- El afiliado ve en su panel: dashboard con clics, leads, ventas, comisiones y EPC; sus leads; sus enlaces con rendimiento por campaña; catálogo con su comisión estimada; materiales listos para copiar; su sección de comisiones y retiros (saldo, historial y métodos de pago); documentos; perfil; soporte y una guía completa en Ayuda.
 - Recibe un correo cuando se registra una venta a su nombre o cambia el estado de cobro.
 - Está prohibido auto-comprar o usar familiares para cobrar comisiones; el incumplimiento suspende la cuenta.
 

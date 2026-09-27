@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { serialize } from "@/lib/affiliate-queries";
 import { getSiteConfig } from "@/lib/site-config";
 import { getUsdVesRate } from "@/lib/payments";
@@ -9,8 +8,6 @@ import { Wallet } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminWithdrawalsPage() {
-  await releaseMaturedCommissions();
-
   const [config, withdrawals] = await Promise.all([
     getSiteConfig(),
     prisma.withdrawal.findMany({

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +9,6 @@ export async function GET() {
   if (!affiliate) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
-
-  await releaseMaturedCommissions(affiliate.id);
 
   const commissionAgg = await prisma.commission.groupBy({
     by: ["status"],
@@ -35,6 +32,6 @@ export async function GET() {
     lifetimeRevenue: affiliate.lifetimeRevenue,
     emailVerified: affiliate.emailVerified,
     balanceAvailable: byStatus("AVAILABLE"),
-    balancePending: byStatus("HOLD") + byStatus("WITHDRAWING"),
+    balancePending: byStatus("WITHDRAWING"),
   });
 }

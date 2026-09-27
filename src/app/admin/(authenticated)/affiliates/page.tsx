@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { getTierInfo, formatUsd } from "@/lib/affiliate";
 import { Users, ArrowRight } from "lucide-react";
 
@@ -13,8 +12,6 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
 };
 
 export default async function AdminAffiliatesPage() {
-  await releaseMaturedCommissions();
-
   const affiliates = await prisma.affiliate.findMany({
     orderBy: { createdAt: "desc" },
     include: {

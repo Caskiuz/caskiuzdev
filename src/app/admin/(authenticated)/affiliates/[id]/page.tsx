@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { getTierInfo, formatUsd } from "@/lib/affiliate";
 import { serialize } from "@/lib/affiliate-queries";
 import { AffiliateActions } from "@/components/admin/affiliate-actions";
@@ -15,7 +14,6 @@ export default async function AdminAffiliateDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await releaseMaturedCommissions();
   const { id } = await params;
   const affiliateId = Number(id);
 

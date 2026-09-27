@@ -42,7 +42,7 @@ export async function notifyAffiliateSale(
         <p><strong>Monto del proyecto:</strong> $${sale.amount.toFixed(2)} USD</p>
         <p><strong>Estado de cobro:</strong> ${statusLabel}</p>
         <p><strong>Tu comisión hasta ahora:</strong> $${sale.commissionTotal.toFixed(2)} USD</p>
-        <p style="font-size:13px;color:#8888a0;">Recuerda: la comisión se libera 30 días después del cobro total de la venta.</p>
+        <p style="font-size:13px;color:#8888a0;">Tu comisión ya quedó disponible: puedes retirarla desde $30 USD.</p>
         <p><a href="${panelUrl}" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;">Ver en tu panel</a></p>
       `),
     });

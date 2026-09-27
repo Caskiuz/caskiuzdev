@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { serialize } from "@/lib/affiliate-queries";
 import { SalesManager } from "@/components/admin/sales-manager";
 import { ShoppingCart } from "lucide-react";
@@ -7,8 +6,6 @@ import { ShoppingCart } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminSalesPage() {
-  await releaseMaturedCommissions();
-
   const [sales, contacts, affiliates] = await Promise.all([
     prisma.sale.findMany({
       include: {

@@ -28,8 +28,8 @@ const QUICK_GUIDES = [
     title: "Cómo cobrar",
     steps: [
       "Sube tu documento de identidad en 'Documentos' y espera la aprobación.",
-      "Registra tu método de pago en 'Retiros' (Binance Pay, wallet o Pago Móvil).",
-      "Cuando tengas $30 USD o más en saldo disponible, solicita el retiro.",
+      "Registra tu método de pago en 'Comisiones y retiros' (Binance Pay, wallet o Pago Móvil).",
+      "Cuando tengas $30 USD o más disponibles, solicita el retiro.",
       "Recibirás tu pago en un máximo de 7 días hábiles.",
     ],
   },
@@ -52,8 +52,7 @@ const SALE_STATUSES = [
 ];
 
 const COMMISSION_STATES = [
-  { state: "En retención", meaning: "La venta se cobró y estás dentro de los 30 días anti-reembolso." },
-  { state: "Disponible", meaning: "Ya puedes retirarla (mínimo acumulado de $30 USD)." },
+  { state: "Disponible", meaning: "El cliente pagó y tu comisión queda disponible al instante (mínimo acumulado de $30 USD para retirar)." },
   { state: "En retiro", meaning: "Solicitaste el pago y está en proceso." },
   { state: "Pagada", meaning: "Ya te pagamos: ves el hash de la transacción en tu historial." },
   { state: "Reversada", meaning: "La venta fue reembolsada y la comisión se anuló." },
@@ -194,7 +193,7 @@ export default async function HelpPage() {
         <p className="text-sm text-muted-foreground leading-relaxed">
           Los servicios se venden por conversación (no hay carrito de compra). El dueño de
           Caskiuz registra la venta cuando el cliente paga, y tú la ves aparecer en tu
-          sección «Comisiones» con uno de estos estados:
+          sección «Comisiones y retiros» con uno de estos estados:
         </p>
         <div className="space-y-2">
           {SALE_STATUSES.map((item) => (
@@ -218,14 +217,15 @@ export default async function HelpPage() {
       <SectionCard icon={Wallet} title="5. Cómo y cuándo cobras">
         <p className="text-sm text-muted-foreground leading-relaxed">
           Tu comisión se calcula <strong className="text-foreground">solo sobre dinero
-          realmente cobrado</strong> (nadie pierde por proyectos que no se pagan):
+          realmente cobrado</strong> (nadie pierde por proyectos que no se pagan) y queda{" "}
+          <strong className="text-foreground">disponible al instante</strong>: sin retenciones
+          ni esperas.
         </p>
         <NumberedSteps
           items={[
-            "El cliente paga el 50% de anticipo: tu comisión se calcula sobre esa mitad y entra en retención.",
-            "El cliente paga el 50% restante: la comisión se recalcula sobre el total y arranca el reloj de 30 días anti-reembolso.",
-            "A los 30 días la comisión pasa sola a «Disponible».",
-            "Con $30 USD o más disponibles vas a «Retiros», registras tu método y solicitas el pago (un retiro a la vez).",
+            "El cliente paga el 50% de anticipo: tu comisión sobre esa mitad queda disponible al instante.",
+            "Al entregar, el cliente paga el resto: la comisión se recalcula sobre el total cobrado y también queda disponible de inmediato.",
+            "Con $30 USD o más disponibles vas a «Comisiones y retiros», registras tu método y solicitas el pago (un retiro a la vez).",
             "Recibes tu pago y ves el hash de la transacción en tu historial.",
           ]}
         />
@@ -258,9 +258,9 @@ export default async function HelpPage() {
             items={[
               "25 personas hacen clic → tu dashboard muestra 25 clics.",
               "Una llena el formulario → 1 lead (tasa de conversión del 4%).",
-              "Cotizas una tienda online de $999. El cliente paga el anticipo de $499.50 → ganas 10% = $49.95, en retención.",
-              "Al entregar, el cliente paga el resto: cobrado $999 → tu comisión se recalcula a $99.90 y arranca la retención de 30 días.",
-              "A los 30 días: $99.90 disponibles. Superas el mínimo de $30, solicitas el retiro y te pagan por Binance Pay.",
+              "Cotizas una tienda online de $999. El cliente paga el anticipo de $499.50 → ganas 10% = $49.95, disponible al instante.",
+              "Al entregar, el cliente paga el resto: cobrado $999 → tu comisión se recalcula a $99.90 y queda disponible de inmediato.",
+              "Ya superas el mínimo de $30: solicitas el retiro y te pagan por Binance Pay.",
             ]}
           />
         </div>
@@ -275,12 +275,11 @@ export default async function HelpPage() {
       <SectionCard icon={LayoutDashboard} title="7. Qué ves en tu panel">
         <div className="space-y-2">
           {[
-            ["Dashboard", "Clics, leads, ventas, conversión, EPC, saldo disponible y en retención, y tu progreso al siguiente nivel."],
+            ["Dashboard", "Clics, leads, ventas, conversión, EPC, saldo disponible y en retiro, y tu progreso al siguiente nivel."],
             ["Mis enlaces", "Tu link, el generador con destinos y campañas, y el rendimiento por sub-ID."],
             ["Catálogo", "Los servicios, sus precios y cuánto ganas con cada uno según tu nivel."],
             ["Materiales", "Textos listos para copiar y pegar en WhatsApp y redes."],
-            ["Comisiones", "Cada venta con su estado y lo que ganaste."],
-            ["Retiros", "Tu saldo, tus métodos de pago y el historial con hashes."],
+            ["Comisiones y retiros", "Cada venta con su estado y lo que ganaste, tu saldo disponible, tus métodos de pago y el historial con hashes."],
             ["Documentos", "Tu verificación de identidad (KYC)."],
             ["Soporte", "Tickets para resolver cualquier duda con el equipo."],
           ].map(([section, description]) => (

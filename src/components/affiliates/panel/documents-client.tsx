@@ -175,7 +175,7 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
               Términos y Condiciones
             </a>{" "}
             del programa, que rigen la relación comercial entre tú y Caskiuz (comisiones,
-            niveles, pagos, retenciones y prácticas prohibidas).
+            niveles, pagos, reembolsos y prácticas prohibidas).
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mt-3">
             No necesitas firmar ni subir ningún documento adicional. Si en el futuro se

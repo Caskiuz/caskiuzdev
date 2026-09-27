@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 import { MIN_WITHDRAWAL } from "@/lib/affiliate";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 
 export const dynamic = "force-dynamic";
 
@@ -77,8 +76,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Saldo disponible (liberando comisiones maduras primero)
-    await releaseMaturedCommissions(affiliate.id);
+    // Saldo disponible (las comisiones están disponibles desde el cobro)
     const available = await prisma.commission.findMany({
       where: { affiliateId: affiliate.id, status: "AVAILABLE" },
       orderBy: { createdAt: "asc" },

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 
 /**
  * Consultas agregadas del panel de afiliados.
@@ -18,15 +17,12 @@ export interface AffiliateStats {
   conversionRate: number; // leads / clicks
   epc: number; // comisiones aprobadas+disponibles / clics
   balanceAvailable: number;
-  balancePending: number; // HOLD
+  balancePending: number; // comisiones reservadas en un retiro en proceso
   lifetimePaid: number; // comisiones PAID
   clicksLast30: { date: string; count: number }[];
 }
 
 export async function getAffiliateStats(affiliateId: number): Promise<AffiliateStats> {
-  // Liberar comisiones maduras antes de calcular (hold de 30 días)
-  await releaseMaturedCommissions(affiliateId);
-
   const now = new Date();
   const since30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -78,7 +74,7 @@ export async function getAffiliateStats(affiliateId: number): Promise<AffiliateS
     conversionRate: totalClicks > 0 ? (totalLeads / totalClicks) * 100 : 0,
     epc: totalClicks > 0 ? approvedLike / totalClicks : 0,
     balanceAvailable: byStatus("AVAILABLE"),
-    balancePending: byStatus("HOLD"),
+    balancePending: byStatus("WITHDRAWING"),
     lifetimePaid: byStatus("PAID"),
     clicksLast30: clicksWindow,
   };
@@ -86,8 +82,7 @@ export async function getAffiliateStats(affiliateId: number): Promise<AffiliateS
 
 export function getCommissionStatusLabel(status: string): string {
   switch (status) {
-    case "HOLD":
-      return "En retención";
+    case "HOLD": // legacy: ya no se usa retención
     case "AVAILABLE":
       return "Disponible";
     case "PAID":

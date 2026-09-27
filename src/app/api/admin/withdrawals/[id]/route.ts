@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { sendEmail, emailShell } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
@@ -100,7 +99,7 @@ export async function PATCH(
         }</p>
         ${txHash ? `<p><strong>Hash/TranId:</strong> ${String(txHash).slice(0, 255)}</p>` : ""}
         ${notes ? `<p><strong>Nota:</strong> ${String(notes).slice(0, 2000)}</p>` : ""}
-        <p>Revisa tu panel: <a href="https://caskiuz.vercel.app/afiliados/panel/retiros" style="color:#38bdf8;">afiliados/panel/retiros</a></p>
+        <p>Revisa tu panel: <a href="https://caskiuz.vercel.app/afiliados/panel/comisiones" style="color:#38bdf8;">afiliados/panel/comisiones</a></p>
       `),
     });
 
@@ -118,8 +117,6 @@ export async function GET(
 ) {
   const authError = await checkAuth();
   if (authError) return authError;
-
-  await releaseMaturedCommissions();
 
   const { id } = await params;
   const withdrawal = await prisma.withdrawal.findUnique({

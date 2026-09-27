@@ -6,7 +6,7 @@ import { AFFILIATE_TERMS } from "@/lib/affiliate-content";
 export const metadata: Metadata = {
   title: "Términos y Condiciones del Programa de Afiliados | Caskiuz",
   description:
-    "Términos y condiciones del programa de afiliados de Caskiuz: comisiones, niveles, pagos en cripto, retenciones, prácticas prohibidas y más.",
+    "Términos y condiciones del programa de afiliados de Caskiuz: comisiones, niveles, pagos en cripto, reembolsos, prácticas prohibidas y más.",
   alternates: { canonical: "https://caskiuz.vercel.app/afiliados/terminos" },
 };
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
-import { syncSaleCommission, releaseMaturedCommissions } from "@/lib/commissions";
+import { syncSaleCommission } from "@/lib/commissions";
 import { notifyAffiliateSale } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +17,6 @@ async function checkAuth() {
 export async function GET() {
   const authError = await checkAuth();
   if (authError) return authError;
-
-  await releaseMaturedCommissions();
 
   const sales = await prisma.sale.findMany({
     include: {

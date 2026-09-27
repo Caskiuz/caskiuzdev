@@ -65,7 +65,6 @@ export function nextTier(revenue: number) {
 
 // ─── Constantes de negocio ───
 export const MIN_WITHDRAWAL = 30; // USD
-export const COMMISSION_HOLD_DAYS = 30; // ventana de reembolsos tras cobro total
 export const REFERRAL_COOKIE = "cask_ref";
 export const REFERRAL_COOKIE_DAYS = 30;
 

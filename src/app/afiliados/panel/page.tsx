@@ -23,9 +23,9 @@ export default async function AffiliateDashboardPage() {
       icon: Wallet,
     },
     {
-      label: "En retención (30 días)",
+      label: "En retiro (pendiente)",
       value: formatUsd(stats.balancePending),
-      sub: "Ventana de reembolsos",
+      sub: "Solicitudes en proceso de pago",
       icon: Clock,
     },
     {
@@ -145,7 +145,7 @@ export default async function AffiliateDashboardPage() {
         {[
           { href: "/afiliados/panel/enlaces", title: "Obtener mi link", text: "Copia tu link único y empieza a compartir." },
           { href: "/afiliados/panel/catalogo", title: "Ver catálogo", text: "Servicios y comisiones por cada venta." },
-          { href: "/afiliados/panel/retiros", title: "Configurar pagos", text: "Registra tu wallet o Binance Pay para cobrar." },
+          { href: "/afiliados/panel/comisiones", title: "Cobrar mis comisiones", text: "Tu saldo disponible, solicita el retiro y registra tu wallet o Binance Pay." },
         ].map((quick) => (
           <Link
             key={quick.href}

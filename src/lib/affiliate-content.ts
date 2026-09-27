@@ -19,11 +19,11 @@ export const AFFILIATE_FAQS: FaqItem[] = [
   },
   {
     q: "¿Cuándo puedo retirar mis comisiones?",
-    a: "Las comisiones entran en un periodo de retención de 30 días tras el cobro total de la venta (ventana de reembolsos). Luego pasan a tu saldo disponible y puedes solicitar retiro desde $30 USD.",
+    a: "Al instante: en cuanto el cliente paga (el 50% de anticipo o el total), tu comisión sobre ese dinero queda disponible de inmediato y puedes solicitar retiro desde $30 USD.",
   },
   {
     q: "¿En qué monedas me pagan?",
-    a: "Puedes cobrar en USDT o USDC en las redes Tron (TRC-20), Ethereum (ERC-20), BNB Smart Chain (BEP-20), Solana, Polygon y Arbitrum; también en Bitcoin (BTC) o directamente vía Binance Pay usando tu Binance ID o email. Si estás en Venezuela, además puedes cobrar en bolívares por Pago Móvil registrando tu teléfono, banco y cédula en la sección Retiros.",
+    a: "Puedes cobrar en USDT o USDC en las redes Tron (TRC-20), Ethereum (ERC-20), BNB Smart Chain (BEP-20), Solana, Polygon y Arbitrum; también en Bitcoin (BTC) o directamente vía Binance Pay usando tu Binance ID o email. Si estás en Venezuela, además puedes cobrar en bolívares por Pago Móvil registrando tu teléfono, banco y cédula en la sección Comisiones y retiros.",
   },
   {
     q: "¿Cómo sé que una venta es mía?",
@@ -78,9 +78,9 @@ export const AFFILIATE_TERMS: TermSection[] = [
     ],
   },
   {
-    title: "5. Retención y reembolsos",
+    title: "5. Disponibilidad de comisiones y reembolsos",
     paragraphs: [
-      "Toda comisión queda en estado de retención durante 30 días desde el cobro total de la venta, como ventana de reembolsos y verificación. Si la venta es reembolsada total o parcialmente, la comisión se anula o ajusta en la misma proporción. Las comisiones solo pasan a saldo disponible tras cumplirse la retención.",
+      "La comisión queda disponible de inmediato en el momento en que se cobra el dinero al cliente: al cobrar el anticipo del 50% se acredita la comisión sobre esa mitad, y al cobrar el total se acredita sobre el 100%. Si la venta es reembolsada total o parcialmente, la comisión se anula o ajusta en la misma proporción; si la comisión ya fue pagada al afiliado, el monto correspondiente podrá descontarse de comisiones futuras.",
     ],
   },
   {

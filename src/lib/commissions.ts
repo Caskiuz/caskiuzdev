@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma/client";
-import { getTierByRevenue, COMMISSION_HOLD_DAYS } from "@/lib/affiliate";
+import { getTierByRevenue } from "@/lib/affiliate";
 
 /**
  * Motor de comisiones de la red de afiliados.
@@ -8,37 +8,13 @@ import { getTierByRevenue, COMMISSION_HOLD_DAYS } from "@/lib/affiliate";
  * - La comisión se devenga SOLO sobre dinero cobrado (50% anticipo → mitad;
  *   pago total → 100%). Nunca sobre montos prometidos.
  * - Se calcula con la tasa del nivel actual del afiliado y queda congelada.
- * - Tras el cobro total entra en retención (hold) de 30 días (ventana de
- *   reembolsos) y luego se libera a saldo disponible.
+ * - La comisión queda DISPONIBLE al instante: en cuanto el cliente paga
+ *   (anticipo o total), el afiliado ya puede retirarla.
  * - Un reembolso anula la comisión (a menos que ya esté pagada/en retiro).
  */
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
-}
-
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-}
-
-/**
- * Libera comisiones en retención cuyo plazo (30 días) ya venció.
- * Se ejecuta de forma perezosa en cada lectura del panel/admin.
- */
-export async function releaseMaturedCommissions(affiliateId?: number): Promise<number> {
-  try {
-    const result = await prisma.commission.updateMany({
-      where: {
-        status: "HOLD",
-        availableAt: { lte: new Date() },
-        ...(affiliateId ? { affiliateId } : {}),
-      },
-      data: { status: "AVAILABLE" },
-    });
-    return result.count;
-  } catch {
-    return 0;
-  }
 }
 
 /**
@@ -83,13 +59,13 @@ export async function syncSaleCommission(saleId: number): Promise<void> {
       });
       return;
     }
-    const isFull = sale.status === "FULLY_PAID";
+    // Disponible de inmediato: sin retención.
     await prisma.commission.update({
       where: { id: existing.id },
       data: {
         amount: commissionAmount,
-        status: commissionAmount > 0 ? "HOLD" : "REVERSED",
-        availableAt: isFull && commissionAmount > 0 ? addDays(new Date(), COMMISSION_HOLD_DAYS) : null,
+        status: commissionAmount > 0 ? "AVAILABLE" : "REVERSED",
+        availableAt: null,
       },
     });
     await prisma.sale.update({
@@ -97,14 +73,13 @@ export async function syncSaleCommission(saleId: number): Promise<void> {
       data: { commissionRate: rate, commissionTotal: commissionAmount, collectedAmount: collected },
     });
   } else if (commissionAmount > 0) {
-    const isFull = sale.status === "FULLY_PAID";
     await prisma.commission.create({
       data: {
         saleId: sale.id,
         affiliateId: sale.affiliateId,
         amount: commissionAmount,
-        status: "HOLD",
-        availableAt: isFull ? addDays(new Date(), COMMISSION_HOLD_DAYS) : null,
+        status: "AVAILABLE",
+        availableAt: null,
       },
     });
     await prisma.sale.update({

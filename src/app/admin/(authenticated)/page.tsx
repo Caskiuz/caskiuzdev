@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma/client";
-import { releaseMaturedCommissions } from "@/lib/commissions";
 import { formatUsd } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +16,6 @@ export default async function AdminPage() {
   let dbError: string | null = null;
 
   try {
-    await releaseMaturedCommissions();
-
     const [messages, subs, posts, affiliates, withdrawals, docs, paidAgg, pendingAgg] =
       await Promise.all([
         prisma.contact.count({ where: { read: false } }),
@@ -111,7 +108,7 @@ export default async function AdminPage() {
             className="glass-card p-6 hover:scale-[1.01] transition-transform"
           >
             <div className="text-4xl font-bold text-aff-cyan mb-2">{formatUsd(commissionsPending)}</div>
-            <div className="text-sm font-medium">Comisiones por pagar (hold + disponible)</div>
+            <div className="text-sm font-medium">Comisiones por pagar (disponible + en retiro)</div>
           </Link>
           <div className="glass-card p-6">
             <div className="text-4xl font-bold text-green-500 mb-2">{formatUsd(commissionsPaid)}</div>

@@ -45,7 +45,6 @@ interface Withdrawal {
 interface WithdrawalsProps {
   country: string;
   initialBalanceAvailable: number;
-  initialBalancePending: number;
   initialKycApproved: boolean;
   initialMethods: PayoutMethod[];
   initialWithdrawals: Withdrawal[];
@@ -70,14 +69,12 @@ const STATUS_COLORS: Record<string, string> = {
 export function WithdrawalsClient({
   country,
   initialBalanceAvailable,
-  initialBalancePending,
   initialKycApproved,
   initialMethods,
   initialWithdrawals,
 }: WithdrawalsProps) {
   const isVenezuela = country === "Venezuela";
   const [balanceAvailable, setBalanceAvailable] = useState(initialBalanceAvailable);
-  const balancePending = initialBalancePending;
   const kycApproved = initialKycApproved;
   const [methods, setMethods] = useState<PayoutMethod[]>(initialMethods);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(initialWithdrawals);
@@ -213,29 +210,6 @@ export function WithdrawalsClient({
         </div>
       )}
 
-      {/* Saldo */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="metal-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground">Saldo disponible</p>
-          <p className="text-3xl font-bold mt-1">{formatUsd(balanceAvailable)}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            En proceso: {formatUsd(balancePending)}
-          </p>
-        </div>
-        <div className="metal-card rounded-2xl p-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-aff-blue/10 border border-aff-blue/20 flex items-center justify-center">
-            <Coins className="w-6 h-6 text-aff-cyan" />
-          </div>
-          <div>
-            <p className="font-semibold">Pagos en cripto y Binance Pay</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              USDT · USDC (6 redes) · BTC · Binance ID/email
-              {isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""} · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* KYC warning */}
       {!kycApproved && (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-600 dark:text-yellow-400">
@@ -253,7 +227,12 @@ export function WithdrawalsClient({
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         {/* Solicitar retiro */}
         <div className="metal-card rounded-2xl p-6">
-          <h2 className="font-bold mb-4">Solicitar retiro</h2>
+          <h2 className="font-bold mb-1">Solicitar retiro</h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            Saldo disponible: {formatUsd(balanceAvailable)} · USDT · USDC (6 redes) · BTC ·
+            Binance ID/email{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""} · Retiro mínimo{" "}
+            {formatUsd(MIN_WITHDRAWAL)}
+          </p>
           {methods.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Agrega primero un método de pago en la sección de al lado.
