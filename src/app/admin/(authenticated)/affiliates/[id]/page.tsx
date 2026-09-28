@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma/client";
-import { getTierInfo, formatUsd } from "@/lib/affiliate";
+import { getTierInfo, formatUsd, payoutMethodDetail } from "@/lib/affiliate";
 import { serialize } from "@/lib/affiliate-queries";
 import { AffiliateActions } from "@/components/admin/affiliate-actions";
 import { DocumentReview } from "@/components/admin/document-review";
@@ -143,11 +143,7 @@ export default async function AdminAffiliateDetailPage({
               <ul className="space-y-2">
                 {affiliate.payoutMethods.map((m) => (
                   <li key={m.id} className="text-sm p-3 rounded-lg bg-surface-hover border border-border">
-                    {m.type === "BINANCE_PAY"
-                      ? `Binance Pay — ${m.binanceId || m.binanceEmail}`
-                      : m.type === "PAGO_MOVIL"
-                        ? `Pago Móvil (bolívares) — ${m.pagoMovilPhone} · ${m.pagoMovilBank} · ${m.pagoMovilHolder} · ${m.pagoMovilId}`
-                        : `${m.currency} (${m.network}) — ${m.address}`}
+                    {payoutMethodDetail(m)}
                   </li>
                 ))}
               </ul>

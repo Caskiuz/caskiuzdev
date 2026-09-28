@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Loader2, AlertCircle, CheckCircle2, Save, Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { COUNTRIES } from "@/lib/affiliate";
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all text-sm";
@@ -221,7 +222,21 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">País</label>
-              <input value={country} onChange={(e) => setCountry(e.target.value)} required maxLength={80} className={inputClass} />
+              <select
+                value={(COUNTRIES as readonly string[]).includes(country) ? country : ""}
+                onChange={(e) => setCountry(e.target.value)}
+                required
+                className={inputClass}
+              >
+                <option value="" disabled>Selecciona tu país</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Tu país habilita los métodos de pago locales: Pago Móvil (Venezuela),
+                Nequi/Bancolombia/Daviplata (Colombia) o Zelle (Estados Unidos).
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Teléfono / WhatsApp</label>

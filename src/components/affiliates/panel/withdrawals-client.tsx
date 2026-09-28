@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins, Smartphone } from "lucide-react";
-import { SUPPORTED_CURRENCIES, NETWORK_LABELS, MIN_WITHDRAWAL, formatUsd } from "@/lib/affiliate";
+import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins, Smartphone, Landmark, CreditCard } from "lucide-react";
+import {
+  SUPPORTED_CURRENCIES,
+  NETWORK_LABELS,
+  MIN_WITHDRAWAL,
+  formatUsd,
+  payoutMethodLabel,
+  payoutMethodShortName,
+  BANCOLOMBIA_ACCOUNT_TYPES,
+} from "@/lib/affiliate";
 import { getWithdrawalStatusLabel } from "@/lib/affiliate-queries";
 import Link from "next/link";
 
@@ -20,6 +28,7 @@ interface PayoutMethod {
   pagoMovilBank?: string | null;
   pagoMovilHolder?: string | null;
   pagoMovilId?: string | null;
+  accountData?: unknown;
 }
 
 interface Withdrawal {
@@ -39,6 +48,11 @@ interface Withdrawal {
     binanceId: string | null;
     binanceEmail: string | null;
     label: string | null;
+    pagoMovilPhone?: string | null;
+    pagoMovilBank?: string | null;
+    pagoMovilHolder?: string | null;
+    pagoMovilId?: string | null;
+    accountData?: unknown;
   };
 }
 
@@ -54,7 +68,11 @@ type MethodForm =
   | { mode: "closed" }
   | { mode: "binance" }
   | { mode: "wallet" }
-  | { mode: "pago-movil" };
+  | { mode: "pago-movil" }
+  | { mode: "nequi" }
+  | { mode: "daviplata" }
+  | { mode: "bancolombia" }
+  | { mode: "zelle" };
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all text-sm";
@@ -74,6 +92,8 @@ export function WithdrawalsClient({
   initialWithdrawals,
 }: WithdrawalsProps) {
   const isVenezuela = country === "Venezuela";
+  const isColombia = country === "Colombia";
+  const isUSA = country === "Estados Unidos";
   const [balanceAvailable, setBalanceAvailable] = useState(initialBalanceAvailable);
   const kycApproved = initialKycApproved;
   const [methods, setMethods] = useState<PayoutMethod[]>(initialMethods);
@@ -92,6 +112,12 @@ export function WithdrawalsClient({
   const [pmBank, setPmBank] = useState("");
   const [pmHolder, setPmHolder] = useState("");
   const [pmId, setPmId] = useState("");
+  const [coPhone, setCoPhone] = useState("");
+  const [coHolder, setCoHolder] = useState("");
+  const [coAccountType, setCoAccountType] = useState<string>(BANCOLOMBIA_ACCOUNT_TYPES[0]);
+  const [coAccountNumber, setCoAccountNumber] = useState("");
+  const [zelleAccount, setZelleAccount] = useState("");
+  const [zelleHolder, setZelleHolder] = useState("");
 
   // Formulario de retiro
   const [withdrawMethod, setWithdrawMethod] = useState<string>("");
@@ -122,7 +148,18 @@ export function WithdrawalsClient({
                 pagoMovilHolder: pmHolder,
                 pagoMovilId: pmId,
               }
-            : { type: "WALLET", currency, network, address };
+            : form.mode === "nequi"
+              ? { type: "NEQUI", accountData: { phone: coPhone, holder: coHolder } }
+              : form.mode === "daviplata"
+                ? { type: "DAVIPLATA", accountData: { phone: coPhone, holder: coHolder } }
+                : form.mode === "bancolombia"
+                  ? {
+                      type: "BANCOLOMBIA",
+                      accountData: { accountType: coAccountType, accountNumber: coAccountNumber, holder: coHolder },
+                    }
+                  : form.mode === "zelle"
+                    ? { type: "ZELLE", accountData: { account: zelleAccount, holder: zelleHolder } }
+                    : { type: "WALLET", currency, network, address };
 
       const res = await fetch("/api/affiliate/payout-methods", {
         method: "POST",
@@ -143,6 +180,11 @@ export function WithdrawalsClient({
       setPmBank("");
       setPmHolder("");
       setPmId("");
+      setCoPhone("");
+      setCoHolder("");
+      setCoAccountNumber("");
+      setZelleAccount("");
+      setZelleHolder("");
     } catch {
       flash("error", "Error de conexión.");
     } finally {
@@ -230,8 +272,9 @@ export function WithdrawalsClient({
           <h2 className="font-bold mb-1">Solicitar retiro</h2>
           <p className="text-xs text-muted-foreground mb-4">
             Saldo disponible: {formatUsd(balanceAvailable)} · USDT · USDC (6 redes) · BTC ·
-            Binance ID/email{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""} · Retiro mínimo{" "}
-            {formatUsd(MIN_WITHDRAWAL)}
+            Binance ID/email{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""}
+            {isColombia ? " · Nequi · Daviplata · Bancolombia (COP) 🇨🇴" : ""}
+            {isUSA ? " · Zelle (USD) 🇺🇸" : ""} · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
           </p>
           {methods.length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -254,11 +297,7 @@ export function WithdrawalsClient({
                   <option value="" disabled>Selecciona un método</option>
                   {methods.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.type === "BINANCE_PAY"
-                        ? `Binance Pay — ${m.binanceId || m.binanceEmail}`
-                        : m.type === "PAGO_MOVIL"
-                          ? `Pago Móvil — ${m.pagoMovilPhone} (${m.pagoMovilBank})`
-                          : `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`}
+                      {payoutMethodLabel(m)}
                     </option>
                   ))}
                 </select>
@@ -298,11 +337,7 @@ export function WithdrawalsClient({
                       <p className="font-semibold">{formatUsd(w.netAmount)}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(w.createdAt).toLocaleDateString("es-ES")} ·{" "}
-                        {w.payoutMethod.type === "BINANCE_PAY"
-                          ? "Binance Pay"
-                          : w.payoutMethod.type === "PAGO_MOVIL"
-                            ? "Pago Móvil (bolívares)"
-                            : `${w.payoutMethod.currency} ${w.payoutMethod.network}`}
+                        {payoutMethodShortName(w.payoutMethod)}
                         {w.txHash && ` · ${w.txHash.slice(0, 18)}…`}
                       </p>
                       {w.notes && <p className="text-xs text-muted-foreground">{w.notes}</p>}
@@ -331,11 +366,7 @@ export function WithdrawalsClient({
                       {m.label || "Método"} {m.isDefault && <span className="text-[10px] text-aff-cyan">· Predeterminado</span>}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {m.type === "BINANCE_PAY"
-                        ? `Binance Pay (${m.binanceId ? `ID ${m.binanceId}` : m.binanceEmail})`
-                        : m.type === "PAGO_MOVIL"
-                          ? `Pago Móvil · ${m.pagoMovilPhone} · ${m.pagoMovilBank}`
-                          : `${m.currency} · ${NETWORK_LABELS[m.network ?? ""] ?? m.network} · ${m.address}`}
+                      {payoutMethodLabel(m)}
                     </p>
                   </div>
                 </div>
@@ -351,7 +382,7 @@ export function WithdrawalsClient({
           </ul>
 
           {/* Selector de tipo */}
-          <div className={`grid gap-3 mb-5 ${isVenezuela ? "grid-cols-3" : "grid-cols-2"}`}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
             <button
               onClick={() => {
                 setForm({ mode: "binance" });
@@ -382,6 +413,48 @@ export function WithdrawalsClient({
               >
                 <Smartphone className="w-5 h-5 mx-auto mb-2" />
                 Pago Móvil 🇻🇪
+              </button>
+            )}
+            {isColombia && (
+              <>
+                <button
+                  onClick={() => setForm({ mode: "nequi" })}
+                  className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                    form.mode === "nequi" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                  }`}
+                >
+                  <Smartphone className="w-5 h-5 mx-auto mb-2" />
+                  Nequi 🇨🇴
+                </button>
+                <button
+                  onClick={() => setForm({ mode: "daviplata" })}
+                  className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                    form.mode === "daviplata" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                  }`}
+                >
+                  <Smartphone className="w-5 h-5 mx-auto mb-2" />
+                  Daviplata 🇨🇴
+                </button>
+                <button
+                  onClick={() => setForm({ mode: "bancolombia" })}
+                  className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                    form.mode === "bancolombia" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                  }`}
+                >
+                  <Landmark className="w-5 h-5 mx-auto mb-2" />
+                  Bancolombia 🇨🇴
+                </button>
+              </>
+            )}
+            {isUSA && (
+              <button
+                onClick={() => setForm({ mode: "zelle" })}
+                className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                  form.mode === "zelle" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                }`}
+              >
+                <CreditCard className="w-5 h-5 mx-auto mb-2" />
+                Zelle 🇺🇸
               </button>
             )}
           </div>
@@ -436,6 +509,124 @@ export function WithdrawalsClient({
               </div>
               <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Pago Móvil"}
+              </button>
+            </form>
+          )}
+
+          {(form.mode === "nequi" || form.mode === "daviplata") && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                📲 Cobra tus comisiones en pesos colombianos directo a tu{" "}
+                {form.mode === "nequi" ? "Nequi" : "Daviplata"}. Exclusivo para afiliados en Colombia.
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">
+                  Teléfono {form.mode === "nequi" ? "Nequi" : "Daviplata"}
+                </label>
+                <input
+                  value={coPhone}
+                  onChange={(e) => setCoPhone(e.target.value)}
+                  required
+                  placeholder="300 1234567"
+                  className={inputClass}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Celular colombiano de 10 dígitos (empieza por 3). Puedes escribirlo con o sin +57.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titular</label>
+                <input
+                  value={coHolder}
+                  onChange={(e) => setCoHolder(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : `Agregar ${form.mode === "nequi" ? "Nequi" : "Daviplata"}`}
+              </button>
+            </form>
+          )}
+
+          {form.mode === "bancolombia" && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                🏦 Recibe tus comisiones en pesos por transferencia a tu cuenta Bancolombia.
+                Exclusivo para afiliados en Colombia.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Tipo de cuenta</label>
+                  <select
+                    value={coAccountType}
+                    onChange={(e) => setCoAccountType(e.target.value)}
+                    className={inputClass}
+                  >
+                    {BANCOLOMBIA_ACCOUNT_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Número de cuenta</label>
+                  <input
+                    value={coAccountNumber}
+                    onChange={(e) => setCoAccountNumber(e.target.value)}
+                    required
+                    placeholder="Ej: 12345678901"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titular</label>
+                <input
+                  value={coHolder}
+                  onChange={(e) => setCoHolder(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Bancolombia"}
+              </button>
+            </form>
+          )}
+
+          {form.mode === "zelle" && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                🇺🇸 Recibe tus comisiones en dólares directo a tu cuenta Zelle. Exclusivo para
+                afiliados en Estados Unidos.
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Email o teléfono de Zelle</label>
+                <input
+                  value={zelleAccount}
+                  onChange={(e) => setZelleAccount(e.target.value)}
+                  required
+                  placeholder="tu@email.com o (555) 123-4567"
+                  className={inputClass}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Debe ser el email o el teléfono con el que estás registrado en Zelle.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titular</label>
+                <input
+                  value={zelleHolder}
+                  onChange={(e) => setZelleHolder(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Zelle"}
               </button>
             </form>
           )}

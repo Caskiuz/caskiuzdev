@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { sendEmail, emailShell } from "@/lib/email";
+import { payoutMethodDetail } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export async function PATCH(
 
     if (status === "PAID" && !txHash) {
       return NextResponse.json(
-        { error: "Para marcar como pagado debes registrar el hash/tranId de la transacción." },
+        { error: "Para marcar como pagado debes registrar la referencia del pago (hash, TranId o comprobante)." },
         { status: 400 }
       );
     }
@@ -78,10 +79,7 @@ export async function PATCH(
     });
 
     // Notificar por email (si Resend está configurado)
-    const methodLabel =
-      withdrawal.payoutMethod.type === "BINANCE_PAY"
-        ? `Binance Pay (${withdrawal.payoutMethod.binanceId || withdrawal.payoutMethod.binanceEmail})`
-        : `${withdrawal.payoutMethod.currency} (${withdrawal.payoutMethod.network})`;
+    const methodLabel = payoutMethodDetail(withdrawal.payoutMethod);
     await sendEmail({
       to: withdrawal.affiliate.email,
       subject:

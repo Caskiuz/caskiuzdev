@@ -15,7 +15,20 @@ export async function GET() {
     where: { affiliateId: affiliate.id },
     include: {
       payoutMethod: {
-        select: { type: true, currency: true, network: true, address: true, binanceId: true, binanceEmail: true, label: true },
+        select: {
+          type: true,
+          currency: true,
+          network: true,
+          address: true,
+          binanceId: true,
+          binanceEmail: true,
+          label: true,
+          pagoMovilPhone: true,
+          pagoMovilBank: true,
+          pagoMovilHolder: true,
+          pagoMovilId: true,
+          accountData: true,
+        },
       },
     },
     orderBy: { createdAt: "desc" },

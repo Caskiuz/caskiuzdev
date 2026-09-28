@@ -63,6 +63,12 @@ const fields = [
     label: "📲 Tasa de cambio USD → Bs (para pagar comisiones por Pago Móvil)",
     placeholder: "38.50",
   },
+  // ─── Nequi / Bancolombia / Daviplata para AFILIADOS colombianos ───
+  {
+    key: "payments_usd_cop_rate",
+    label: "🇨🇴 Tasa de cambio USD → COP (para pagar comisiones por Nequi, Bancolombia o Daviplata)",
+    placeholder: "4000",
+  },
 ];
 
 export default async function PaymentsSettingsPage() {
@@ -71,7 +77,7 @@ export default async function PaymentsSettingsPage() {
     <SettingsEditor
       group="payments"
       title="Métodos de pago"
-      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). La tasa USD → Bs se usa para pagar las comisiones de afiliados venezolanos por Pago Móvil (ellos registran su propio teléfono y banco desde su panel). Los datos que dejes en blanco no se muestran en la web."
+      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Las tasas de cambio se usan para pagar comisiones: USD → Bs por Pago Móvil (afiliados venezolanos) y USD → COP por Nequi, Bancolombia o Daviplata (afiliados colombianos). Los afiliados en EE. UU. cobran por Zelle en dólares. Ellos registran sus propios datos desde su panel. Los datos que dejes en blanco no se muestran en la web."
       fields={fields}
       initialData={config}
     />

@@ -4,9 +4,10 @@
  * Zelle, PayPal, Binance, Western Union y envíos cripto a wallets
  * USDT/USDC/BTC.
  *
- * El Pago Móvil NO es método de clientes: es un método de COBRO de
- * comisiones exclusivo de los afiliados en Venezuela (se configura en
- * el panel del afiliado, sección Retiros).
+ * Los métodos locales NO son de clientes: son métodos de COBRO de
+ * comisiones según el país del afiliado (se registran en el panel del
+ * afiliado, sección Comisiones y retiros): Pago Móvil (Venezuela),
+ * Nequi/Bancolombia/Daviplata (Colombia) y Zelle (Estados Unidos).
  */
 
 export interface PaymentMethodInfo {
@@ -88,5 +89,24 @@ export function formatVes(amount: number): string {
     currency: "VES",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+/**
+ * Tasa de cambio USD → COP configurada por el dueño para pagar las
+ * comisiones de afiliados colombianos por Nequi, Bancolombia o Daviplata.
+ * Retorna null si no está configurada.
+ */
+export function getUsdCopRate(config: Record<string, string>): number | null {
+  const raw = (config["payments_usd_cop_rate"] || "").trim().replace(",", ".");
+  const rate = Number(raw);
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+}
+
+export function formatCop(amount: number): string {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
   }).format(amount);
 }

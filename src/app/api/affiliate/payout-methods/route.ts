@@ -5,11 +5,15 @@ import {
   validateWalletAddress,
   validateBinancePayInput,
   SUPPORTED_CURRENCIES,
+  BANCOLOMBIA_ACCOUNT_TYPES,
+  normalizeBancolombiaAccount,
+  normalizeColombianPhone,
+  normalizeZelleAccount,
 } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
 
-const MAX_METHODS = 5;
+const MAX_METHODS = 6;
 
 export async function GET() {
   const affiliate = await getCurrentAffiliate();
@@ -43,6 +47,7 @@ export async function POST(request: NextRequest) {
       pagoMovilBank,
       pagoMovilHolder,
       pagoMovilId,
+      accountData,
     } = body;
 
     const count = await prisma.payoutMethod.count({ where: { affiliateId: affiliate.id } });
@@ -118,6 +123,110 @@ export async function POST(request: NextRequest) {
           pagoMovilHolder: holder.slice(0, 120),
           pagoMovilId: docId.slice(0, 40),
           label: label ? String(label).slice(0, 40) : "Pago Móvil (Venezuela)",
+          isDefault: count === 0,
+        },
+      });
+      return NextResponse.json({ success: true, method }, { status: 201 });
+    }
+
+    // Métodos locales de Colombia (pesos): Nequi, Daviplata y Bancolombia
+    if (type === "NEQUI" || type === "DAVIPLATA" || type === "BANCOLOMBIA") {
+      if (affiliate.country !== "Colombia") {
+        return NextResponse.json(
+          { error: "Estos métodos son exclusivos para afiliados en Colombia. Si estás en Colombia, actualiza tu país en el perfil." },
+          { status: 403 }
+        );
+      }
+      const holder = String(accountData?.holder || "").trim();
+      if (!holder) {
+        return NextResponse.json(
+          { error: "El titular de la cuenta es obligatorio." },
+          { status: 400 }
+        );
+      }
+
+      let data: Record<string, string>;
+      let defaultLabel: string;
+
+      if (type === "BANCOLOMBIA") {
+        const accountType = String(accountData?.accountType || "").trim();
+        if (!(BANCOLOMBIA_ACCOUNT_TYPES as readonly string[]).includes(accountType)) {
+          return NextResponse.json(
+            { error: "Tipo de cuenta inválido. Elige Ahorros o Corriente." },
+            { status: 400 }
+          );
+        }
+        const accountNumber = normalizeBancolombiaAccount(String(accountData?.accountNumber || ""));
+        if (!accountNumber) {
+          return NextResponse.json(
+            { error: "Número de cuenta Bancolombia inválido (de 8 a 17 dígitos)." },
+            { status: 400 }
+          );
+        }
+        data = { accountType, accountNumber };
+        defaultLabel = "Bancolombia (Colombia)";
+      } else {
+        const phone = normalizeColombianPhone(String(accountData?.phone || ""));
+        if (!phone) {
+          return NextResponse.json(
+            { error: "Teléfono inválido. Debe ser un móvil colombiano de 10 dígitos que empiece por 3." },
+            { status: 400 }
+          );
+        }
+        data = { phone };
+        defaultLabel = type === "NEQUI" ? "Nequi (Colombia)" : "Daviplata (Colombia)";
+      }
+
+      const method = await prisma.payoutMethod.create({
+        data: {
+          affiliateId: affiliate.id,
+          type,
+          binanceId: null,
+          binanceEmail: null,
+          currency: "COP",
+          network: null,
+          address: null,
+          accountData: { ...data, holder: holder.slice(0, 120) },
+          label: label ? String(label).slice(0, 40) : defaultLabel,
+          isDefault: count === 0,
+        },
+      });
+      return NextResponse.json({ success: true, method }, { status: 201 });
+    }
+
+    // Zelle: cobro de comisiones EXCLUSIVO para afiliados en Estados Unidos
+    if (type === "ZELLE") {
+      if (affiliate.country !== "Estados Unidos") {
+        return NextResponse.json(
+          { error: "Zelle es exclusivo para afiliados en Estados Unidos. Si estás en EE. UU., actualiza tu país en el perfil." },
+          { status: 403 }
+        );
+      }
+      const account = normalizeZelleAccount(String(accountData?.account || ""));
+      const holder = String(accountData?.holder || "").trim();
+      if (!account) {
+        return NextResponse.json(
+          { error: "Ingresa un email o un teléfono de EE. UU. (10 dígitos) válido para Zelle." },
+          { status: 400 }
+        );
+      }
+      if (!holder) {
+        return NextResponse.json(
+          { error: "El titular de la cuenta Zelle es obligatorio." },
+          { status: 400 }
+        );
+      }
+      const method = await prisma.payoutMethod.create({
+        data: {
+          affiliateId: affiliate.id,
+          type: "ZELLE",
+          binanceId: null,
+          binanceEmail: null,
+          currency: "USD",
+          network: null,
+          address: null,
+          accountData: { account, holder: holder.slice(0, 120) },
+          label: label ? String(label).slice(0, 40) : "Zelle (Estados Unidos)",
           isDefault: count === 0,
         },
       });

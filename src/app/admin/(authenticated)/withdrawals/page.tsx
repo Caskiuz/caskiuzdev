@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma/client";
 import { serialize } from "@/lib/affiliate-queries";
 import { getSiteConfig } from "@/lib/site-config";
-import { getUsdVesRate } from "@/lib/payments";
+import { getUsdCopRate, getUsdVesRate } from "@/lib/payments";
 import { WithdrawalsManager } from "@/components/admin/withdrawals-manager";
 import { Wallet } from "lucide-react";
 
@@ -21,6 +21,7 @@ export default async function AdminWithdrawalsPage() {
   ]);
 
   const usdVesRate = getUsdVesRate(config);
+  const usdCopRate = getUsdCopRate(config);
   const pending = withdrawals.filter((w) => w.status === "REQUESTED").length;
 
   return (
@@ -32,12 +33,14 @@ export default async function AdminWithdrawalsPage() {
         <p className="text-muted-foreground mt-1">
           Proceso de pago: paga manualmente desde Binance o tu wallet, pega el hash/TranId y
           marca como pagado. Los retiros por Pago Móvil se pagan en bolívares al afiliado
-          venezolano. El afiliado recibe una notificación por email.
+          venezolano; los de Nequi, Daviplata o Bancolombia en pesos colombianos; los de Zelle
+          en dólares. El afiliado recibe una notificación por email.
         </p>
       </div>
 
       <WithdrawalsManager
         usdVesRate={usdVesRate}
+        usdCopRate={usdCopRate}
         withdrawals={serialize(
           withdrawals.map((w) => ({
             id: w.id,
@@ -59,6 +62,7 @@ export default async function AdminWithdrawalsPage() {
               pagoMovilBank: w.payoutMethod.pagoMovilBank,
               pagoMovilHolder: w.payoutMethod.pagoMovilHolder,
               pagoMovilId: w.payoutMethod.pagoMovilId,
+              accountData: w.payoutMethod.accountData,
             },
           }))
         )}

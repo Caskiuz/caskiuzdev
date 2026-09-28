@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Check, X, Wallet } from "lucide-react";
+import { isColombianPayoutType, payoutMethodDetail } from "@/lib/affiliate";
+import { formatCop } from "@/lib/payments";
 
 interface WithdrawalRow {
   id: number;
@@ -23,6 +25,7 @@ interface WithdrawalRow {
     pagoMovilBank?: string | null;
     pagoMovilHolder?: string | null;
     pagoMovilId?: string | null;
+    accountData?: unknown;
   };
 }
 
@@ -43,9 +46,11 @@ const STATUS_LABELS: Record<string, string> = {
 export function WithdrawalsManager({
   withdrawals,
   usdVesRate,
+  usdCopRate,
 }: {
   withdrawals: WithdrawalRow[];
   usdVesRate: number | null;
+  usdCopRate: number | null;
 }) {
   const [items, setItems] = useState(withdrawals);
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -98,16 +103,14 @@ export function WithdrawalsManager({
       ) : (
         <div className="space-y-4">
           {items.map((w) => {
-            const method =
-              w.payoutMethod.type === "BINANCE_PAY"
-                ? `Binance Pay — ${w.payoutMethod.binanceId || w.payoutMethod.binanceEmail}`
-                : w.payoutMethod.type === "PAGO_MOVIL"
-                  ? `Pago Móvil (BOLÍVARES) — ${w.payoutMethod.pagoMovilPhone} · ${w.payoutMethod.pagoMovilBank} · ${w.payoutMethod.pagoMovilHolder} · ${w.payoutMethod.pagoMovilId}`
-                  : `${w.payoutMethod.currency} (${w.payoutMethod.network}) — ${w.payoutMethod.address}`;
+            const method = payoutMethodDetail(w.payoutMethod);
             const pending = w.status === "REQUESTED" || w.status === "APPROVED";
             const isPagoMovil = w.payoutMethod.type === "PAGO_MOVIL";
+            const isColombian = isColombianPayoutType(w.payoutMethod.type);
             const vesEquivalent =
               isPagoMovil && usdVesRate ? w.netAmount * usdVesRate : null;
+            const copEquivalent =
+              isColombian && usdCopRate ? w.netAmount * usdCopRate : null;
 
             return (
               <div key={w.id} className="rounded-2xl border border-border bg-surface p-5">
@@ -132,6 +135,23 @@ export function WithdrawalsManager({
                         ) : (
                           <span className="text-xs font-normal text-muted-foreground">
                             {" "}(configura la tasa Bs/USD en Ajustes → Métodos de pago)
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {isColombian && (
+                      <p className="text-sm font-semibold text-aff-cyan mt-0.5">
+                        🇨🇴 Pagar en pesos colombianos
+                        {copEquivalent ? (
+                          <>
+                            : {formatCop(copEquivalent)}{" "}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              (tasa {usdCopRate?.toLocaleString("es-CO")} COP/USD)
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-normal text-muted-foreground">
+                            {" "}(configura la tasa COP/USD en Ajustes → Métodos de pago)
                           </span>
                         )}
                       </p>
@@ -165,7 +185,7 @@ export function WithdrawalsManager({
                         <input
                           value={txInputs[w.id] ?? ""}
                           onChange={(e) => setTxInputs((prev) => ({ ...prev, [w.id]: e.target.value }))}
-                          placeholder="Hash de transacción / TranId de Binance Pay"
+                          placeholder="Referencia del pago (hash / TranId / comprobante)"
                           className="flex-1 px-3 py-2 rounded-lg bg-surface border border-border text-sm"
                         />
                         <button
@@ -201,7 +221,7 @@ export function WithdrawalsManager({
                         <input
                           value={txInputs[w.id] ?? ""}
                           onChange={(e) => setTxInputs((prev) => ({ ...prev, [w.id]: e.target.value }))}
-                          placeholder="Hash de transacción / TranId"
+                          placeholder="Referencia del pago (hash / TranId / comprobante)"
                           className="flex-1 px-3 py-2 rounded-lg bg-surface border border-border text-sm"
                         />
                         <button

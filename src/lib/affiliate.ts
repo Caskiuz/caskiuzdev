@@ -68,6 +68,14 @@ export const MIN_WITHDRAWAL = 30; // USD
 export const REFERRAL_COOKIE = "cask_ref";
 export const REFERRAL_COOKIE_DAYS = 30;
 
+/** Lista de países del registro y del perfil (el país habilita métodos de pago locales) */
+export const COUNTRIES = [
+  "Argentina", "Bolivia", "Chile", "Colombia", "Costa Rica", "Cuba",
+  "Ecuador", "El Salvador", "España", "Estados Unidos", "Guatemala",
+  "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú",
+  "Puerto Rico", "República Dominicana", "Uruguay", "Venezuela", "Otro",
+] as const;
+
 export function formatUsd(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -159,4 +167,133 @@ export function validateBinancePayInput(type: string, value: string): boolean {
   if (type === "BINANCE_ID") return /^\d{6,12}$/.test(value.trim());
   if (type === "BINANCE_EMAIL") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   return false;
+}
+
+// ─── Métodos de pago locales (Colombia / EE. UU.) ───
+export const COLOMBIA_METHOD_TYPES = ["NEQUI", "DAVIPLATA", "BANCOLOMBIA"] as const;
+
+export function isColombianPayoutType(type: string): boolean {
+  return (COLOMBIA_METHOD_TYPES as readonly string[]).includes(type);
+}
+
+export const BANCOLOMBIA_ACCOUNT_TYPES = ["Ahorros", "Corriente"] as const;
+
+/**
+ * Teléfono móvil colombiano: 10 dígitos que empiezan por 3.
+ * Acepta +57, espacios y guiones; devuelve solo dígitos o null si es inválido.
+ */
+export function normalizeColombianPhone(value: string): string | null {
+  const digits = value.replace(/\D/g, "");
+  const local = digits.length === 12 && digits.startsWith("57") ? digits.slice(2) : digits;
+  return /^3\d{9}$/.test(local) ? local : null;
+}
+
+/** Cuenta bancaria colombiana (Bancolombia): 8–17 dígitos */
+export function normalizeBancolombiaAccount(value: string): string | null {
+  const digits = value.replace(/[\s-]/g, "");
+  return /^\d{8,17}$/.test(digits) ? digits : null;
+}
+
+/**
+ * Cuenta Zelle: email válido o teléfono de EE. UU. (10 dígitos, opcional +1).
+ * Devuelve el valor normalizado (email en minúsculas o teléfono a 10 dígitos).
+ */
+export function normalizeZelleAccount(value: string): string | null {
+  const trimmed = value.trim();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return trimmed.toLowerCase();
+  const digits = trimmed.replace(/\D/g, "");
+  const local = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  return /^\d{10}$/.test(local) ? local : null;
+}
+
+// ─── Formateo único de métodos de pago (panel, admin y emails) ───
+export interface PayoutMethodLike {
+  type: string;
+  currency?: string | null;
+  network?: string | null;
+  address?: string | null;
+  binanceId?: string | null;
+  binanceEmail?: string | null;
+  pagoMovilPhone?: string | null;
+  pagoMovilBank?: string | null;
+  pagoMovilHolder?: string | null;
+  pagoMovilId?: string | null;
+  accountData?: unknown;
+}
+
+export interface LocalAccountData {
+  phone?: string;
+  holder?: string;
+  accountType?: string;
+  accountNumber?: string;
+  account?: string;
+}
+
+export function readAccountData(value: unknown): LocalAccountData {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as LocalAccountData;
+  }
+  return {};
+}
+
+/** Etiqueta corta del método (selector de retiro y listas del panel). */
+export function payoutMethodLabel(m: PayoutMethodLike): string {
+  const acc = readAccountData(m.accountData);
+  switch (m.type) {
+    case "BINANCE_PAY":
+      return `Binance Pay — ${m.binanceId || m.binanceEmail}`;
+    case "PAGO_MOVIL":
+      return `Pago Móvil — ${m.pagoMovilPhone} (${m.pagoMovilBank})`;
+    case "NEQUI":
+      return `Nequi — ${acc.phone}`;
+    case "DAVIPLATA":
+      return `Daviplata — ${acc.phone}`;
+    case "BANCOLOMBIA":
+      return `Bancolombia — ${acc.accountType} ${acc.accountNumber}`;
+    case "ZELLE":
+      return `Zelle — ${acc.account}`;
+    default:
+      return `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`;
+  }
+}
+
+/** Nombre corto del método (historial de retiros, badges). */
+export function payoutMethodShortName(m: PayoutMethodLike): string {
+  switch (m.type) {
+    case "BINANCE_PAY":
+      return "Binance Pay";
+    case "PAGO_MOVIL":
+      return "Pago Móvil (bolívares)";
+    case "NEQUI":
+      return "Nequi (pesos)";
+    case "DAVIPLATA":
+      return "Daviplata (pesos)";
+    case "BANCOLOMBIA":
+      return "Bancolombia (pesos)";
+    case "ZELLE":
+      return "Zelle (USD)";
+    default:
+      return `${m.currency} ${m.network}`;
+  }
+}
+
+/** Detalle completo del método (panel del admin y emails de retiro). */
+export function payoutMethodDetail(m: PayoutMethodLike): string {
+  const acc = readAccountData(m.accountData);
+  switch (m.type) {
+    case "BINANCE_PAY":
+      return `Binance Pay — ${m.binanceId || m.binanceEmail}`;
+    case "PAGO_MOVIL":
+      return `Pago Móvil (BOLÍVARES) — ${m.pagoMovilPhone} · ${m.pagoMovilBank} · ${m.pagoMovilHolder} · ${m.pagoMovilId}`;
+    case "NEQUI":
+      return `Nequi (COP) — ${acc.phone} · ${acc.holder}`;
+    case "DAVIPLATA":
+      return `Daviplata (COP) — ${acc.phone} · ${acc.holder}`;
+    case "BANCOLOMBIA":
+      return `Bancolombia (COP) — Cuenta ${acc.accountType} ${acc.accountNumber} · ${acc.holder}`;
+    case "ZELLE":
+      return `Zelle (USD) — ${acc.account} · ${acc.holder}`;
+    default:
+      return `${m.currency} (${m.network}) — ${m.address}`;
+  }
 }

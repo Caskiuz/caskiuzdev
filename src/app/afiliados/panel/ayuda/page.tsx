@@ -28,7 +28,7 @@ const QUICK_GUIDES = [
     title: "Cómo cobrar",
     steps: [
       "Sube tu documento de identidad en 'Documentos' y espera la aprobación.",
-      "Registra tu método de pago en 'Comisiones y retiros' (Binance Pay, wallet o Pago Móvil).",
+      "Registra tu método de pago en 'Comisiones y retiros' (Binance Pay, wallet, Pago Móvil, Nequi/Bancolombia/Daviplata o Zelle según tu país).",
       "Cuando tengas $30 USD o más disponibles, solicita el retiro.",
       "Recibirás tu pago en un máximo de 7 días hábiles.",
     ],
@@ -250,9 +250,10 @@ export default async function HelpPage() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Métodos de pago: USDT o USDC (6 redes), Bitcoin, Binance Pay y — si estás en
-          Venezuela — bolívares por Pago Móvil. La verificación de identidad (KYC) es
-          requisito para el primer retiro.
+          Métodos de pago: USDT o USDC (6 redes), Bitcoin y Binance Pay para todos; y métodos
+          locales según tu país — Venezuela: bolívares por Pago Móvil; Colombia: pesos por
+          Nequi, Bancolombia o Daviplata; Estados Unidos: Zelle en dólares. La verificación de
+          identidad (KYC) es requisito para el primer retiro.
         </p>
       </SectionCard>
 

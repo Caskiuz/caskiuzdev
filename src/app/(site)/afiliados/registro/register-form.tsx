@@ -5,15 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { COUNTRIES } from "@/lib/affiliate";
 
 type FormState = "idle" | "submitting" | "success" | "error";
-
-const COUNTRIES = [
-  "Argentina", "Bolivia", "Chile", "Colombia", "Costa Rica", "Cuba",
-  "Ecuador", "El Salvador", "España", "Estados Unidos", "Guatemala",
-  "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú",
-  "Puerto Rico", "República Dominicana", "Uruguay", "Venezuela", "Otro",
-];
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all";
