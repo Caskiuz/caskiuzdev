@@ -16,6 +16,8 @@ interface Props {
   description?: string;
   fields: Field[];
   initialData: Record<string, string>;
+  /** Contenido adicional (server-rendered) entre la descripción y los campos */
+  beforeFields?: React.ReactNode;
 }
 
 export function SettingsEditor({
@@ -24,6 +26,7 @@ export function SettingsEditor({
   description,
   fields,
   initialData,
+  beforeFields,
 }: Props) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
@@ -82,6 +85,8 @@ export function SettingsEditor({
           <p className="mt-2 text-muted-foreground">{description}</p>
         )}
       </div>
+
+      {beforeFields && <div className="mb-6">{beforeFields}</div>}
 
       <div className="glass-card p-6 space-y-5">
         {fields.map((field) => (

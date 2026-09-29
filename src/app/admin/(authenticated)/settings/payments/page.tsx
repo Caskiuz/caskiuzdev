@@ -1,5 +1,7 @@
 import { getSiteConfig } from "@/lib/site-config";
+import { ensureFreshRates } from "@/lib/exchange-rates";
 import { SettingsEditor } from "@/components/admin/settings-editor";
+import { AutoRatesPanel } from "@/components/admin/auto-rates-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -57,29 +59,20 @@ const fields = [
     type: "textarea" as const,
     placeholder: "USDT (ERC20): 0x…\nUSDC (Solana): …",
   },
-  // ─── Pago Móvil para AFILIADOS venezolanos ───
-  {
-    key: "payments_usd_ves_rate",
-    label: "📲 Tasa de cambio USD → Bs (para pagar comisiones por Pago Móvil)",
-    placeholder: "38.50",
-  },
-  // ─── Nequi / Bancolombia / Daviplata para AFILIADOS colombianos ───
-  {
-    key: "payments_usd_cop_rate",
-    label: "🇨🇴 Tasa de cambio USD → COP (para pagar comisiones por Nequi, Bancolombia o Daviplata)",
-    placeholder: "4000",
-  },
 ];
 
 export default async function PaymentsSettingsPage() {
+  // Las tasas USD → Bs y USD → COP se actualizan solas (cron + refresco al entrar).
+  await ensureFreshRates();
   const config = await getSiteConfig();
   return (
     <SettingsEditor
       group="payments"
       title="Métodos de pago"
-      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Las tasas de cambio se usan para pagar comisiones: USD → Bs por Pago Móvil (afiliados venezolanos) y USD → COP por Nequi, Bancolombia o Daviplata (afiliados colombianos). Los afiliados en EE. UU. cobran por Zelle en dólares. Ellos registran sus propios datos desde su panel. Los datos que dejes en blanco no se muestran en la web."
+      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Las tasas de cambio para pagar comisiones (USD → Bs paralelo y USD → COP TRM) se actualizan automáticamente desde fuentes públicas; no hay que configurarlas. Los afiliados registran sus propios datos desde su panel. Los datos que dejes en blanco no se muestran en la web."
       fields={fields}
       initialData={config}
+      beforeFields={<AutoRatesPanel config={config} />}
     />
   );
 }

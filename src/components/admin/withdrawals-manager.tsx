@@ -47,10 +47,15 @@ export function WithdrawalsManager({
   withdrawals,
   usdVesRate,
   usdCopRate,
+  ratesMeta,
 }: {
   withdrawals: WithdrawalRow[];
   usdVesRate: number | null;
   usdCopRate: number | null;
+  ratesMeta?: {
+    ves: { source: string | null; dateLabel: string | null };
+    cop: { source: string | null; dateLabel: string | null };
+  };
 }) {
   const [items, setItems] = useState(withdrawals);
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -129,12 +134,14 @@ export function WithdrawalsManager({
                           <>
                             : ≈ Bs {vesEquivalent.toLocaleString("es-VE", { maximumFractionDigits: 2 })}{" "}
                             <span className="text-xs font-normal text-muted-foreground">
-                              (tasa {usdVesRate?.toLocaleString("es-VE")} Bs/USD)
+                              (tasa {usdVesRate?.toLocaleString("es-VE")} Bs/USD
+                              {ratesMeta?.ves.source ? ` · ${ratesMeta.ves.source}` : ""}
+                              {ratesMeta?.ves.dateLabel ? ` · ${ratesMeta.ves.dateLabel}` : ""})
                             </span>
                           </>
                         ) : (
                           <span className="text-xs font-normal text-muted-foreground">
-                            {" "}(configura la tasa Bs/USD en Ajustes → Métodos de pago)
+                            {" "}(tasa no disponible aún: se reintenta automáticamente)
                           </span>
                         )}
                       </p>
@@ -146,12 +153,14 @@ export function WithdrawalsManager({
                           <>
                             : {formatCop(copEquivalent)}{" "}
                             <span className="text-xs font-normal text-muted-foreground">
-                              (tasa {usdCopRate?.toLocaleString("es-CO")} COP/USD)
+                              (tasa {usdCopRate?.toLocaleString("es-CO")} COP/USD
+                              {ratesMeta?.cop.source ? ` · ${ratesMeta.cop.source}` : ""}
+                              {ratesMeta?.cop.dateLabel ? ` · ${ratesMeta.cop.dateLabel}` : ""})
                             </span>
                           </>
                         ) : (
                           <span className="text-xs font-normal text-muted-foreground">
-                            {" "}(configura la tasa COP/USD en Ajustes → Métodos de pago)
+                            {" "}(tasa no disponible aún: se reintenta automáticamente)
                           </span>
                         )}
                       </p>
