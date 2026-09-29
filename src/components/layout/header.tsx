@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { cn } from "@/lib/utils";
+
+const emptySubscribe = () => () => {};
 
 const navLinks = [
   { href: "/#home", label: "Inicio" },
@@ -19,14 +21,14 @@ const navLinks = [
   { href: "/#contact", label: "Contacto" },
 ];
 
-export function Header() {
+export function Header({ sessionSlot }: { sessionSlot?: React.ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  // Evita el parpadeo de hidratación del toggle de tema sin setState en efecto
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   useEffect(() => {
-    setMounted(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -46,10 +48,12 @@ export function Header() {
           {/* Logo */}
           <Link
             href="/#home"
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-2.5 group shrink-0"
           >
             <BrandLogo size={34} />
-            <span className="font-bold text-lg tracking-tight">
+            {/* El texto se oculta en móviles muy pequeños para que las
+                píldoras de sesión y los botones quepan en la barra */}
+            <span className="font-bold text-lg tracking-tight hidden sm:inline">
               <span className="gradient-text">Caskiuz</span>
             </span>
           </Link>
@@ -69,6 +73,7 @@ export function Header() {
 
           {/* Desktop actions */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
+            {sessionSlot}
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -92,6 +97,7 @@ export function Header() {
 
           {/* Mobile menu button */}
           <div className="flex lg:hidden items-center gap-2">
+            {sessionSlot}
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
