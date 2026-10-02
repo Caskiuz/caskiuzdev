@@ -2,6 +2,7 @@ import { requireAffiliate } from "@/lib/affiliate-auth";
 import { prisma } from "@/lib/prisma/client";
 import { affiliateRef } from "@/lib/affiliate";
 import { LinkBuilder } from "@/components/affiliates/panel/link-builder";
+import { SectionGuide } from "@/components/affiliates/panel/section-guide";
 
 export default async function LinksPage() {
   const affiliate = await requireAffiliate();
@@ -49,6 +50,19 @@ export default async function LinksPage() {
           )}
         </p>
       </div>
+
+      <SectionGuide
+        pageKey="enlaces"
+        title="Aquí está tu dinero: todo empieza con tu link"
+        intro="Tu link único es lo que te acredita cada clic y cada venta. No necesitas vender nada: solo compartirlo."
+        steps={[
+          "Cópialo con el botón grande de arriba.",
+          "Agrega un sub-ID por red social (ej: instagram) para medir cada campaña.",
+          "Pégalo en tu bio, estados, grupos y chats.",
+          "Cada clic aparece aquí en tiempo real, y la venta queda a tu nombre.",
+        ]}
+        helpHref="/afiliados/panel/ayuda#tu-link"
+      />
 
       <LinkBuilder referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)} />
 

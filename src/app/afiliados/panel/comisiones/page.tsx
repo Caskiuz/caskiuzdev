@@ -9,6 +9,7 @@ import { formatUsd, MIN_WITHDRAWAL } from "@/lib/affiliate";
 import { CheckCircle2, Wallet, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { WithdrawalsClient } from "@/components/affiliates/panel/withdrawals-client";
+import { SectionGuide } from "@/components/affiliates/panel/section-guide";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,18 @@ export default async function CommissionsPage() {
           </a>
         )}
       </div>
+
+      <SectionGuide
+        pageKey="comisiones"
+        title="Aquí cobras tu dinero"
+        intro="Tus comisiones llegan solas cuando el cliente paga. Para poder retirarlas solo necesitas dos cosas."
+        steps={[
+          "Verifica tu identidad en Documentos (solo la primera vez).",
+          "Registra tu método de pago: cripto, Pago Móvil, Nequi, Bancolombia, Daviplata o Zelle.",
+          "Cuando tengas $30 USD o más disponibles, pulsa «Solicitar retiro».",
+        ]}
+        helpHref="/afiliados/panel/ayuda#cobrar"
+      />
 
       {/* Resumen */}
       <div className="grid sm:grid-cols-3 gap-4">

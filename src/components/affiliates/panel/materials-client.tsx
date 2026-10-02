@@ -93,11 +93,31 @@ export function MaterialsClient({ referralCode }: { referralCode: string }) {
 
   return (
     <div className="space-y-10">
+      {/* Accesos rápidos por canal */}
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-semibold text-muted-foreground self-center mr-1">
+          ¿Dónde quieres promocionar?
+        </p>
+        {MATERIAL_SECTIONS.map((section) => (
+          <button
+            key={section.id}
+            onClick={() =>
+              document
+                .getElementById(`mat-${section.id}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            className="px-3 py-1.5 text-xs rounded-full border border-border hover:bg-surface-hover hover:text-aff-cyan transition-colors"
+          >
+            {section.title}
+          </button>
+        ))}
+      </div>
+
       {/* Materiales por canal */}
       {MATERIAL_SECTIONS.map((section) => {
         const Icon = SECTION_ICONS[section.icon] ?? MessageCircle;
         return (
-          <section key={section.id}>
+          <section key={section.id} id={`mat-${section.id}`} className="scroll-mt-24">
             <div className="flex items-center gap-2 mb-1">
               <Icon className="w-5 h-5 text-aff-cyan" />
               <h2 className="text-lg font-bold">{section.title}</h2>

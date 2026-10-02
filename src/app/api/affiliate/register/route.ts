@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { hashPassword } from "@/lib/password";
 import { generateReferralCode, slugifyName, affiliateRef } from "@/lib/affiliate";
-import { createPurposeToken } from "@/lib/affiliate-auth";
+import { createPurposeToken, setAffiliateCookie } from "@/lib/affiliate-auth";
 import { sendEmail, emailShell } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Sesión directa: el usuario entra al panel sin pasar por el login
+    await setAffiliateCookie(affiliate.id);
+
     // Email de bienvenida + verificación (si Resend está configurado)
     const ref = affiliateRef(affiliate.slug, affiliate.referralCode);
     const verifyToken = await createPurposeToken(affiliate.email, "verify");
@@ -92,10 +95,17 @@ export async function POST(request: NextRequest) {
       subject: "¡Bienvenido a Caskiuz Affiliates! 🚀",
       html: emailShell(`
         <h2 style="margin:0 0 12px;">¡Bienvenido, ${escapeHtml(affiliate.name)}!</h2>
-        <p>Tu cuenta de afiliado fue creada correctamente.</p>
+        <p>Tu cuenta de afiliado fue creada correctamente. Ya puedes empezar a ganar.</p>
         <p><strong>Tu código de referido:</strong> <code style="background:#1c1c28;padding:4px 8px;border-radius:6px;">${affiliate.referralCode}</code></p>
         <p>Tu link único: <a href="https://caskiuz.vercel.app/r/${ref}" style="color:#38bdf8;">caskiuz.vercel.app/r/${ref}</a></p>
-        <p>Confirma tu email aquí: <a href="${verifyUrl}" style="color:#38bdf8;">Verificar email</a></p>
+        <h3 style="margin:24px 0 8px;">Tus 3 primeros pasos</h3>
+        <ol style="margin:0 0 8px;padding-left:20px;line-height:1.8;">
+          <li><strong>Sube tu documento de identidad</strong> en tu panel (sección Documentos) para habilitar los retiros.</li>
+          <li><strong>Registra tu método de pago</strong> en Comisiones y retiros (cripto, Pago Móvil, Nequi, Zelle…).</li>
+          <li><strong>Comparte tu link</strong> en tus redes y chats: cada venta que llegue por él te deja hasta 40% de comisión.</li>
+        </ol>
+        <p>Entra ya a tu panel: <a href="https://caskiuz.vercel.app/afiliados/panel" style="display:inline-block;margin-top:8px;padding:10px 18px;background:#0ea5e9;color:#ffffff;border-radius:8px;text-decoration:none;">Ir a mi panel</a></p>
+        <p style="margin-top:16px;">Confirma tu email aquí: <a href="${verifyUrl}" style="color:#38bdf8;">Verificar email</a></p>
       `),
     });
 

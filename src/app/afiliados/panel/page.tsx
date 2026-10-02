@@ -5,13 +5,76 @@ import { getAffiliateStats } from "@/lib/affiliate-queries";
 import { getTierInfo, nextTier, formatUsd, MIN_WITHDRAWAL } from "@/lib/affiliate";
 import { getSiteConfigByGroup } from "@/lib/site-config";
 import { TELEGRAM_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
+import { prisma } from "@/lib/prisma/client";
+import { OnboardingChecklist } from "@/components/affiliates/panel/onboarding-checklist";
+import { NextStepCard, type NextStepData } from "@/components/affiliates/panel/next-step-card";
+import { ReopenOnboarding } from "@/components/affiliates/panel/onboarding-reopen";
 import { ClicksChart } from "@/components/affiliates/panel/clicks-chart";
 
-export default async function AffiliateDashboardPage() {
+export default async function AffiliateDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ nuevo?: string }>;
+}) {
   const affiliate = await requireAffiliate();
   const stats = await getAffiliateStats(affiliate.id);
   const tier = getTierInfo(affiliate.tier);
   const upcoming = nextTier(affiliate.lifetimeRevenue);
+
+  // Estado de la Ruta de inicio (pasos auto-detectados)
+  const [kycDoc, payoutCount] = await Promise.all([
+    prisma.affiliateDocument.findFirst({
+      where: { affiliateId: affiliate.id, type: "ID", status: "APPROVED" },
+      select: { id: true },
+    }),
+    prisma.payoutMethod.count({ where: { affiliateId: affiliate.id } }),
+  ]);
+  const isNew = (await searchParams).nuevo === "1";
+  const ref = affiliate.slug || affiliate.referralCode;
+  const referralLink = `https://caskiuz.vercel.app/r/${ref}`;
+
+  let nextStep: NextStepData;
+  if (!kycDoc) {
+    nextStep = {
+      title: "Sube tu documento de identidad",
+      text: "Es el único requisito para cobrar. Toma 2 minutos y se aprueba en un máximo de 72 horas.",
+      cta: "Ir a Documentos",
+      href: "/afiliados/panel/documentos",
+      copy: false,
+    };
+  } else if (payoutCount === 0) {
+    nextStep = {
+      title: "Registra tu método de pago",
+      text: "Elige cómo quieres cobrar: cripto, Pago Móvil, Nequi, Bancolombia, Daviplata o Zelle según tu país.",
+      cta: "Registrar método",
+      href: "/afiliados/panel/comisiones",
+      copy: false,
+    };
+  } else if (stats.totalClicks === 0) {
+    nextStep = {
+      title: "Comparte tu link único",
+      text: "Pégalo en tu bio, estados y chats. Cada clic queda registrado en tu panel.",
+      cta: "Copiar mi link",
+      href: "/afiliados/panel/enlaces",
+      copy: true,
+    };
+  } else if (stats.balanceAvailable < MIN_WITHDRAWAL) {
+    nextStep = {
+      title: "Consigue tu primera venta",
+      text: "Usa los materiales listos para promocionar: copia, pega y comparte.",
+      cta: "Ver materiales",
+      href: "/afiliados/panel/materiales",
+      copy: false,
+    };
+  } else {
+    nextStep = {
+      title: "¡Puedes cobrar!",
+      text: `Tienes ${formatUsd(stats.balanceAvailable)} disponibles. Solicita tu retiro cuando quieras.`,
+      cta: "Solicitar retiro",
+      href: "/afiliados/panel/comisiones",
+      copy: false,
+    };
+  }
 
   const groups = await getSiteConfigByGroup();
   const affiliateConfig = groups["affiliates"] ?? {};
@@ -68,6 +131,29 @@ export default async function AffiliateDashboardPage() {
         <h1 className="text-2xl sm:text-3xl font-bold">¡Hola, {affiliate.name.split(" ")[0]}! 👋</h1>
         <p className="text-muted-foreground mt-1">Este es el resumen de tu actividad como afiliado.</p>
       </div>
+
+      {isNew && (
+        <div className="flex items-start gap-2 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-sm text-green-500">
+          🎉 ¡Bienvenido a la red! Completa tu Ruta de inicio y en minutos estarás
+          compartiendo tu link para ganar tus primeras comisiones.
+        </div>
+      )}
+
+      {affiliate.onboardingCompletedAt ? (
+        <div className="flex justify-end">
+          <ReopenOnboarding />
+        </div>
+      ) : (
+        <OnboardingChecklist
+          name={affiliate.name}
+          referralLink={referralLink}
+          kycApproved={!!kycDoc}
+          hasPayoutMethod={payoutCount > 0}
+          hasClicks={stats.totalClicks > 0}
+        />
+      )}
+
+      <NextStepCard step={nextStep} referralLink={referralLink} />
 
       {/* Nivel actual y progreso */}
       <div className="metal-border rounded-2xl p-6">

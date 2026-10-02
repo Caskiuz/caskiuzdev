@@ -5,6 +5,7 @@ import { getTierInfo, formatUsd } from "@/lib/affiliate";
 import { getClientPaymentMethods } from "@/lib/payments";
 import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard, Globe } from "lucide-react";
 import Link from "next/link";
+import { SectionGuide } from "@/components/affiliates/panel/section-guide";
 
 const METHOD_ICONS: Record<string, typeof Smartphone> = {
   "zelle": Landmark,
@@ -46,6 +47,18 @@ export default async function CatalogPage() {
           sobre el monto cobrado. Sube de nivel con más ventas referidas.
         </p>
       </div>
+
+      <SectionGuide
+        pageKey="catalogo"
+        title="Conoce qué vendes y cuánto ganas"
+        intro="Aquí están los servicios que promocionas y la comisión que te deja cada uno según tu nivel."
+        steps={[
+          "Mira los servicios y tu comisión estimada en cada tarjeta.",
+          "Crea un link directo al servicio que más le sirva a tu audiencia.",
+          "Compártelo: si tu cliente paga, la comisión es tuya.",
+        ]}
+        helpHref="/afiliados/panel/ayuda#catalogo"
+      />
 
       {/* Métodos de pago que aceptamos de tus clientes */}
       <div className="metal-card rounded-2xl p-5">

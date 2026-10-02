@@ -3,6 +3,7 @@ import { requireAffiliate } from "@/lib/affiliate-auth";
 import { prisma } from "@/lib/prisma/client";
 import { serialize } from "@/lib/affiliate-queries";
 import { Users, ShoppingCart, ArrowRight, UserPlus } from "lucide-react";
+import { SectionGuide } from "@/components/affiliates/panel/section-guide";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,18 @@ export default async function LeadsPage() {
           <ArrowRight className="w-4 h-4" /> Obtener más leads
         </Link>
       </div>
+
+      <SectionGuide
+        pageKey="leads"
+        title="Aquí llegan tus posibles clientes"
+        intro="Cada persona que escribe por tu link (formulario, WhatsApp o chat de la web) queda registrada aquí a tu nombre."
+        steps={[
+          "Comparte tu link en tus redes y chats.",
+          "Quien escriba por tu link o por WhatsApp/web aparece aquí automáticamente.",
+          "Si te escriben por otro canal (DM, teléfono), pídeles que mencionen tu código de referido.",
+        ]}
+        helpHref="/afiliados/panel/ayuda#recorrido"
+      />
 
       {leads.length === 0 ? (
         <div className="metal-card rounded-2xl p-10 text-center">

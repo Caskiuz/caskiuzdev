@@ -15,6 +15,8 @@ import {
   LifeBuoy,
   Info,
   Video,
+  Store,
+  ShieldCheck,
 } from "lucide-react";
 
 const QUICK_GUIDES = [
@@ -64,14 +66,16 @@ const COMMISSION_STATES = [
 function SectionCard({
   icon: Icon,
   title,
+  id,
   children,
 }: {
   icon: typeof BookOpen;
   title: string;
+  id?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="metal-card rounded-2xl p-6">
+    <section id={id} className="metal-card rounded-2xl p-6 scroll-mt-24">
       <h2 className="font-bold mb-4 flex items-center gap-2">
         <Icon className="w-5 h-5 text-aff-cyan" /> {title}
       </h2>
@@ -137,7 +141,7 @@ export default async function HelpPage() {
       <h2 className="text-xl font-bold pt-2">Cómo funciona todo, paso a paso</h2>
 
       {/* 1. Tu link */}
-      <SectionCard icon={Link2} title="1. Tu link único">
+      <SectionCard icon={Link2} title="1. Tu link único" id="tu-link">
         <p className="text-sm text-muted-foreground leading-relaxed">
           Este es tu link personal. Todo lo que pase después de un clic en él queda
           registrado a tu nombre:
@@ -185,7 +189,7 @@ export default async function HelpPage() {
       </SectionCard>
 
       {/* 3. Recorrido del cliente */}
-      <SectionCard icon={MousePointerClick} title="3. El recorrido de tu cliente (cómo se te acredita)">
+      <SectionCard icon={MousePointerClick} title="3. El recorrido de tu cliente (cómo se te acredita)" id="recorrido">
         <p className="text-sm text-muted-foreground leading-relaxed">
           Hay tres caminos para que una venta quede a tu nombre. Los dos primeros funcionan
           solos (el sistema hace todo); el tercero depende de que tu cliente mencione tu código:
@@ -231,7 +235,7 @@ export default async function HelpPage() {
       </SectionCard>
 
       {/* 5. Cobro */}
-      <SectionCard icon={Wallet} title="5. Cómo y cuándo cobras">
+      <SectionCard icon={Wallet} title="5. Cómo y cuándo cobras" id="cobrar">
         <p className="text-sm text-muted-foreground leading-relaxed">
           Tu comisión se calcula <strong className="text-foreground">solo sobre dinero
           realmente cobrado</strong> (nadie pierde por proyectos que no se pagan) y queda{" "}
@@ -290,7 +294,7 @@ export default async function HelpPage() {
       </SectionCard>
 
       {/* 7. Panel */}
-      <SectionCard icon={LayoutDashboard} title="7. Qué ves en tu panel">
+      <SectionCard icon={LayoutDashboard} title="7. Qué ves en tu panel" id="panel">
         <div className="space-y-2">
           {[
             ["Dashboard", "Clics, leads, ventas, conversión, EPC, saldo disponible y en retiro, y tu progreso al siguiente nivel."],
@@ -315,6 +319,34 @@ export default async function HelpPage() {
           Hoy las novedades de tus ventas se ven directamente en el panel. Los emails
           automáticos se envían cuando aprueban tu KYC, cuando cambia el estado de un
           retiro y en las respuestas de soporte.
+        </p>
+      </SectionCard>
+
+      {/* Catálogo */}
+      <SectionCard icon={Store} title="Catálogo de ofertas" id="catalogo">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          En «Catálogo» ves los servicios que puedes promocionar y, en cada tarjeta,
+          cuánto ganarías según tu nivel. Cada servicio tiene un botón para crear un
+          link directo: úsalo cuando quieras recomendar algo específico.
+        </p>
+      </SectionCard>
+
+      {/* Materiales */}
+      <SectionCard icon={Megaphone} title="Materiales promocionales" id="materiales">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          En «Materiales» tienes textos listos para WhatsApp, Instagram, TikTok,
+          email y más — ya con tu link incluido. Copia, pega y comparte. No escribas
+          precios ni promesas: tu trabajo es generar interés y Caskiuz cierra la venta.
+        </p>
+      </SectionCard>
+
+      {/* Documentos */}
+      <SectionCard icon={ShieldCheck} title="Documentos (KYC)" id="documentos">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Para habilitar los retiros debes subir una foto clara de tu cédula,
+          pasaporte o DNI en «Documentos». Se usa solo para verificación y el equipo
+          lo aprueba en un máximo de 72 horas. Sin este paso aprobado no se procesa
+          tu primer retiro.
         </p>
       </SectionCard>
 

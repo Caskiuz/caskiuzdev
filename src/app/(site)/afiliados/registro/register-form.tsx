@@ -55,7 +55,10 @@ export function RegisterForm() {
       }
       setReferralCode(json.slug || json.referralCode || "");
       setState("success");
-      setTimeout(() => router.push(`/afiliados/login?registrado=1`), 2200);
+      setTimeout(() => {
+        router.push(`/afiliados/panel?nuevo=1`);
+        router.refresh();
+      }, 2200);
     } catch {
       setError("Error de conexión. Inténtalo de nuevo.");
       setState("error");
@@ -77,7 +80,7 @@ export function RegisterForm() {
             caskiuz.vercel.app/r/{referralCode}
           </code>
         </p>
-        <p className="text-sm text-muted-foreground">Redirigiendo al inicio de sesión…</p>
+        <p className="text-sm text-muted-foreground">Te estamos llevando a tu panel…</p>
       </motion.div>
     );
   }
