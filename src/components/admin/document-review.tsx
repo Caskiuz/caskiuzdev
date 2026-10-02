@@ -102,16 +102,17 @@ export function DocumentReview({ documents }: { documents: DocItem[] }) {
               </span>
             </div>
 
-            {doc.status === "PENDING" && (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => view(doc.id)}
-                    disabled={busyId === doc.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover disabled:opacity-60"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Ver archivo
-                  </button>
+            {/* Ver archivo está disponible siempre (también para aprobados y rechazados) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => view(doc.id)}
+                disabled={busyId === doc.id}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover disabled:opacity-60"
+              >
+                <Eye className="w-3.5 h-3.5" /> Ver archivo
+              </button>
+              {doc.status === "PENDING" && (
+                <>
                   <button
                     onClick={() => review(doc.id, "APPROVED")}
                     disabled={busyId === doc.id}
@@ -127,14 +128,17 @@ export function DocumentReview({ documents }: { documents: DocItem[] }) {
                   >
                     <X className="w-3.5 h-3.5" /> Rechazar
                   </button>
-                </div>
-                <input
-                  value={notes[doc.id] ?? ""}
-                  onChange={(e) => setNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
-                  placeholder="Nota para el afiliado (opcional, ej: 'la imagen está borrosa')"
-                  className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-sm"
-                />
-              </>
+                </>
+              )}
+            </div>
+
+            {doc.status === "PENDING" && (
+              <input
+                value={notes[doc.id] ?? ""}
+                onChange={(e) => setNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
+                placeholder="Nota para el afiliado (opcional, ej: 'la imagen está borrosa')"
+                className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-sm"
+              />
             )}
           </div>
         ))
