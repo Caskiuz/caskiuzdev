@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { MousePointerClick, Users, ShoppingBag, TrendingUp, Wallet, Clock, ArrowRight } from "lucide-react";
+import { MousePointerClick, Users, ShoppingBag, TrendingUp, Wallet, Clock, ArrowRight, Send, Video, Download } from "lucide-react";
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { getAffiliateStats } from "@/lib/affiliate-queries";
 import { getTierInfo, nextTier, formatUsd, MIN_WITHDRAWAL } from "@/lib/affiliate";
+import { getSiteConfigByGroup } from "@/lib/site-config";
+import { TELEGRAM_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
 import { ClicksChart } from "@/components/affiliates/panel/clicks-chart";
 
 export default async function AffiliateDashboardPage() {
@@ -10,6 +12,11 @@ export default async function AffiliateDashboardPage() {
   const stats = await getAffiliateStats(affiliate.id);
   const tier = getTierInfo(affiliate.tier);
   const upcoming = nextTier(affiliate.lifetimeRevenue);
+
+  const groups = await getSiteConfigByGroup();
+  const affiliateConfig = groups["affiliates"] ?? {};
+  const telegramUrl = affiliateConfig["affiliates_telegram_url"] || TELEGRAM_GROUP_URL;
+  const zoomUrl = affiliateConfig["affiliates_zoom_url"] || "";
 
   const progressPct = upcoming
     ? Math.min(100, (affiliate.lifetimeRevenue / upcoming.minRevenue) * 100)
@@ -181,6 +188,92 @@ export default async function AffiliateDashboardPage() {
             <p className="text-sm text-muted-foreground mt-1">{quick.text}</p>
           </Link>
         ))}
+      </div>
+
+      {/* Comunidad y videoconferencias */}
+      <div className="metal-card rounded-2xl p-6">
+        <h2 className="font-bold mb-4 flex items-center gap-2">
+          <Send className="w-5 h-5 text-aff-cyan" /> Comunidad y videoconferencias
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a
+            href={telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-card rounded-2xl p-5 hover:bg-surface-hover transition-colors group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-aff-blue/10 border border-aff-blue/20 flex items-center justify-center mb-3">
+              <Send className="w-5 h-5 text-aff-cyan" />
+            </div>
+            <p className="font-bold group-hover:text-aff-cyan transition-colors">Grupo de Telegram</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Únete a la red: anuncios y fechas de las clases. Funciona en iPhone, Android y escritorio.
+            </p>
+          </a>
+
+          <div className="glass-card rounded-2xl p-5">
+            <div className="w-11 h-11 rounded-xl bg-aff-blue/10 border border-aff-blue/20 flex items-center justify-center mb-3">
+              <Video className="w-5 h-5 text-aff-cyan" />
+            </div>
+            <p className="font-bold">Descargar Zoom</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Las clases y videoconferencias se hacen por Zoom. Descárgala gratis:
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href={ZOOM_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" /> Computadora
+              </a>
+              <a
+                href={ZOOM_APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+              >
+                iPhone / iPad
+              </a>
+              <a
+                href={ZOOM_PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+              >
+                Android
+              </a>
+            </div>
+          </div>
+
+          {zoomUrl ? (
+            <a
+              href={zoomUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-card rounded-2xl p-5 hover:bg-surface-hover transition-colors group"
+            >
+              <div className="w-11 h-11 rounded-xl bg-aff-blue/10 border border-aff-blue/20 flex items-center justify-center mb-3">
+                <Video className="w-5 h-5 text-aff-cyan" />
+              </div>
+              <p className="font-bold group-hover:text-aff-cyan transition-colors">Sala de videoconferencias</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Entra a la sala de Zoom de la red para las clases en vivo.
+              </p>
+            </a>
+          ) : (
+            <div className="glass-card rounded-2xl p-5 opacity-70">
+              <div className="w-11 h-11 rounded-xl bg-aff-blue/10 border border-aff-blue/20 flex items-center justify-center mb-3">
+                <Video className="w-5 h-5 text-aff-cyan" />
+              </div>
+              <p className="font-bold">Sala de videoconferencias</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Próximamente: aquí y en el grupo de Telegram publicaremos el enlace de la sala.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

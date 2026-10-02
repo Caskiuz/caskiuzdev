@@ -178,6 +178,8 @@ async function main() {
     { key: "affiliates_hero_subtitle", value: "Únete gratis, comparte tu link único y cobra en USDT, USDC, BTC o Binance Pay por cada venta que refieras.", group: "affiliates" },
     { key: "affiliates_min_withdrawal", value: "30", group: "affiliates" },
     { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
+    { key: "affiliates_telegram_url", value: "https://t.me/+WSCZuhkg-RA4NjNh", group: "affiliates" },
+    { key: "affiliates_zoom_url", value: "", group: "affiliates" },
 
     // ─── MÉTODOS DE PAGO (clientes — configurables en el admin) ───
     { key: "payments_zelle", value: "", group: "payments" },

@@ -11,6 +11,7 @@ import {
   Wallet,
   Headphones,
   CreditCard,
+  Send,
 } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 
@@ -97,6 +98,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             href="/admin/settings/social"
             icon={<Settings className="w-5 h-5" />}
             label="Redes Sociales"
+          />
+          <SidebarLink
+            href="/admin/settings/affiliates"
+            icon={<Send className="w-5 h-5" />}
+            label="Red de Afiliados"
           />
         </nav>
 

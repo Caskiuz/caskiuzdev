@@ -17,7 +17,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
-import { MessageCircle, Clock, ExternalLink } from "lucide-react";
+import { MessageCircle, Clock, ExternalLink, type LucideIcon } from "lucide-react";
 import {
   type ServiceItem,
   defaultServices,
@@ -27,7 +27,7 @@ import {
 import { getClientPaymentMethods } from "@/lib/payments";
 import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<string, LucideIcon> = {
   Globe, Smartphone, Server, Zap, Rocket, ShoppingCart, BarChart3, Bot, Headset,
   Search, MapPin,
 };

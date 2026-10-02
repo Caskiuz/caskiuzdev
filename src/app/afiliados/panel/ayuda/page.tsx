@@ -1,5 +1,7 @@
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { AFFILIATE_FAQS } from "@/lib/affiliate-content";
+import { getSiteConfigByGroup } from "@/lib/site-config";
+import { TELEGRAM_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
 import Link from "next/link";
 import {
   BookOpen,
@@ -12,6 +14,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   Info,
+  Video,
 } from "lucide-react";
 
 const QUICK_GUIDES = [
@@ -97,6 +100,11 @@ export default async function HelpPage() {
   const baseUrl = "https://caskiuz.vercel.app";
   const ref = affiliate.slug || affiliate.referralCode;
   const link = `${baseUrl}/r/${ref}`;
+
+  const groups = await getSiteConfigByGroup();
+  const affiliateConfig = groups["affiliates"] ?? {};
+  const telegramUrl = affiliateConfig["affiliates_telegram_url"] || TELEGRAM_GROUP_URL;
+  const zoomUrl = affiliateConfig["affiliates_zoom_url"] || "";
 
   const campaignExamples = [
     { channel: "Instagram", url: `${baseUrl}/r/${ref}?subid=instagram` },
@@ -308,6 +316,70 @@ export default async function HelpPage() {
           automáticos se envían cuando aprueban tu KYC, cuando cambia el estado de un
           retiro y en las respuestas de soporte.
         </p>
+      </SectionCard>
+
+      {/* Videoconferencias y clases */}
+      <SectionCard icon={Video} title="Videoconferencias y clases (Zoom)">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Las clases de las guías del trabajo y las videoconferencias de la red se hacen por{" "}
+          <strong className="text-foreground">Zoom</strong>. Descarga la app gratis — funciona
+          en iPhone, Android y computadora:
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={ZOOM_DOWNLOAD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+          >
+            💻 Computadora
+          </a>
+          <a
+            href={ZOOM_APP_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+          >
+            📱 iPhone / iPad
+          </a>
+          <a
+            href={ZOOM_PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+          >
+            🤖 Android
+          </a>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Únete al{" "}
+          <a
+            href={telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-aff-cyan hover:underline"
+          >
+            grupo de Telegram de la red
+          </a>{" "}
+          para enterarte de las fechas y horarios de cada clase.
+        </p>
+        {zoomUrl ? (
+          <div className="p-3 rounded-xl bg-surface-hover border border-border text-sm">
+            <span className="text-muted-foreground">Enlace de la sala: </span>
+            <a
+              href={zoomUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-aff-cyan hover:underline break-all"
+            >
+              {zoomUrl}
+            </a>
+          </div>
+        ) : (
+          <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+            💡 El enlace de la sala se publicará pronto: lo verás aquí y en el grupo de Telegram.
+          </p>
+        )}
       </SectionCard>
 
       {/* FAQ */}
