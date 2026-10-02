@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, CheckCircle2, AlertCircle, Eye, X } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Eye, X, Download } from "lucide-react";
 
 interface DocItem {
   id: number;
@@ -20,7 +20,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function DocumentReview({ documents }: { documents: DocItem[] }) {
   const [busyId, setBusyId] = useState<number | null>(null);
-  const [viewing, setViewing] = useState<string | null>(null); // data URL
+  const [viewing, setViewing] = useState<{ fileName: string | null; fileData: string } | null>(null);
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [items, setItems] = useState(documents);
@@ -56,7 +56,7 @@ export function DocumentReview({ documents }: { documents: DocItem[] }) {
     try {
       const res = await fetch(`/api/admin/documents/${id}`);
       const json = await res.json();
-      if (json.fileData) setViewing(json.fileData);
+      if (json.fileData) setViewing({ fileName: json.fileName ?? null, fileData: json.fileData });
       else setMessage({ type: "error", text: "No se pudo cargar el archivo." });
     } catch {
       setMessage({ type: "error", text: "Error de conexión." });
@@ -146,16 +146,37 @@ export function DocumentReview({ documents }: { documents: DocItem[] }) {
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setViewing(null)}
         >
-          <div className="max-w-3xl w-full max-h-[85vh] bg-surface rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-              <p className="text-sm font-medium">Documento</p>
-              <button onClick={() => setViewing(null)} className="p-1.5 rounded-lg hover:bg-surface-hover">
-                <X className="w-5 h-5" />
-              </button>
+          <div
+            className="w-full max-w-3xl h-[85vh] bg-surface rounded-2xl overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border shrink-0">
+              <p className="text-sm font-medium truncate">{viewing.fileName || "Documento"}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={viewing.fileData}
+                  download={viewing.fileName || "documento"}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border hover:bg-surface-hover transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" /> Descargar
+                </a>
+                <button onClick={() => setViewing(null)} className="p-1.5 rounded-lg hover:bg-surface-hover">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-            <div className="p-4 overflow-auto max-h-[75vh]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={viewing} alt="Documento del afiliado" className="w-full rounded-xl" />
+            <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900">
+              {viewing.fileData.startsWith("data:application/pdf") ? (
+                <iframe
+                  src={viewing.fileData}
+                  title="Documento del afiliado"
+                  className="w-full h-full border-0"
+                  allow="fullscreen"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={viewing.fileData} alt="Documento del afiliado" className="w-full" />
+              )}
             </div>
           </div>
         </div>

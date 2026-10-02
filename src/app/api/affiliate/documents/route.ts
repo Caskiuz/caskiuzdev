@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 const ALLOWED_TYPES = ["ID"]; // solo verificación de identidad; el contrato se acepta en el registro
 const MAX_BASE64_LENGTH = 2_800_000; // ~2MB
+const ALLOWED_DATA_URL = /^data:(image\/(jpeg|png|webp)|application\/pdf);base64,/i;
 
 export async function GET() {
   const affiliate = await getCurrentAffiliate();
@@ -35,9 +36,9 @@ export async function POST(request: NextRequest) {
     if (!ALLOWED_TYPES.includes(type)) {
       return NextResponse.json({ error: "Tipo de documento inválido." }, { status: 400 });
     }
-    if (typeof fileData !== "string" || !fileData.startsWith("data:")) {
+    if (typeof fileData !== "string" || !ALLOWED_DATA_URL.test(fileData)) {
       return NextResponse.json(
-        { error: "Archivo inválido. Envía la imagen en formato base64 (data URL)." },
+        { error: "Archivo inválido. Solo se permiten archivos JPG, PNG o PDF (formato base64)." },
         { status: 400 }
       );
     }
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        document: { id: document.id, type: document.type, status: document.status, createdAt: document.createdAt },
+        document: { id: document.id, type: document.type, fileName: document.fileName, status: document.status, createdAt: document.createdAt },
       },
       { status: 201 }
     );

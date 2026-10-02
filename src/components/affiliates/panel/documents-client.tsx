@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, Clock, Upload, FileText, ShieldCheck } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Upload, FileText, ShieldCheck, Eye, Loader2 } from "lucide-react";
+import { DocumentViewer } from "./document-viewer";
 
 interface DocumentItem {
   id: number;
@@ -23,11 +24,30 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
   const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+  const [viewing, setViewing] = useState<{ fileName: string | null; fileData: string } | null>(null);
+  const [viewBusyId, setViewBusyId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function flash(type: "ok" | "error", text: string) {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
+  }
+
+  async function view(id: number) {
+    setViewBusyId(id);
+    try {
+      const res = await fetch(`/api/affiliate/documents/${id}`);
+      const json = await res.json();
+      if (!res.ok || !json.fileData) {
+        flash("error", json.error || "No se pudo cargar el documento.");
+        return;
+      }
+      setViewing({ fileName: json.fileName ?? null, fileData: json.fileData });
+    } catch {
+      flash("error", "Error de conexión.");
+    } finally {
+      setViewBusyId(null);
+    }
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -60,6 +80,7 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
         }
         flash("ok", "Documento subido. Lo revisaremos en un máximo de 72 horas.");
         setDocuments((prev) => [{ ...json.document, notes: null, reviewedAt: null }, ...prev]);
+        setViewing({ fileName: file.name, fileData: String(reader.result) });
       } catch {
         flash("error", "Error de conexión.");
       } finally {
@@ -203,22 +224,41 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
                     {d.notes && <> · Nota: {d.notes}</>}
                   </p>
                 </div>
-                <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${
-                    d.status === "APPROVED"
-                      ? "bg-green-500/10 text-green-500"
-                      : d.status === "REJECTED"
-                        ? "bg-accent/10 text-accent"
-                        : "bg-yellow-500/10 text-yellow-500"
-                  }`}
-                >
-                  {STATUS_LABELS[d.status] ?? d.status}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => view(d.id)}
+                    disabled={viewBusyId === d.id}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border border-border hover:bg-surface-hover disabled:opacity-60"
+                    title="Ver archivo"
+                  >
+                    {viewBusyId === d.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                    Ver
+                  </button>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      d.status === "APPROVED"
+                        ? "bg-green-500/10 text-green-500"
+                        : d.status === "REJECTED"
+                          ? "bg-accent/10 text-accent"
+                          : "bg-yellow-500/10 text-yellow-500"
+                    }`}
+                  >
+                    {STATUS_LABELS[d.status] ?? d.status}
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {viewing && (
+        <DocumentViewer
+          fileName={viewing.fileName}
+          fileData={viewing.fileData}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 }
