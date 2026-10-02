@@ -9,6 +9,7 @@ import {
   Link2,
   Store,
   Megaphone,
+  Bell,
   Wallet,
   FileText,
   User,
@@ -25,6 +26,7 @@ import { BrandLogo } from "@/components/ui/brand-logo";
 
 const navItems = [
   { href: "/afiliados/panel", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/afiliados/panel/anuncios", label: "Anuncios", icon: Bell },
   { href: "/afiliados/panel/leads", label: "Mis leads", icon: Users },
   { href: "/afiliados/panel/enlaces", label: "Mis enlaces", icon: Link2 },
   { href: "/afiliados/panel/catalogo", label: "Catálogo", icon: Store },
@@ -41,11 +43,13 @@ export function PanelSidebar({
   tier,
   referralCode,
   avatarUrl,
+  announcementsCount = 0,
 }: {
   name: string;
   tier: string;
   referralCode: string;
   avatarUrl?: string | null;
+  announcementsCount?: number;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -83,6 +87,7 @@ export function PanelSidebar({
     <nav className="mt-6 space-y-1">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
+        const showBadge = item.href === "/afiliados/panel/anuncios" && announcementsCount > 0;
         return (
           <Link
             key={item.href}
@@ -97,6 +102,11 @@ export function PanelSidebar({
           >
             <item.icon className="w-4.5 h-4.5 shrink-0" />
             {item.label}
+            {showBadge && (
+              <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold">
+                {announcementsCount > 9 ? "9+" : announcementsCount}
+              </span>
+            )}
           </Link>
         );
       })}

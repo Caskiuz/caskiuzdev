@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 const fields = [
   { key: "affiliates_telegram_url", label: "Link del grupo de Telegram", type: "url" as const, placeholder: "https://t.me/+..." },
+  { key: "affiliates_whatsapp_url", label: "Link del grupo de WhatsApp", type: "url" as const, placeholder: "https://chat.whatsapp.com/..." },
   { key: "affiliates_zoom_url", label: "Link de la sala de Zoom (opcional)", type: "url" as const, placeholder: "https://zoom.us/j/... (déjalo vacío si aún no hay sala)" },
 ];
 

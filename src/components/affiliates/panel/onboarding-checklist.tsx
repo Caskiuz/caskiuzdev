@@ -11,15 +11,17 @@ import {
   X,
   Megaphone,
   Send,
+  MessageCircle,
   FileText,
   CreditCard,
   Link2,
 } from "lucide-react";
-import { TELEGRAM_GROUP_URL } from "@/lib/affiliate-links";
 
 interface OnboardingChecklistProps {
   name: string;
   referralLink: string;
+  telegramUrl: string;
+  whatsappUrl: string;
   kycApproved: boolean;
   hasPayoutMethod: boolean;
   hasClicks: boolean;
@@ -40,6 +42,8 @@ interface Step {
 export function OnboardingChecklist({
   name,
   referralLink,
+  telegramUrl,
+  whatsappUrl,
   kycApproved,
   hasPayoutMethod,
   hasClicks,
@@ -140,8 +144,8 @@ export function OnboardingChecklist({
             🎉 ¡Estás listo para ganar! Completaste todos los pasos.
           </p>
           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            Revisa los materiales promocionales para publicar y únete al grupo de
-            Telegram para las clases y anuncios de la red.
+            Revisa los materiales promocionales para publicar y únete a los grupos de
+            la red para las clases y anuncios.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
@@ -151,12 +155,20 @@ export function OnboardingChecklist({
               <Megaphone className="w-3.5 h-3.5" /> Ver materiales
             </Link>
             <a
-              href={TELEGRAM_GROUP_URL}
+              href={telegramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-aff-blue/15 text-aff-cyan border border-aff-blue/20 hover:bg-aff-blue/25 transition-colors"
             >
               <Send className="w-3.5 h-3.5" /> Grupo de Telegram
+            </a>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-green-500/15 text-green-500 border border-green-500/20 hover:bg-green-500/25 transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5" /> Grupo de WhatsApp
             </a>
           </div>
         </div>

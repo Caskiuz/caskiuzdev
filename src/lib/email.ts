@@ -1,18 +1,18 @@
 import { Resend } from "resend";
 
 /**
- * Envío de emails transaccionales vía Resend.
- * Si no hay API key configurada, registra en consola y no falla
+ * Envío de emails transaccionales.
+ * Proveedores soportados, por orden de prioridad:
+ *  1. Brevo  (BREVO_API_KEY)  — 300 correos/día gratis; requiere verificar el remitente.
+ *  2. Resend (RESEND_API_KEY) — respaldo.
+ * Si no hay ninguno configurado, registra en consola y no falla
  * (el sitio sigue funcionando sin emails).
  */
 
 const FROM =
-  process.env.RESEND_FROM || "Caskiuz Affiliates <onboarding@resend.dev>";
-
-function getClient(): Resend | null {
-  if (!process.env.RESEND_API_KEY) return null;
-  return new Resend(process.env.RESEND_API_KEY);
-}
+  process.env.EMAIL_FROM ||
+  process.env.RESEND_FROM ||
+  "Caskiuz Affiliates <onboarding@resend.dev>";
 
 interface SendOptions {
   to: string;
@@ -20,23 +20,66 @@ interface SendOptions {
   html: string;
 }
 
-export async function sendEmail({ to, subject, html }: SendOptions): Promise<boolean> {
-  const resend = getClient();
-  if (!resend) {
-    console.log(`✉️ [EMAIL NO ENVIADO - Resend sin configurar] ${subject} → ${to}`);
-    return false;
-  }
+/** ¿Hay algún proveedor de correo configurado? */
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
+}
+
+/** Convierte "Nombre <correo>" en { name, email }. */
+function parseFrom(from: string): { name: string; email: string } {
+  const match = from.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (match) return { name: match[1] || "Caskiuz Afiliados", email: match[2] };
+  return { name: "Caskiuz Afiliados", email: from.trim() };
+}
+
+async function sendViaBrevo({ to, subject, html }: SendOptions): Promise<boolean> {
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
-    if (error) {
-      console.error("Error enviando email:", error);
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY as string,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        sender: parseFrom(FROM),
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      console.error("Error enviando email (Brevo):", response.status, detail);
       return false;
     }
     return true;
   } catch (error) {
-    console.error("Error enviando email:", error);
+    console.error("Error enviando email (Brevo):", error);
     return false;
   }
+}
+
+async function sendViaResend({ to, subject, html }: SendOptions): Promise<boolean> {
+  const resend = new Resend(process.env.RESEND_API_KEY as string);
+  try {
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    if (error) {
+      console.error("Error enviando email (Resend):", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error enviando email (Resend):", error);
+    return false;
+  }
+}
+
+export async function sendEmail({ to, subject, html }: SendOptions): Promise<boolean> {
+  if (process.env.BREVO_API_KEY) return sendViaBrevo({ to, subject, html });
+  if (process.env.RESEND_API_KEY) return sendViaResend({ to, subject, html });
+  console.log(`✉️ [EMAIL NO ENVIADO - sin proveedor configurado] ${subject} → ${to}`);
+  return false;
 }
 
 const baseStyle = `

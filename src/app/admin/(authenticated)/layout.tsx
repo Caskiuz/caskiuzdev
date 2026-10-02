@@ -12,6 +12,7 @@ import {
   Headphones,
   CreditCard,
   Send,
+  Megaphone,
 } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 
@@ -61,6 +62,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             href="/admin/withdrawals"
             icon={<Wallet className="w-5 h-5" />}
             label="Retiros"
+          />
+          <SidebarLink
+            href="/admin/anuncios"
+            icon={<Megaphone className="w-5 h-5" />}
+            label="Anuncios"
           />
 
           <div className="pt-4 pb-2">

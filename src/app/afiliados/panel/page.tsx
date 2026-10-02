@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { MousePointerClick, Users, ShoppingBag, TrendingUp, Wallet, Clock, ArrowRight, Send, Video, Download } from "lucide-react";
+import { MousePointerClick, Users, ShoppingBag, TrendingUp, Wallet, Clock, ArrowRight, Send, Video, Download, MessageCircle } from "lucide-react";
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { getAffiliateStats } from "@/lib/affiliate-queries";
 import { getTierInfo, nextTier, formatUsd, MIN_WITHDRAWAL } from "@/lib/affiliate";
 import { getSiteConfigByGroup } from "@/lib/site-config";
-import { TELEGRAM_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
+import { TELEGRAM_GROUP_URL, WHATSAPP_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
 import { prisma } from "@/lib/prisma/client";
 import { OnboardingChecklist } from "@/components/affiliates/panel/onboarding-checklist";
 import { NextStepCard, type NextStepData } from "@/components/affiliates/panel/next-step-card";
@@ -79,6 +79,7 @@ export default async function AffiliateDashboardPage({
   const groups = await getSiteConfigByGroup();
   const affiliateConfig = groups["affiliates"] ?? {};
   const telegramUrl = affiliateConfig["affiliates_telegram_url"] || TELEGRAM_GROUP_URL;
+  const whatsappUrl = affiliateConfig["affiliates_whatsapp_url"] || WHATSAPP_GROUP_URL;
   const zoomUrl = affiliateConfig["affiliates_zoom_url"] || "";
 
   const progressPct = upcoming
@@ -147,6 +148,8 @@ export default async function AffiliateDashboardPage({
         <OnboardingChecklist
           name={affiliate.name}
           referralLink={referralLink}
+          telegramUrl={telegramUrl}
+          whatsappUrl={whatsappUrl}
           kycApproved={!!kycDoc}
           hasPayoutMethod={payoutCount > 0}
           hasClicks={stats.totalClicks > 0}
@@ -281,7 +284,7 @@ export default async function AffiliateDashboardPage({
         <h2 className="font-bold mb-4 flex items-center gap-2">
           <Send className="w-5 h-5 text-aff-cyan" /> Comunidad y videoconferencias
         </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <a
             href={telegramUrl}
             target="_blank"
@@ -294,6 +297,21 @@ export default async function AffiliateDashboardPage({
             <p className="font-bold group-hover:text-aff-cyan transition-colors">Grupo de Telegram</p>
             <p className="text-sm text-muted-foreground mt-1">
               Únete a la red: anuncios y fechas de las clases. Funciona en iPhone, Android y escritorio.
+            </p>
+          </a>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-card rounded-2xl p-5 hover:bg-surface-hover transition-colors group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-3">
+              <MessageCircle className="w-5 h-5 text-green-500" />
+            </div>
+            <p className="font-bold group-hover:text-green-500 transition-colors">Grupo de WhatsApp</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Dudas rápidas, avisos y compañeros de la red. Funciona en iPhone, Android y escritorio.
             </p>
           </a>
 
@@ -355,7 +373,7 @@ export default async function AffiliateDashboardPage({
               </div>
               <p className="font-bold">Sala de videoconferencias</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Próximamente: aquí y en el grupo de Telegram publicaremos el enlace de la sala.
+                Próximamente: el enlace se publicará en Anuncios y en los grupos de la red.
               </p>
             </div>
           )}

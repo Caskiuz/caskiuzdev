@@ -130,6 +130,7 @@ model Affiliate {
   withdrawals    Withdrawal[]
   tickets        SupportTicket[]
   contacts       Contact[]
+  announcementReads AnnouncementRead[]
 
   @@map("affiliates")
 }
@@ -278,4 +279,40 @@ model TicketReply {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("affiliate_ticket_replies")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Anuncios globales (admin → todos los afiliados)
+// ─────────────────────────────────────────────────────────────
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(160)
+  body      String   @db.Text
+  kind      String   @default("INFO") // INFO | ZOOM | NEWS | URGENT
+  linkUrl   String?  @db.VarChar(500)
+  linkLabel String?  @db.VarChar(80)
+  active    Boolean  @default(true)
+  startsAt  DateTime @default(now()) @map("starts_at")
+  endsAt    DateTime @map("ends_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  reads     AnnouncementRead[]
+
+  @@index([active, startsAt, endsAt])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id             Int          @id @default(autoincrement())
+  announcementId Int          @map("announcement_id")
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  affiliateId    Int          @map("affiliate_id")
+  affiliate      Affiliate    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  readAt         DateTime     @default(now()) @map("read_at")
+
+  @@unique([announcementId, affiliateId])
+  @@index([affiliateId])
+  @@map("announcement_reads")
 }

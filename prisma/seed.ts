@@ -179,6 +179,7 @@ async function main() {
     { key: "affiliates_min_withdrawal", value: "30", group: "affiliates" },
     { key: "affiliates_seo_note", value: "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.", group: "affiliates" },
     { key: "affiliates_telegram_url", value: "https://t.me/+WSCZuhkg-RA4NjNh", group: "affiliates" },
+    { key: "affiliates_whatsapp_url", value: "https://chat.whatsapp.com/Bz942OBMdpC09rslaRviws", group: "affiliates" },
     { key: "affiliates_zoom_url", value: "", group: "affiliates" },
 
     // ─── MÉTODOS DE PAGO (clientes — configurables en el admin) ───

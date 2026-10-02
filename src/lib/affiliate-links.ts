@@ -5,6 +5,9 @@
  */
 export const TELEGRAM_GROUP_URL = "https://t.me/+WSCZuhkg-RA4NjNh";
 
+// Grupo de WhatsApp de la red (link de invitación; funciona en iPhone, Android y escritorio).
+export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Bz942OBMdpC09rslaRviws";
+
 // Descarga de Zoom: la página oficial detecta el sistema operativo del visitante.
 export const ZOOM_DOWNLOAD_URL = "https://zoom.us/download";
 // Zoom Workplace en el App Store (iPhone/iPad) — ID oficial.

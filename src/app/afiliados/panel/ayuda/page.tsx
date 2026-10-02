@@ -1,7 +1,7 @@
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { AFFILIATE_FAQS } from "@/lib/affiliate-content";
 import { getSiteConfigByGroup } from "@/lib/site-config";
-import { TELEGRAM_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
+import { TELEGRAM_GROUP_URL, WHATSAPP_GROUP_URL, ZOOM_DOWNLOAD_URL, ZOOM_APP_STORE_URL, ZOOM_PLAY_STORE_URL } from "@/lib/affiliate-links";
 import Link from "next/link";
 import {
   BookOpen,
@@ -108,6 +108,7 @@ export default async function HelpPage() {
   const groups = await getSiteConfigByGroup();
   const affiliateConfig = groups["affiliates"] ?? {};
   const telegramUrl = affiliateConfig["affiliates_telegram_url"] || TELEGRAM_GROUP_URL;
+  const whatsappUrl = affiliateConfig["affiliates_whatsapp_url"] || WHATSAPP_GROUP_URL;
   const zoomUrl = affiliateConfig["affiliates_zoom_url"] || "";
 
   const campaignExamples = [
@@ -298,6 +299,7 @@ export default async function HelpPage() {
         <div className="space-y-2">
           {[
             ["Dashboard", "Clics, leads, ventas, conversión, EPC, saldo disponible y en retiro, y tu progreso al siguiente nivel."],
+            ["Anuncios", "Los avisos oficiales de la red: reuniones por Zoom con su enlace, clases y noticias del programa. Los nuevos aparecen al entrar al panel hasta que los lees."],
             ["Mis enlaces", "Tu link, el generador con destinos y campañas, y el rendimiento por sub-ID."],
             ["Catálogo", "Los servicios, sus precios y cuánto ganas con cada uno según tu nivel."],
             ["Materiales", "Textos listos para copiar y pegar en WhatsApp y redes."],
@@ -393,6 +395,15 @@ export default async function HelpPage() {
           >
             grupo de Telegram de la red
           </a>{" "}
+          o al{" "}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-500 hover:underline"
+          >
+            grupo de WhatsApp
+          </a>{" "}
           para enterarte de las fechas y horarios de cada clase.
         </p>
         {zoomUrl ? (
@@ -409,7 +420,7 @@ export default async function HelpPage() {
           </div>
         ) : (
           <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
-            💡 El enlace de la sala se publicará pronto: lo verás aquí y en el grupo de Telegram.
+            💡 El enlace de la sala se publicará pronto: lo verás aquí, en Anuncios y en los grupos de la red.
           </p>
         )}
       </SectionCard>
