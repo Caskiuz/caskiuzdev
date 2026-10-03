@@ -1,11 +1,14 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 /**
  * Envío de emails transaccionales.
- * Proveedores soportados, por orden de prioridad:
- *  1. Brevo  (BREVO_API_KEY)  — 300 correos/día gratis; requiere verificar el remitente.
- *  2. Resend (RESEND_API_KEY) — respaldo.
- * Si no hay ninguno configurado, registra en consola y no falla
+ * Proveedores soportados: Brevo (API), SMTP (nodemailer; por defecto Gmail) y Resend.
+ * La elección se controla con EMAIL_PROVIDER: "brevo" | "smtp" | "resend".
+ * Sin EMAIL_PROVIDER, el orden automático es Brevo → SMTP → Resend
+ * (Resend queda último a propósito: sin dominio verificado solo puede enviar
+ * al correo del dueño de la cuenta).
+ * Si no hay ningún proveedor configurado, registra en consola y no falla
  * (el sitio sigue funcionando sin emails).
  */
 
@@ -20,9 +23,35 @@ interface SendOptions {
   html: string;
 }
 
-/** ¿Hay algún proveedor de correo configurado? */
+type EmailProvider = "brevo" | "smtp" | "resend";
+
+function hasBrevo(): boolean {
+  return Boolean(process.env.BREVO_API_KEY);
+}
+
+function hasSmtp(): boolean {
+  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+function hasResend(): boolean {
+  return Boolean(process.env.RESEND_API_KEY);
+}
+
+/** Proveedor activo según EMAIL_PROVIDER o el orden automático. */
+function activeProvider(): EmailProvider | null {
+  const explicit = (process.env.EMAIL_PROVIDER || "").trim().toLowerCase();
+  if (explicit === "brevo") return hasBrevo() ? "brevo" : null;
+  if (explicit === "smtp") return hasSmtp() ? "smtp" : null;
+  if (explicit === "resend") return hasResend() ? "resend" : null;
+  if (hasBrevo()) return "brevo";
+  if (hasSmtp()) return "smtp";
+  if (hasResend()) return "resend";
+  return null;
+}
+
+/** ¿Hay algún proveedor de correo configurado y activo? */
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
+  return activeProvider() !== null;
 }
 
 /** Convierte "Nombre <correo>" en { name, email }. */
@@ -60,6 +89,26 @@ async function sendViaBrevo({ to, subject, html }: SendOptions): Promise<boolean
   }
 }
 
+async function sendViaSmtp({ to, subject, html }: SendOptions): Promise<boolean> {
+  try {
+    const port = Number(process.env.SMTP_PORT || 465);
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port,
+      secure: port === 465,
+      auth: {
+        user: process.env.SMTP_USER as string,
+        pass: process.env.SMTP_PASS as string,
+      },
+    });
+    await transporter.sendMail({ from: FROM, to, subject, html });
+    return true;
+  } catch (error) {
+    console.error("Error enviando email (SMTP):", error);
+    return false;
+  }
+}
+
 async function sendViaResend({ to, subject, html }: SendOptions): Promise<boolean> {
   const resend = new Resend(process.env.RESEND_API_KEY as string);
   try {
@@ -76,9 +125,13 @@ async function sendViaResend({ to, subject, html }: SendOptions): Promise<boolea
 }
 
 export async function sendEmail({ to, subject, html }: SendOptions): Promise<boolean> {
-  if (process.env.BREVO_API_KEY) return sendViaBrevo({ to, subject, html });
-  if (process.env.RESEND_API_KEY) return sendViaResend({ to, subject, html });
-  console.log(`✉️ [EMAIL NO ENVIADO - sin proveedor configurado] ${subject} → ${to}`);
+  const provider = activeProvider();
+  if (provider === "brevo") return sendViaBrevo({ to, subject, html });
+  if (provider === "smtp") return sendViaSmtp({ to, subject, html });
+  if (provider === "resend") return sendViaResend({ to, subject, html });
+  console.log(
+    `✉️ [EMAIL NO ENVIADO - proveedor sin configurar] ${subject} → ${to} (configura SMTP_USER/SMTP_PASS, BREVO_API_KEY o RESEND_API_KEY)`
+  );
   return false;
 }
 
