@@ -5,7 +5,9 @@ import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_TYPES = ["ID"]; // solo verificación de identidad; el contrato se acepta en el registro
-const MAX_BASE64_LENGTH = 2_800_000; // ~2MB
+// El cuerpo viaja como base64 (+33%) y Vercel limita cada petición a 4.5 MB,
+// por eso el tope real del archivo es ~3 MB (las fotos se optimizan en el cliente).
+const MAX_BASE64_LENGTH = 4_300_000; // ~3 MB
 const ALLOWED_DATA_URL = /^data:(image\/(jpeg|png|webp)|application\/pdf);base64,/i;
 
 export async function GET() {
@@ -43,8 +45,13 @@ export async function POST(request: NextRequest) {
       );
     }
     if (fileData.length > MAX_BASE64_LENGTH) {
+      const isPdfData = fileData.startsWith("data:application/pdf");
       return NextResponse.json(
-        { error: "El archivo supera el límite de 2MB." },
+        {
+          error: isPdfData
+            ? "El PDF supera el límite de 3 MB."
+            : "La imagen supera el límite permitido.",
+        },
         { status: 400 }
       );
     }
