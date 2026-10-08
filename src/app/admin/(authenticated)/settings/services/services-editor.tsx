@@ -81,7 +81,7 @@ export function ServicesEditor({ initialServices }: Props) {
           configs: [
             { key: "services_data", value: JSON.stringify(services), group: "services" },
             { key: "services_label", value: "Servicios", group: "services" },
-            { key: "services_title", value: "Lo que puedo hacer por ti", group: "services" },
+            { key: "services_title", value: "puedo hacer", group: "services" },
             { key: "services_subtitle", value: "Soluciones a medida para cada etapa de tu producto digital...", group: "services" },
           ],
         }),

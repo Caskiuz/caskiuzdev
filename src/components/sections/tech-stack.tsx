@@ -81,7 +81,7 @@ export function TechStack() {
   return (
     <section ref={ref} id="tech-stack" className="relative py-24 sm:py-32">
       {/* Background subtle gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(108,92,231,0.05),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.06),transparent_70%)]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -90,11 +90,11 @@ export function TechStack() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             Tech Stack
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Tecnologías que <span className="gradient-text">domino</span>
+            Tecnologías que <span className="metal-text">domino</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             Stack completo para construir productos digitales robustos, escalables
@@ -122,7 +122,7 @@ export function TechStack() {
                     animate={isInView ? { opacity: 1, scale: 1 } : {}}
                     transition={{ duration: 0.3, delay: ci * 0.12 + ii * 0.05 }}
                     whileHover={{ scale: 1.05, y: -2 }}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface hover:bg-surface-hover border border-border transition-all duration-200 cursor-default"
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl glass-card hover:bg-surface-hover transition-all duration-200 cursor-default"
                   >
                     <span className="text-lg">{item.icon}</span>
                     <span className="text-sm font-medium truncate">{item.name}</span>

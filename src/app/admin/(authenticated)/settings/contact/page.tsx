@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const fields = [
   { key: "contact_label", label: "Etiqueta superior", placeholder: "Contacto" },
-  { key: "contact_title", label: "Título de la sección", placeholder: "¿Listo para empezar?" },
+  { key: "contact_title", label: "Palabra resaltada del título", placeholder: "empezar" },
   { key: "contact_subtitle", label: "Subtítulo", type: "textarea" as const, placeholder: "Cuéntame sobre tu proyecto..." },
   { key: "contact_email", label: "Email de contacto", type: "email" as const, placeholder: "rijarwow@gmail.com" },
   { key: "contact_whatsapp", label: "Número de WhatsApp (con prefijo)", placeholder: "584262931869" },

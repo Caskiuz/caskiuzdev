@@ -47,11 +47,11 @@ export function About({ config = {} }: AboutProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("about_label", "Sobre mí")}
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Mi <span className="gradient-text">{c("about_title", "historia")}</span>
+            Mi <span className="metal-text">{c("about_title", "historia")}</span>
           </h2>
         </motion.div>
 
@@ -65,7 +65,7 @@ export function About({ config = {} }: AboutProps) {
             <div className="glass-card p-8">
               <h3 className="text-2xl font-bold mb-4">
                 {c("about_bio_title", "Más allá del")}{" "}
-                <span className="gradient-text">{c("about_bio_title_highlight", "código")}</span>
+                <span className="metal-text">{c("about_bio_title_highlight", "código")}</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 {c("about_bio_p1", "Soy un desarrollador full-stack apasionado por crear productos digitales que marcan la diferencia. Mi enfoque combina excelencia técnica con pensamiento estratégico, asegurando que cada línea de código contribuya al éxito del negocio.")}
@@ -76,8 +76,8 @@ export function About({ config = {} }: AboutProps) {
 
               {/* Quick facts */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
-                  <MapPin className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3 p-3 rounded-xl glass-card">
+                  <MapPin className="w-5 h-5 text-aff-cyan" />
                   <div>
                     <div className="text-xs text-muted-foreground">
                       {c("about_quick_location_label", "Ubicación")}
@@ -87,8 +87,8 @@ export function About({ config = {} }: AboutProps) {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
-                  <Coffee className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3 p-3 rounded-xl glass-card">
+                  <Coffee className="w-5 h-5 text-aff-cyan" />
                   <div>
                     <div className="text-xs text-muted-foreground">
                       {c("about_quick_avail_label", "Disponible")}
@@ -123,12 +123,12 @@ export function About({ config = {} }: AboutProps) {
                 )}
 
                 {/* Timeline dot */}
-                <div className="absolute left-0 top-1 w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-primary" />
+                <div className="absolute left-0 top-1 w-10 h-10 rounded-xl bg-aff-cyan/10 border border-aff-cyan/20 flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-aff-cyan" />
                 </div>
 
                 <div className="glass-card p-5">
-                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-aff-cyan uppercase tracking-wider">
                     {item.year}
                   </span>
                   <h4 className="text-lg font-bold mt-1">{item.title}</h4>

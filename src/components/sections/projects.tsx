@@ -1,19 +1,26 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { ExternalLink, Code2, ArrowUpRight, Star, GitFork, Loader2, Briefcase } from "lucide-react";
+import { ExternalLink, Code2, ArrowUpRight, Star, GitFork, Loader2, Smartphone } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { ProjectIcon } from "@/components/ui/project-icons";
 
 const hardcodedDescriptions: Record<string, string> = {
   SistemadePrestamos:
     "Sistema web de gestión de préstamos desarrollado en Laravel 11. Optimizado para producción en Render con Docker, persistencia de sesiones seguras HTTPS, diseño adaptable mobile-first, lógica de reportes financieros multimoneda y middleware personalizado.",
   caskiuzdev:
-    "Portfolio personal full-stack — Next.js 14, TailwindCSS, Prisma, Framer Motion. Desplegado en Vercel con CI/CD. Blog MDX, SEO optimizado, formulario de contacto y panel admin.",
+    "Portfolio personal full-stack — Next.js 16, TailwindCSS, Prisma, Framer Motion. Desplegado en Vercel con CI/CD. Blog MDX, SEO optimizado, formulario de contacto y panel admin.",
   caskiuz:
     "Perfil de GitHub con README personalizado. Presentación profesional, estadísticas de actividad y proyectos destacados.",
+  rifasv2:
+    "Plataforma SaaS de rifas en línea: cada organizador recibe una landing page con su logo y colores, más un panel de administración con estadísticas y verificador de tickets. Los participantes eligen sus números de lotería, suben el comprobante de pago y consultan sus tickets; los pagos van directo a la cuenta del organizador, sin comisiones.",
 };
+
+// Repos excluidos manualmente del portfolio (quitar el nombre de aquí para volver a mostrarlo).
+// cobrogest-pro: su URL de Vercel devuelve 404 (deployment eliminado) — reactivar cuando tenga web activa.
+const hiddenProjects = ["caskiuzdev", "dymb", "cobrogest-pro"];
 
 interface GitHubRepo {
   id: number;
@@ -21,6 +28,7 @@ interface GitHubRepo {
   description: string | null;
   html_url: string;
   homepage: string | null;
+  demoUrl: string | null;
   language: string | null;
   topics: string[];
   stargazers_count: number;
@@ -28,7 +36,68 @@ interface GitHubRepo {
   fork: boolean;
   size: number;
   updated_at: string;
+  pushed_at: string;
 }
+
+/** Proyecto listo para renderizar, venga de GitHub o sea una entrada manual. */
+interface ProjectData {
+  id: string | number;
+  name: string;
+  description: string;
+  demoUrl: string;
+  codeUrl?: string;
+  language: string | null;
+  topics: string[];
+  stars?: number;
+  forks?: number;
+  links?: { label: string; url: string }[];
+  /** false = se muestra como tarjeta secundaria en vez de destacada (ej. proyectos en construcción) */
+  featured?: boolean;
+}
+
+// Proyectos sin repositorio público: se muestran con los mismos enlaces que en sus webs.
+const manualProjects: ProjectData[] = [
+  {
+    id: "comeya",
+    name: "ComeYa",
+    description:
+      "App de delivery de comida con apps nativas para iOS y Android. Conecta restaurantes y negocios locales con sus clientes: menús con fotos reales, pedido en menos de un minuto, seguimiento del repartidor en tiempo real sobre el mapa, pago seguro y notificaciones en cada etapa. Incluye versión web sincronizada y panel de administración.",
+    demoUrl: "https://comeya.es",
+    language: null,
+    topics: ["iOS", "Android", "Delivery"],
+    links: [
+      {
+        label: "App Store",
+        url: "https://apps.apple.com/ve/app/comeya/id6780499208",
+      },
+      {
+        label: "Google Play",
+        url: "https://play.google.com/store/apps/details?id=com.comeya.app",
+      },
+    ],
+  },
+  {
+    id: "highpower",
+    name: "HighPower",
+    description:
+      "Plataforma Web3 y DeFi del ecosistema HighPower (HGP): staking, pools de liquidez y NFTs sobre BNB Smart Chain. Dashboard con métricas en vivo (TVL, usuarios, pools activos y NFTs acuñados), conexión de wallet y contratos inteligentes. Landing animada con diseño dark, orientada a tokens, NFTs y rendimientos sostenibles; desplegada en Vercel.",
+    demoUrl: "https://highpowercoinproject.vercel.app",
+    // Repo privado a la fecha: el botón "Código" dará 404 hasta que se haga público en GitHub.
+    codeUrl: "https://github.com/Caskiuz/highpower-dapp-final",
+    language: null,
+    topics: ["Web3", "DeFi", "BNB Chain"],
+  },
+  {
+    id: "astrobar",
+    name: "AstroBar",
+    description:
+      "Plataforma de promociones nocturnas que conecta bares de Buenos Aires con sus clientes: los usuarios entran con verificación por SMS y descubren promos flash y ofertas exclusivas, con soporte por llamada y WhatsApp. Interfaz pensada como app de entregas local, con registro abierto para nuevos usuarios. Proyecto en construcción activa, ya desplegado en Vercel.",
+    demoUrl: "https://astro-bar-app.vercel.app",
+    language: null,
+    topics: ["Bares", "Promociones", "Buenos Aires"],
+    featured: false,
+  },
+];
 
 function langColor(lang: string | null): string {
   const colors: Record<string, string> = {
@@ -43,6 +112,38 @@ function langColor(lang: string | null): string {
   return colors[lang || ""] || "bg-gray-500";
 }
 
+/** Captura del sitio en vivo vía /api/screenshot (Microlink, cacheada 24h). */
+function screenshotUrl(url: string): string {
+  return `/api/screenshot?url=${encodeURIComponent(url)}`;
+}
+
+function ProjectThumb({ url, name }: { url: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+        <div className="opacity-50">
+          <ProjectIcon name={name} size={96} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={screenshotUrl(url)}
+      alt={`Vista previa de ${name.replace(/-/g, " ")}`}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      className="object-cover object-top"
+      loading="lazy"
+      unoptimized
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -52,6 +153,194 @@ const itemVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
+
+const openDemo = (url: string) => window.open(url, "_blank", "noopener,noreferrer");
+
+function FeaturedCard({ project }: { project: ProjectData }) {
+  return (
+    <motion.div variants={itemVariants} className="group">
+      <div
+        onClick={() => openDemo(project.demoUrl)}
+        className="relative h-full rounded-2xl metal-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+        {/* Miniatura */}
+        <div className="relative h-52 shrink-0 overflow-hidden bg-surface">
+          <ProjectThumb url={project.demoUrl} name={project.name} />
+          <span className="absolute top-3 left-3 z-10 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan px-3 py-1 rounded-full">
+            Destacado
+          </span>
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-white bg-black/50 px-3 py-1.5 rounded-full">
+              Ver <ArrowUpRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+
+        <div className="relative z-10 p-6 flex flex-col flex-1">
+          <h3 className="text-xl font-bold mb-3">{project.name.replace(/-/g, " ")}</h3>
+          <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {project.topics?.slice(0, 4).map((topic) => (
+              <span
+                key={topic}
+                className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground"
+              >
+                {topic}
+              </span>
+            ))}
+            {project.language && (
+              <span className="flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground">
+                <span className={`w-2 h-2 rounded-full ${langColor(project.language)}`} />
+                {project.language}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-auto pt-6">
+            {project.codeUrl && (
+              <Link
+                href={project.codeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
+              >
+                <Code2 className="w-4 h-4" />
+                Código
+              </Link>
+            )}
+            {project.links?.map((link) => (
+              <Link
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
+              >
+                <Smartphone className="w-4 h-4" />
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium btn-aff transition-all"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Ver
+            </Link>
+            {project.stars !== undefined && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                <Star className="w-3.5 h-3.5" />
+                {project.stars}
+              </span>
+            )}
+            {project.forks !== undefined && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <GitFork className="w-3.5 h-3.5" />
+                {project.forks}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function SideCard({ project }: { project: ProjectData }) {
+  return (
+    <motion.div variants={itemVariants} className="group">
+      <div
+        onClick={() => openDemo(project.demoUrl)}
+        className="relative h-full rounded-2xl metal-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+      >
+        {/* Miniatura */}
+        <div className="relative aspect-video shrink-0 overflow-hidden bg-surface">
+          <ProjectThumb url={project.demoUrl} name={project.name} />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-white bg-black/50 px-3 py-1.5 rounded-full">
+              Ver <ArrowUpRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+
+        <div className="relative z-10 p-5 flex flex-col flex-1">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-bold capitalize">{project.name.replace(/-/g, " ")}</h3>
+            {project.stars !== undefined && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
+                <Star className="w-3 h-3" /> {project.stars}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed flex-1">{project.description}</p>
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {project.language && (
+              <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
+                <span className={`w-1.5 h-1.5 rounded-full ${langColor(project.language)}`} />
+                {project.language}
+              </span>
+            )}
+            {project.topics?.slice(0, 2).map((topic) => (
+              <span
+                key={topic}
+                className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground"
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            {project.codeUrl && (
+              <Link
+                href={project.codeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
+              >
+                <Code2 className="w-3 h-3" />
+                Código
+              </Link>
+            )}
+            {project.links?.map((link) => (
+              <Link
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
+              >
+                <Smartphone className="w-3 h-3" />
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium btn-aff transition-all"
+            >
+              Ver <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+const byStars = (a: GitHubRepo, b: GitHubRepo) => b.stargazers_count - a.stargazers_count;
+const byRecent = (a: GitHubRepo, b: GitHubRepo) =>
+  new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime();
 
 export function Projects() {
   const ref = useRef<HTMLElement>(null);
@@ -66,12 +355,13 @@ export function Projects() {
         const res = await fetch("/api/github");
         if (!res.ok) throw new Error("GitHub API error");
         const data: GitHubRepo[] = await res.json();
-        // Filtrar: quitar forks, repos vacíos (solo size 0 y sin descripción), ordenar por estrellas
-        const filtered = data
+        // Solo repos con demo en vivo (Vercel o campo "Website" de GitHub)
+        const live = data
           .filter((r) => !r.fork)
+          .filter((r) => !hiddenProjects.includes(r.name))
           .filter((r) => r.description || r.size > 0)
-          .sort((a, b) => b.stargazers_count - a.stargazers_count);
-        setRepos(filtered);
+          .filter((r) => Boolean(r.demoUrl));
+        setRepos(live);
       } catch {
         setError(true);
       } finally {
@@ -81,10 +371,34 @@ export function Projects() {
     fetchRepos();
   }, []);
 
-  // Primeros 2 como destacados (con más estrellas), el resto como side
-  const mainProjects = repos.slice(0, 2);
-  const sideProjects = repos.slice(2, 5);
-  const hasMore = repos.length > 5;
+  const toProjectData = (repo: GitHubRepo): ProjectData => ({
+    id: repo.id,
+    name: repo.name,
+    description: hardcodedDescriptions[repo.name] || repo.description || "Sin descripción",
+    demoUrl: repo.demoUrl!,
+    codeUrl: repo.html_url,
+    language: repo.language,
+    topics: repo.topics ?? [],
+    stars: repo.stargazers_count,
+    forks: repo.forks_count,
+  });
+
+  // Destacados: manuales sin "featured: false" primero, luego los 2 repos con más estrellas.
+  // El resto va a la grilla secundaria: repos por más reciente + manuales no destacados.
+  const featuredGb = useMemo(() => [...repos].sort(byStars).slice(0, 2).map(toProjectData), [repos]);
+  const sideGb = useMemo(() => {
+    const featuredIds = new Set(featuredGb.map((p) => p.id));
+    return repos.filter((r) => !featuredIds.has(r.id)).sort(byRecent).map(toProjectData);
+  }, [repos, featuredGb]);
+  const featured = useMemo(
+    () => [...manualProjects.filter((p) => p.featured !== false), ...featuredGb],
+    [featuredGb]
+  );
+  const sideProjects = useMemo(
+    () => [...sideGb, ...manualProjects.filter((p) => p.featured === false)],
+    [sideGb]
+  );
+  const totalProjects = featured.length + sideProjects.length;
 
   return (
     <section ref={ref} id="projects" className="relative py-24 sm:py-32">
@@ -96,21 +410,21 @@ export function Projects() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             Portfolio
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Proyectos <span className="gradient-text">Destacados</span>
+            Proyectos <span className="metal-text">en Vivo</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Una selección de mis repositorios públicos en GitHub, actualizados en tiempo real.
+            Mis proyectos en vivo, sincronizados en tiempo real con GitHub y Vercel.
           </p>
         </motion.div>
 
         {/* Loading state */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Loader2 className="w-8 h-8 animate-spin text-aff-cyan" />
             <span className="ml-3 text-muted-foreground">Cargando proyectos desde GitHub...</span>
           </div>
         )}
@@ -124,7 +438,7 @@ export function Projects() {
                 href="https://github.com/Caskiuz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline font-medium"
+                className="text-aff-cyan hover:underline font-medium"
               >
                 Ver en GitHub →
               </a>
@@ -132,226 +446,38 @@ export function Projects() {
           </div>
         )}
 
+        {/* Empty state */}
+        {!loading && !error && totalProjects === 0 && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">
+              Aún no hay proyectos en vivo.{" "}
+              <a
+                href="https://github.com/Caskiuz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-aff-cyan hover:underline font-medium"
+              >
+                Ver repositorios en GitHub →
+              </a>
+            </p>
+          </div>
+        )}
+
         {/* Bento Grid */}
-        {!loading && !error && repos.length > 0 && (
+        {!loading && !error && totalProjects > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {/* Featured project 1 */}
-            {mainProjects[0] && (
-              <motion.div variants={itemVariants} className="group">
-                <div className="relative h-full min-h-[340px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  {/* SVG Illustration */}
-                  <div className="absolute top-2 right-2 w-36 h-36 opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none">
-                    <ProjectIcon name={mainProjects[0].name} size={144} />
-                  </div>
-
-                  <div className="relative z-10">
-                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                      Destacado
-                    </span>
-                    <h3 className="text-xl font-bold mt-2 mb-3">
-                      {mainProjects[0].name.replace(/-/g, " ")}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed max-w-lg">
-                      {hardcodedDescriptions[mainProjects[0].name] || mainProjects[0].description || "Sin descripción"}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {mainProjects[0].topics?.slice(0, 4).map((topic) => (
-                        <span
-                          key={topic}
-                          className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground"
-                        >
-                          {topic}
-                        </span>
-                      ))}
-                      {mainProjects[0].language && (
-                        <span className="flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground">
-                          <span className={`w-2 h-2 rounded-full ${langColor(mainProjects[0].language)}`} />
-                          {mainProjects[0].language}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="relative z-10 flex flex-wrap items-center gap-3 mt-6">
-                    <Link
-                      href={mainProjects[0].html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
-                    >
-                      <Code2 className="w-4 h-4" />
-                      Código
-                    </Link>
-                    {mainProjects[0].homepage && (
-                      <Link
-                        href={mainProjects[0].homepage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Demo
-                      </Link>
-                    )}
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                      <Star className="w-3.5 h-3.5" />
-                      {mainProjects[0].stargazers_count}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <GitFork className="w-3.5 h-3.5" />
-                      {mainProjects[0].forks_count}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Featured project 2 */}
-            {mainProjects[1] && (
-              <motion.div variants={itemVariants} className="group">
-                <div className="relative h-full min-h-[340px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
-                  <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  {/* SVG Illustration */}
-                  <div className="absolute top-2 right-2 w-36 h-36 opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none">
-                    <ProjectIcon name={mainProjects[1].name} size={144} />
-                  </div>
-
-                  <div className="relative z-10">
-                    <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
-                      Destacado
-                    </span>
-                    <h3 className="text-xl font-bold mt-2 mb-3">
-                      {mainProjects[1].name.replace(/-/g, " ")}
-                    </h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {hardcodedDescriptions[mainProjects[1].name] || mainProjects[1].description || "Sin descripción"}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {mainProjects[1].topics?.slice(0, 3).map((topic) => (
-                        <span
-                          key={topic}
-                          className="px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground"
-                        >
-                          {topic}
-                        </span>
-                      ))}
-                      {mainProjects[1].language && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground">
-                          <span className={`w-2 h-2 rounded-full ${langColor(mainProjects[1].language)}`} />
-                          {mainProjects[1].language}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="relative z-10 flex flex-wrap items-center gap-2 mt-4">
-                    <Link
-                      href={mainProjects[1].html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 rounded-full transition-all"
-                    >
-                      <Code2 className="w-3 h-3" /> Código
-                    </Link>
-                    {mainProjects[1].homepage && (
-                      <Link
-                        href={mainProjects[1].homepage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-hover rounded-full transition-all"
-                      >
-                        Demo <ArrowUpRight className="w-3 h-3" />
-                      </Link>
-                    )}
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-                      <Star className="w-3 h-3" /> {mainProjects[1].stargazers_count}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Side projects */}
-            {sideProjects.map((project) => (
-              <motion.div key={project.id} variants={itemVariants} className="group">
-                <div className="relative h-full min-h-[200px] rounded-2xl border border-border bg-surface hover:bg-surface-hover transition-all duration-300 p-5 flex flex-col overflow-hidden">
-                  {/* SVG Illustration */}
-                  <div className="absolute top-1 right-1 w-28 h-28 opacity-25 group-hover:opacity-45 transition-opacity duration-500 pointer-events-none">
-                    <ProjectIcon name={project.name} size={112} />
-                  </div>
-
-                  <div className="relative z-10 flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      <Code2 className="w-5 h-5 text-primary" />
-                    </div>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Star className="w-3 h-3" /> {project.stargazers_count}
-                    </span>
-                  </div>
-                  <h3 className="font-bold mb-2 capitalize relative z-10">
-                    {project.name.replace(/-/g, " ")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1 relative z-10">
-                    {hardcodedDescriptions[project.name] || project.description || "Sin descripción"}
-                  </p>
-                  <div className="relative z-10 flex flex-wrap gap-1.5 mt-4">
-                    {project.language && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
-                        <span className={`w-1.5 h-1.5 rounded-full ${langColor(project.language)}`} />
-                        {project.language}
-                      </span>
-                    )}
-                    {project.topics?.slice(0, 2).map((topic) => (
-                      <span
-                        key={topic}
-                        className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                  <Link
-                    href={project.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative z-10 mt-3 text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
-                  >
-                    Ver código <ArrowUpRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </motion.div>
+            {featured.map((project) => (
+              <FeaturedCard key={project.id} project={project} />
             ))}
 
-            {/* LinkedIn Card */}
-            <motion.div variants={itemVariants} className="group">
-              <div className="relative h-full min-h-[200px] rounded-2xl border border-[#0A66C2]/30 bg-[#0A66C2]/[0.03] hover:bg-[#0A66C2]/[0.06] transition-all duration-300 p-5 flex flex-col">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
-                    <Briefcase className="w-5 h-5 text-[#0A66C2]" />
-                  </div>
-                </div>
-                <h3 className="font-bold mb-2">LinkedIn</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Conecta conmigo en LinkedIn. Experiencia profesional verificada, recomendaciones de clientes y habilidades validadas en desarrollo de software.
-                </p>
-                <Link
-                  href="https://www.linkedin.com/in/ricardo-agelvis-9489a9370"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 text-xs text-[#0A66C2] hover:underline font-medium inline-flex items-center gap-1"
-                >
-                  Ver perfil <ArrowUpRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </motion.div>
+            {sideProjects.map((project) => (
+              <SideCard key={project.id} project={project} />
+            ))}
           </motion.div>
         )}
 
@@ -362,16 +488,16 @@ export function Projects() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="text-center mt-12"
         >
-          {hasMore && (
+          {totalProjects > 0 && (
             <p className="text-xs text-muted-foreground mb-4">
-              Mostrando {Math.min(5, repos.length)} de {repos.length} repositorios
+              Mostrando {totalProjects} {totalProjects === 1 ? "proyecto" : "proyectos"} en vivo
             </p>
           )}
           <Link
             href="https://github.com/Caskiuz"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-foreground bg-surface border border-border hover:border-primary/30 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-primary/5"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-foreground glass-card hover:border-aff-cyan/30 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-aff-cyan/5"
           >
             <Code2 className="w-4 h-4" />
             Ver todos los proyectos en GitHub

@@ -81,11 +81,11 @@ export function Contact({ config = {} }: ContactProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("contact_label", "Contacto")}
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            ¿Listo para <span className="gradient-text">{c("contact_title", "empezar")}</span>?
+            ¿Listo para <span className="metal-text">{c("contact_title", "empezar")}</span>?
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             {c("contact_subtitle", "Cuéntame sobre tu proyecto y te responderé en menos de 24 horas. La primera consulta es gratis.")}
@@ -129,22 +129,22 @@ export function Contact({ config = {} }: ContactProps) {
               className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-aff-cyan" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">Email</h4>
                   <p className="text-sm text-muted-foreground">{email}</p>
                 </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-aff-cyan group-hover:translate-x-1 transition-all" />
               </div>
             </Link>
 
             {/* Availability */}
             <div className="glass-card p-5">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-secondary" />
+                <div className="w-12 h-12 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-aff-cyan" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Disponibilidad</h4>
@@ -267,7 +267,7 @@ export function Contact({ config = {} }: ContactProps) {
                         name="name"
                         required
                         placeholder="Tu nombre"
-                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
                       />
                     </div>
                     <div>
@@ -283,7 +283,7 @@ export function Contact({ config = {} }: ContactProps) {
                         name="email"
                         required
                         placeholder="tu@email.com"
-                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
                       />
                     </div>
                   </div>
@@ -342,7 +342,7 @@ export function Contact({ config = {} }: ContactProps) {
                   <button
                     type="submit"
                     disabled={formState === "submitting"}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white bg-primary hover:bg-primary-hover rounded-full transition-all duration-200 shadow-xl shadow-primary/25 hover:shadow-primary/40 disabled:opacity-60"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold btn-aff transition-all duration-200 disabled:opacity-60"
                   >
                     {formState === "submitting" ? (
                       <>

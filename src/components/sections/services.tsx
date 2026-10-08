@@ -82,11 +82,11 @@ export function Services({ config = {} }: ServicesProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("services_label", "Servicios")}
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Lo que <span className="gradient-text">{c("services_title", "puedo hacer")} por ti</span>
+            Lo que <span className="metal-text">{c("services_title", "puedo hacer")} por ti</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             {c("services_subtitle", "Soluciones a medida para cada etapa de tu producto digital, desde el MVP hasta la escala empresarial.")}
@@ -127,14 +127,14 @@ export function Services({ config = {} }: ServicesProps) {
                       className="group relative"
                     >
                       <div
-                        className={`relative h-full rounded-2xl border p-6 sm:p-8 transition-all duration-300 ${
+                        className={`relative h-full rounded-2xl p-6 sm:p-8 transition-all duration-300 ${
                           service.popular
-                            ? "border-primary/30 bg-surface gradient-border"
-                            : "border-border bg-surface hover:bg-surface-hover"
+                            ? "metal-border bg-surface"
+                            : "metal-card"
                         }`}
                       >
                         {service.popular && (
-                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-semibold text-white bg-primary rounded-full shadow-lg shadow-primary/25">
+                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan rounded-full shadow-lg shadow-aff-blue/25">
                             Más Popular
                           </span>
                         )}
@@ -143,8 +143,8 @@ export function Services({ config = {} }: ServicesProps) {
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${
                             service.popular
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted text-muted-foreground group-hover:text-primary group-hover:bg-primary/10"
+                              ? "bg-aff-cyan/10 text-aff-cyan"
+                              : "bg-muted text-muted-foreground group-hover:text-aff-cyan group-hover:bg-aff-cyan/10"
                           } transition-colors`}
                         >
                           <IconComp className="w-6 h-6" />
@@ -160,7 +160,7 @@ export function Services({ config = {} }: ServicesProps) {
                           <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
                             💰 Inversión
                           </span>
-                          <div className="text-2xl font-bold gradient-text">
+                          <div className="text-2xl font-bold metal-text">
                             {service.price}
                           </div>
                           {service.deliveryTime && (
@@ -175,7 +175,7 @@ export function Services({ config = {} }: ServicesProps) {
                         <ul className="space-y-2.5 mb-6">
                           {service.features.map((feature, j) => (
                             <li key={j} className="flex items-center gap-2.5 text-sm">
-                              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-aff-cyan flex-shrink-0" />
                               <span className="text-muted-foreground">{feature}</span>
                             </li>
                           ))}
@@ -200,8 +200,8 @@ export function Services({ config = {} }: ServicesProps) {
                             href="#contact"
                             className={`block w-full text-center py-2 text-xs font-medium rounded-full transition-all duration-200 ${
                               service.popular
-                                ? "text-primary border border-primary/30 hover:bg-primary/5"
-                                : "text-muted-foreground border border-border hover:border-primary/30 hover:text-primary"
+                                ? "text-aff-cyan border border-aff-cyan/30 hover:bg-aff-cyan/5"
+                                : "text-muted-foreground border border-border hover:border-aff-cyan/30 hover:text-aff-cyan"
                             }`}
                           >
                             <ExternalLink className="w-3 h-3 inline mr-1" />
@@ -224,14 +224,14 @@ export function Services({ config = {} }: ServicesProps) {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-16"
         >
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/5 via-primary/5 to-emerald-500/5 border border-emerald-500/10 p-6 text-center">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/5 via-aff-blue/5 to-emerald-500/5 border border-emerald-500/10 p-6 text-center">
             <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold">
               <span>💳</span>
               <span>Todos los proyectos inician con el</span>
-              <span className="gradient-text font-bold">50% de anticipo</span>
+              <span className="metal-text font-bold">50% de anticipo</span>
               <span>y el</span>
-              <span className="gradient-text font-bold">50% restante al finalizar</span>
+              <span className="metal-text font-bold">50% restante al finalizar</span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Para servicios recurrentes aplica facturación mensual. Pagos seguros vía{" "}
@@ -252,13 +252,13 @@ export function Services({ config = {} }: ServicesProps) {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-16"
         >
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border border-primary/20 p-8 sm:p-10 text-center">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-aff-blue/10 via-aff-blue/5 to-aff-cyan/10 border border-aff-blue/20 p-8 sm:p-10 text-center">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-aff-cyan/5 rounded-full blur-3xl" />
             <h3 className="text-2xl sm:text-3xl font-bold mb-3">
               🎁 ¿No sabes qué necesita tu proyecto?
             </h3>
             <p className="text-muted-foreground max-w-xl mx-auto mb-6">
-              Solicita una <span className="text-primary font-semibold">consultoría gratuita de 15 minutos</span> por WhatsApp. 
+              Solicita una <span className="text-aff-cyan font-semibold">consultoría gratuita de 15 minutos</span> por WhatsApp. 
               Analizamos tu idea juntos y te doy un plan de acción claro, sin compromiso.
             </p>
             <a

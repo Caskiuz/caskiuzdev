@@ -165,11 +165,11 @@ export function Testimonials() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+          <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             Testimonios
           </span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Lo que dicen <span className="gradient-text">mis clientes</span>
+            Lo que dicen <span className="metal-text">mis clientes</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             Comentarios reales de personas que confiaron en mi trabajo. ¿Trabajamos juntos? ¡Deja el tuyo!
@@ -179,7 +179,7 @@ export function Testimonials() {
         {/* Testimonials grid */}
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <Loader2 className="w-8 h-8 text-aff-cyan animate-spin" />
           </div>
         ) : (
           <motion.div
@@ -195,7 +195,7 @@ export function Testimonials() {
                 className="relative glass-card p-6 sm:p-8 group hover:scale-[1.02] transition-transform duration-300"
               >
                 {/* Quote icon */}
-                <div className="absolute top-4 right-4 text-primary/10">
+                <div className="absolute top-4 right-4 text-aff-cyan/10">
                   <Quote className="w-10 h-10" />
                 </div>
 
@@ -216,7 +216,7 @@ export function Testimonials() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3 border-t border-border pt-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-aff-cyan/10 flex items-center justify-center text-aff-cyan font-bold text-sm">
                     {t.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -242,7 +242,7 @@ export function Testimonials() {
             <div className="text-center">
               <button
                 onClick={() => setFormOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-primary border border-primary/30 rounded-full hover:bg-primary/5 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-aff-cyan border border-aff-cyan/30 rounded-full hover:bg-aff-cyan/5 transition-colors"
               >
                 <Send className="w-4 h-4" />
                 ¿Trabajamos juntos? ¡Deja tu comentario!
@@ -272,7 +272,7 @@ export function Testimonials() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="Tu nombre"
-                  className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:outline-none text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:outline-none text-sm"
                   maxLength={60}
                   required
                 />
@@ -286,7 +286,7 @@ export function Testimonials() {
                     value={formRole}
                     onChange={(e) => setFormRole(e.target.value)}
                     placeholder="Ej: Fundadora"
-                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:outline-none text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:outline-none text-sm"
                     maxLength={40}
                   />
                 </div>
@@ -297,7 +297,7 @@ export function Testimonials() {
                     value={formCompany}
                     onChange={(e) => setFormCompany(e.target.value)}
                     placeholder="Ej: Mi Startup"
-                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:outline-none text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:outline-none text-sm"
                     maxLength={40}
                   />
                 </div>
@@ -350,7 +350,7 @@ export function Testimonials() {
               <button
                 type="submit"
                 disabled={formSubmitting}
-                className="w-full py-3 text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-full transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 text-sm font-semibold btn-aff transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {formSubmitting ? (
                   <>

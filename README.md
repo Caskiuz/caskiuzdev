@@ -13,9 +13,9 @@ Web profesional full-stack para captación de clientes freelance. Diseño modern
 ## ✨ Features
 
 - 🎨 **Diseño profesional** — Glassmorphism, Bento Grid, Dark/Light mode
-- ⚡ **Next.js 14** — App Router, Server Components, Turbopack
+- ⚡ **Next.js 16** — App Router, Server Components, Turbopack
 - 🎬 **Animaciones** — Framer Motion con scroll reveals y parallax
-- 📂 **Proyectos automáticos** — Sincronización con GitHub API en tiempo real
+- 📂 **Proyectos automáticos** — Sincronización con GitHub + Vercel API: enlaces de demo en vivo y miniaturas automáticas de cada sitio
 - 📝 **Blog MDX** — Markdown + componentes React + SEO completo
 - 📞 **WhatsApp Directo** — Botón flotante con mensaje predefinido
 - 📧 **Formulario de contacto** — Guarda leads en MySQL (Aiven)
@@ -30,7 +30,7 @@ Web profesional full-stack para captación de clientes freelance. Diseño modern
 
 | Capa | Tecnología |
 |---|---|
-| **Framework** | Next.js 14 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Lenguaje** | TypeScript |
 | **Estilos** | TailwindCSS 4 |
 | **Animaciones** | Framer Motion |
@@ -130,6 +130,7 @@ El proyecto está configurado para deploy automático en cada push a `main`.
 2. Agrega las variables de entorno:
    ```
    DATABASE_URL=mysql://...
+   VERCEL_TOKEN=...   # opcional: https://vercel.com/account/tokens → detecta el demo en vivo de cada proyecto
    ```
 3. Deploy automático en cada `git push`
 

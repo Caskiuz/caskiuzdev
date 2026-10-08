@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, ShieldCheck, Wallet, Smartphone } from "lucide-react";
 import { containerVariants, itemVariants } from "../variants";
 
-const Hero3D = lazy(() => import("../hero-3d"));
+const Hero3D = lazy(() => import("@/components/ui/hero-3d"));
 
 function LogoFallback() {
   return (
