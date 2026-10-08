@@ -168,14 +168,14 @@ export default async function AdminAffiliateDetailPage({
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
+            <table className="w-full sm:min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
                   <th className="px-3 py-2">Servicio</th>
                   <th className="px-3 py-2">Monto</th>
                   <th className="px-3 py-2">Estado</th>
                   <th className="px-3 py-2">Comisión</th>
-                  <th className="px-3 py-2">Fecha</th>
+                  <th className="px-3 py-2 hidden sm:table-cell">Fecha</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,7 +185,7 @@ export default async function AdminAffiliateDetailPage({
                     <td className="px-3 py-2.5">{formatUsd(sale.amount)}</td>
                     <td className="px-3 py-2.5 text-muted-foreground">{sale.status}</td>
                     <td className="px-3 py-2.5 text-aff-cyan font-medium">{formatUsd(sale.commissionTotal)}</td>
-                    <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                    <td className="px-3 py-2.5 text-xs text-muted-foreground hidden sm:table-cell">
                       {new Date(sale.createdAt).toLocaleDateString("es-ES")}
                     </td>
                   </tr>

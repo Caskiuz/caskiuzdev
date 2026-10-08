@@ -74,17 +74,17 @@ export function TestimonialsClient({ initialTestimonials }: Props) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="glass-card p-4 text-center">
-          <p className="text-3xl font-bold gradient-text">{testimonials.length}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
+        <div className="glass-card p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold gradient-text">{testimonials.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Total</p>
         </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-3xl font-bold text-green-500">{approved.length}</p>
+        <div className="glass-card p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-green-500">{approved.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Aprobados</p>
         </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-3xl font-bold text-yellow-500">{pending.length}</p>
+        <div className="glass-card p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-yellow-500">{pending.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Pendientes</p>
         </div>
       </div>
@@ -120,7 +120,7 @@ export function TestimonialsClient({ initialTestimonials }: Props) {
   function renderTable(rows: TestimonialRow[]) {
     return (
       <div className="glass-card overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full sm:min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
               <th className="p-3">Nombre</th>

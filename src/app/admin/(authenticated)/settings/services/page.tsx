@@ -7,18 +7,15 @@ export const dynamic = "force-dynamic";
 export default async function ServicesSettingsPage() {
   const config = await getSiteConfig();
 
-  // Parse existing services from DB and merge with defaults
+  // Servicios efectivos: los guardados en la BD combinados con los por defecto
+  // (misma lógica que la web pública, para que el editor nunca aparezca vacío).
   let services: ServiceItem[] = [];
   try {
     const raw = config["services_data"];
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        services = mergeServices(parsed);
-      }
-    }
+    const parsed = raw ? JSON.parse(raw) : [];
+    services = mergeServices(Array.isArray(parsed) ? parsed : []);
   } catch {
-    services = [];
+    services = mergeServices([]);
   }
 
   return (

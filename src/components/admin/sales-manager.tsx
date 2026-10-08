@@ -621,7 +621,64 @@ export function SalesManager({
       )}
 
       {/* Lista */}
-      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+      {/* Móvil: una tarjeta por venta (la tabla de 7 columnas no cabe en el teléfono) */}
+      <div className="md:hidden rounded-2xl border border-border bg-surface overflow-hidden divide-y divide-border">
+        {items.map((sale) => (
+          <div key={sale.id} className="p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">{sale.serviceTitle}</p>
+                {sale.contact && (
+                  <p className="text-xs text-muted-foreground truncate">Lead: {sale.contact.name}</p>
+                )}
+              </div>
+              <span
+                className={`shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                  SOURCE_COLORS[sale.source] ?? SOURCE_COLORS.MANUAL
+                }`}
+              >
+                {SOURCE_LABELS[sale.source] ?? sale.source}
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground truncate">
+              {sale.affiliate.name} · {sale.affiliate.email}
+            </p>
+
+            <div className="flex items-center justify-between text-sm">
+              <span>
+                Monto: <strong>${sale.amount.toFixed(2)}</strong>
+              </span>
+              <span className="text-aff-cyan font-medium">
+                Comisión: ${sale.commissionTotal.toFixed(2)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <select
+                value={sale.status}
+                onChange={(e) => updateStatus(sale.id, e.target.value)}
+                className={`px-2.5 py-1.5 rounded-lg border border-border text-xs ${STATUS_COLORS[sale.status] ?? ""}`}
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                {new Date(sale.createdAt).toLocaleDateString("es-ES")}
+              </span>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <p className="px-5 py-10 text-center text-muted-foreground">
+            Aún no hay ventas. Crea la primera con el botón de nueva venta.
+          </p>
+        )}
+      </div>
+
+      {/* Escritorio: tabla completa */}
+      <div className="hidden md:block rounded-2xl border border-border bg-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
