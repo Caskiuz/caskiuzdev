@@ -47,7 +47,7 @@ export default async function AdminAffiliateDetailPage({
   const contacts = serialize(affiliate.contacts);
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 space-y-6 sm:p-6 sm:space-y-8 lg:p-8">
       <Link
         href="/admin/affiliates"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -168,7 +168,7 @@ export default async function AdminAffiliateDetailPage({
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
                   <th className="px-3 py-2">Servicio</th>

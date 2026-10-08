@@ -25,7 +25,7 @@ export default async function AdminAffiliatesPage() {
   const pendingWithdrawals = await prisma.withdrawal.count({ where: { status: "REQUESTED" } });
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 space-y-6 sm:p-6 sm:space-y-8 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -55,7 +55,7 @@ export default async function AdminAffiliatesPage() {
 
       <div className="rounded-2xl border border-border bg-surface overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase tracking-wider">
                 <th className="px-5 py-3">Afiliado</th>

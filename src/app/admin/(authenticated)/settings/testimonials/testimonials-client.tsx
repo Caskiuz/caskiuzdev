@@ -120,7 +120,7 @@ export function TestimonialsClient({ initialTestimonials }: Props) {
   function renderTable(rows: TestimonialRow[]) {
     return (
       <div className="glass-card overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
               <th className="p-3">Nombre</th>

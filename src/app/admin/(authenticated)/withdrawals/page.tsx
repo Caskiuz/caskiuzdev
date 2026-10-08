@@ -48,7 +48,7 @@ export default async function AdminWithdrawalsPage() {
   const pending = withdrawals.filter((w) => w.status === "REQUESTED").length;
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 space-y-6 sm:p-6 sm:space-y-8 lg:p-8">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Wallet className="w-6 h-6 text-primary" /> Retiros ({pending} pendientes)

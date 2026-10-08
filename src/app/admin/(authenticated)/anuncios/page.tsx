@@ -16,7 +16,7 @@ export default async function AdminAnnouncementsPage() {
   ]);
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 space-y-6 sm:p-6 sm:space-y-8 lg:p-8">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Megaphone className="w-6 h-6 text-primary" /> Anuncios para afiliados

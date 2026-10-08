@@ -623,7 +623,7 @@ export function SalesManager({
       {/* Lista */}
       <div className="rounded-2xl border border-border bg-surface overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
                 <th className="px-5 py-3">Servicio</th>
