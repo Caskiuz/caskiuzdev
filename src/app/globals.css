@@ -364,6 +364,16 @@ body {
     }
   }
 
+  /* Mini-ventana en vivo de los proyectos: recorre la página de arriba abajo */
+  @keyframes live-pan {
+    0%, 10% {
+      transform: translateY(0);
+    }
+    90%, 100% {
+      transform: translateY(var(--pan, 0px));
+    }
+  }
+
   /* Nodo de datos orbitando el logo de la marca */
   @keyframes brand-orbit {
     from {

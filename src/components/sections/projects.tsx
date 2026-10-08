@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import { motion, useInView } from "framer-motion";
 import { ExternalLink, Code2, ArrowUpRight, Star, GitFork, Loader2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ProjectIcon } from "@/components/ui/project-icons";
+import previewsJson from "@/lib/previews.json";
 
 const hardcodedDescriptions: Record<string, string> = {
   SistemadePrestamos:
@@ -136,10 +144,184 @@ function screenshotUrl(url: string): string {
   return `/api/screenshot?url=${encodeURIComponent(url)}`;
 }
 
-function ProjectThumb({ url, name }: { url: string; name: string }) {
-  const [failed, setFailed] = useState(false);
+interface PreviewEntry {
+  video: string;
+  poster: string;
+  recordedAt: string;
+}
 
-  if (failed) {
+const previews = previewsJson as Record<string, PreviewEntry>;
+
+/** Vista previa grabada con `npm run previews`, si existe para esa URL. */
+function recordedPreview(url: string): PreviewEntry | null {
+  return previews[url.replace(/\/+$/, "")] ?? null;
+}
+
+// Una sola comprobación de incrustabilidad por URL y carga de página.
+const embedChecks = new Map<string, Promise<boolean>>();
+
+function isEmbeddable(url: string): Promise<boolean> {
+  const cached = embedChecks.get(url);
+  if (cached) return cached;
+  const check = fetch(`/api/embed-check?url=${encodeURIComponent(url)}`)
+    .then((res) => (res.ok ? res.json() : { embeddable: false }))
+    .then((data) => Boolean(data.embeddable))
+    .catch(() => false);
+  embedChecks.set(url, check);
+  return check;
+}
+
+/** Media query reactiva (arranca en false para no romper la hidratación). */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
+const LIVE_WIDTH = 1280;
+const LIVE_HEIGHT = 1400;
+const HOVER_GRACE_MS = 1500;
+const LIVE_LOAD_TIMEOUT_MS = 8000;
+
+/** Escala del iframe al ancho de la tarjeta y recorrido vertical del paneo. */
+function usePreviewGeometry(ref: RefObject<HTMLDivElement | null>) {
+  const [geometry, setGeometry] = useState({ scale: 0.3, pan: 0 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const scale = el.clientWidth / LIVE_WIDTH;
+      setGeometry({
+        scale,
+        pan: Math.max(0, Math.round(LIVE_HEIGHT * scale - el.clientHeight)),
+      });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return geometry;
+}
+
+type PreviewMode = "static" | "video" | "live";
+
+/**
+ * Miniatura de un proyecto con la animación real de su web: mini-ventana en vivo
+ * (iframe) si el sitio permite incrustarse, o el vídeo grabado con `npm run previews`
+ * si no lo permite (p. ej. BeeFinder) o si estamos en móvil.
+ * Escritorio: arranca al pasar el ratón. Móvil: al entrar la tarjeta en pantalla.
+ */
+function ProjectPreview({ url, name }: { url: string; name: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const leaveTimer = useRef<number | undefined>(undefined);
+  const hoverCapable = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const [mode, setMode] = useState<PreviewMode>("static");
+  const [active, setActive] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [liveReady, setLiveReady] = useState(false);
+  const [liveFailed, setLiveFailed] = useState(false);
+  const [videoBlocked, setVideoBlocked] = useState(false);
+  const { scale, pan } = usePreviewGeometry(containerRef);
+
+  const preview = recordedPreview(url);
+
+  useEffect(() => {
+    let cancelled = false;
+    isEmbeddable(url).then((embeddable) => {
+      if (cancelled) return;
+      if (reducedMotion) {
+        setMode("static");
+      } else if (hoverCapable) {
+        setMode(embeddable ? "live" : preview ? "video" : "static");
+      } else {
+        setMode(preview ? "video" : embeddable ? "live" : "static");
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [url, hoverCapable, reducedMotion, preview]);
+
+  // Vuelve al estado estático: desmonta el vídeo/iframe y reinicia su carga.
+  const deactivate = () => {
+    setActive(false);
+    setLiveReady(false);
+    setLiveFailed(false);
+    setVideoBlocked(false);
+  };
+
+  // Móvil/táctil (sin hover): animación automática mientras la tarjeta se ve.
+  useEffect(() => {
+    if (hoverCapable || mode === "static") return;
+    const el = containerRef.current;
+    if (!el) return;
+    let hideTimer: number | undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio >= 0.5) {
+          window.clearTimeout(hideTimer);
+          setActive(true);
+        } else if (entry.intersectionRatio <= 0.25) {
+          hideTimer = window.setTimeout(deactivate, 400);
+        }
+      },
+      { threshold: [0, 0.25, 0.5] }
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(hideTimer);
+    };
+  }, [hoverCapable, mode]);
+
+  const playing = active && mode !== "static" && !videoBlocked;
+  const live = playing && mode === "live" && liveReady && !liveFailed;
+  const video = playing && mode === "video";
+  const source = preview ? preview.poster : screenshotUrl(url);
+
+  // El autoplay silenciado puede fallar (Modo de bajo consumo en iOS, por ejemplo).
+  useEffect(() => {
+    if (!video) return;
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.play().catch((error: DOMException) => {
+      // AbortError = reproducción interrumpida por el desmontaje; no es un bloqueo.
+      if (error?.name === "AbortError") return;
+      setVideoBlocked(true);
+    });
+  }, [video]);
+
+  // Si el iframe no termina de cargar, se queda la captura estática.
+  useEffect(() => {
+    if (!playing || mode !== "live" || liveReady) return;
+    const timer = window.setTimeout(() => setLiveFailed(true), LIVE_LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [playing, mode, liveReady]);
+
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
+
+  const handleEnter = () => {
+    if (!hoverCapable) return;
+    window.clearTimeout(leaveTimer.current);
+    setActive(true);
+  };
+
+  const handleLeave = () => {
+    if (!hoverCapable) return;
+    leaveTimer.current = window.setTimeout(deactivate, HOVER_GRACE_MS);
+  };
+
+  if (imageFailed && !live && !video) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
         <div className="opacity-50">
@@ -149,17 +331,102 @@ function ProjectThumb({ url, name }: { url: string; name: string }) {
     );
   }
 
+  const badge =
+    "inline-flex items-center gap-1.5 font-semibold uppercase tracking-wide text-white bg-black/60 rounded-full";
+
   return (
-    <Image
-      src={screenshotUrl(url)}
-      alt={`Vista previa de ${name.replace(/-/g, " ")}`}
-      fill
-      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      className="object-cover object-top"
-      loading="lazy"
-      unoptimized
-      onError={() => setFailed(true)}
-    />
+    <div
+      ref={containerRef}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      className="absolute inset-0 overflow-hidden"
+    >
+      <Image
+        src={source}
+        alt={`Vista previa de ${name.replace(/-/g, " ")}`}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className="object-cover object-top"
+        loading="lazy"
+        unoptimized
+        onError={() => setImageFailed(true)}
+      />
+
+      {video && (
+        <video
+          ref={videoRef}
+          src={preview?.video}
+          poster={preview?.poster}
+          muted
+          loop
+          playsInline
+          preload="none"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+
+      {/* Mini-ventana en vivo: iframe 1280x1400 escalado al ancho de la tarjeta,
+          paneando hacia abajo para que se vean las animaciones de la página. */}
+      {playing && mode === "live" && !liveFailed && (
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute left-0 top-0 w-full"
+            style={
+              {
+                "--pan": `-${pan}px`,
+                animation: liveReady ? "live-pan 18s ease-in-out infinite alternate" : "none",
+              } as CSSProperties
+            }
+          >
+            <div
+              className="origin-top-left"
+              style={{ width: LIVE_WIDTH, height: LIVE_HEIGHT, transform: `scale(${scale})` }}
+            >
+              <iframe
+                src={url}
+                title={`Sitio en vivo de ${name}`}
+                loading="lazy"
+                tabIndex={-1}
+                aria-hidden="true"
+                onLoad={() => setLiveReady(true)}
+                onError={() => setLiveFailed(true)}
+                className={`h-full w-full border-0 pointer-events-none transition-opacity duration-500 ${
+                  liveReady ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(live || video) && (
+        <span
+          className={`${badge} absolute top-3 right-3 z-20 text-[10px] px-2.5 py-1`}
+        >
+          <span className="relative flex w-1.5 h-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-green-400" />
+          </span>
+          {live ? "En vivo" : "Vista previa"}
+        </span>
+      )}
+
+      {/* Mientras corre la animación el overlay "Ver" se reduce a una etiqueta
+          para no taparla; la tarjeta completa sigue abriendo el sitio. */}
+      {live || video ? (
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 text-xs font-medium text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
+          Ver sitio <ArrowUpRight className="w-3 h-3" />
+        </span>
+      ) : (
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span className="flex items-center gap-1.5 text-xs font-medium text-white bg-black/50 px-3 py-1.5 rounded-full">
+            Ver <ArrowUpRight className="w-3 h-3" />
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -184,17 +451,12 @@ function FeaturedCard({ project }: { project: ProjectData }) {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Miniatura */}
+        {/* Miniatura con vista previa animada del sitio */}
         <div className="relative h-52 shrink-0 overflow-hidden bg-surface">
-          <ProjectThumb url={project.demoUrl} name={project.name} />
-          <span className="absolute top-3 left-3 z-10 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan px-3 py-1 rounded-full">
+          <ProjectPreview url={project.demoUrl} name={project.name} />
+          <span className="absolute top-3 left-3 z-30 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan px-3 py-1 rounded-full">
             Destacado
           </span>
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-white bg-black/50 px-3 py-1.5 rounded-full">
-              Ver <ArrowUpRight className="w-3 h-3" />
-            </span>
-          </div>
         </div>
 
         <div className="relative z-10 p-6 flex flex-col flex-1">
@@ -279,14 +541,9 @@ function SideCard({ project }: { project: ProjectData }) {
         onClick={() => openDemo(project.demoUrl)}
         className="relative h-full rounded-2xl metal-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
       >
-        {/* Miniatura */}
+        {/* Miniatura con vista previa animada del sitio */}
         <div className="relative aspect-video shrink-0 overflow-hidden bg-surface">
-          <ProjectThumb url={project.demoUrl} name={project.name} />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-white bg-black/50 px-3 py-1.5 rounded-full">
-              Ver <ArrowUpRight className="w-3 h-3" />
-            </span>
-          </div>
+          <ProjectPreview url={project.demoUrl} name={project.name} />
         </div>
 
         <div className="relative z-10 p-5 flex flex-col flex-1">

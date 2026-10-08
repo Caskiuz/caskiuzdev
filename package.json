@@ -7,6 +7,7 @@
     "build": "npx prisma db push && next build",
     "start": "next start",
     "lint": "eslint",
+    "previews": "node scripts/record-previews.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -49,6 +50,8 @@
     "@types/three": "^0.186.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "ffmpeg-static": "^5.3.0",
+    "playwright": "^1.64.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

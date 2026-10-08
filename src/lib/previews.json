@@ -1,0 +1,42 @@
+{
+  "https://astro-bar-app.vercel.app": {
+    "video": "/previews/astrobar.mp4",
+    "poster": "/previews/astrobar.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://beefinder.net": {
+    "video": "/previews/beefinder.mp4",
+    "poster": "/previews/beefinder.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://comeya.es": {
+    "video": "/previews/comeya.mp4",
+    "poster": "/previews/comeya.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://daysstylestore.vercel.app": {
+    "video": "/previews/daysstylestore.mp4",
+    "poster": "/previews/daysstylestore.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://highpowercoinproject.vercel.app": {
+    "video": "/previews/highpower.mp4",
+    "poster": "/previews/highpower.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://rifasv2-two.vercel.app": {
+    "video": "/previews/rifasv2.mp4",
+    "poster": "/previews/rifasv2.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://spait-gules.vercel.app": {
+    "video": "/previews/spait.mp4",
+    "poster": "/previews/spait.jpg",
+    "recordedAt": "2026-10-08"
+  },
+  "https://vetsancristobal.vercel.app": {
+    "video": "/previews/vetsancristobal.mp4",
+    "poster": "/previews/vetsancristobal.jpg",
+    "recordedAt": "2026-10-08"
+  }
+}

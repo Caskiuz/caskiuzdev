@@ -16,6 +16,7 @@ Web profesional full-stack para captación de clientes freelance. Diseño modern
 - ⚡ **Next.js 16** — App Router, Server Components, Turbopack
 - 🎬 **Animaciones** — Framer Motion con scroll reveals y parallax
 - 📂 **Proyectos automáticos** — Sincronización con GitHub + Vercel API: enlaces de demo en vivo y miniaturas automáticas de cada sitio
+- 🎥 **Vistas previas animadas** — Mini-ventana con el sitio en vivo (iframe) al pasar el ratón, o vídeo mp4 grabado cuando el sitio no permite incrustarse; en móvil se animan solas al hacer scroll
 - 📝 **Blog MDX** — Markdown + componentes React + SEO completo
 - 📞 **WhatsApp Directo** — Botón flotante con mensaje predefinido
 - 📧 **Formulario de contacto** — Guarda leads en MySQL (Aiven)
@@ -122,6 +123,26 @@ npx prisma studio           # UI para explorar datos
 
 ---
 
+## 🎥 Vistas previas animadas
+
+Cada tarjeta de proyecto muestra la animación real de su web:
+
+- **Mini-ventana en vivo** (iframe) si el sitio permite incrustarse — se comprueba con `/api/embed-check`. En escritorio arranca al pasar el ratón y se detiene al salir.
+- **Vídeo mp4 grabado** si el sitio bloquea la incrustación (p. ej. BeeFinder responde `x-frame-options: SAMEORIGIN`) y siempre en móvil, donde se reproduce automáticamente al entrar la tarjeta en pantalla.
+- **Captura estática** como respaldo final (Microlink vía `/api/screenshot`).
+
+Para (re)grabar los vídeos:
+
+```bash
+npx playwright install chromium   # una sola vez (~120 MB)
+npm run previews                  # graba todos los proyectos
+npm run previews -- --only=rifasv2  # o solo uno
+```
+
+El script recorre cada web a 1280x800 durante ~6 s (con scroll suave), genera `public/previews/{slug}.mp4` + `{slug}.jpg` y actualiza el manifest `src/lib/previews.json`, que la web importa directamente. Los mp4 se commitean al repo, así que **hay que ejecutar `npm run previews` cuando un proyecto cambie** y subir los archivos nuevos. La lista de proyectos se toma de `/api/github` (los repos con demo) más los proyectos manuales del script.
+
+---
+
 ## 🌐 Despliegue en Vercel
 
 El proyecto está configurado para deploy automático en cada push a `main`.
@@ -143,6 +164,8 @@ El proyecto está configurado para deploy automático en cada push a `main`.
 | POST | `/api/contact` | Guarda mensaje de contacto |
 | POST | `/api/subscribe` | Suscribe email al newsletter |
 | GET | `/api/github` | Proxy de GitHub API (repos) |
+| GET | `/api/screenshot` | Captura estática de un sitio (Microlink, caché 24 h) |
+| GET | `/api/embed-check` | Comprueba si un sitio permite incrustarse en un iframe |
 
 ---
 
