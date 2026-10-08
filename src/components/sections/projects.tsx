@@ -77,6 +77,25 @@ const manualProjects: ProjectData[] = [
     ],
   },
   {
+    id: "beefinder",
+    name: "BeeFinder",
+    description:
+      "Marketplace de servicios a domicilio donde los usuarios publican una tarea y los profesionales disponibles la realizan: limpieza, mudanzas, marketing digital, electrónica, salón y spa, entre otras categorías. Incluye perfiles de proveedores, reservas con pago desde la web o la app, valoraciones, panel de trabajos y apps nativas para iOS y Android.",
+    demoUrl: "https://beefinder.net",
+    language: null,
+    topics: ["Marketplace", "Servicios", "iOS", "Android"],
+    links: [
+      {
+        label: "App Store",
+        url: "https://apps.apple.com/es/app/beefinder/id6766002889",
+      },
+      {
+        label: "Google Play",
+        url: "https://play.google.com/store/apps/details?id=com.beefinder.client&hl=en-US",
+      },
+    ],
+  },
+  {
     id: "highpower",
     name: "HighPower",
     description:
