@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { sendEmail, emailShell } from "@/lib/email";
+import { notifyInApp } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,18 @@ export async function PATCH(
         notes: notes ? String(notes).slice(0, 2000) : document.notes,
         reviewedAt: new Date(),
       },
+    });
+
+    // Aviso interno en el panel del afiliado (no depende de email)
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: document.affiliateId,
+      kind: "KYC",
+      title: status === "APPROVED" ? "✅ Tu documento fue aprobado" : "⚠️ Tu documento fue rechazado",
+      body: `Documento ${document.type}: ${
+        status === "APPROVED" ? "aprobado" : "rechazado"
+      }${notes ? ` · Nota: ${String(notes).slice(0, 200)}` : ""}`,
+      linkUrl: "/afiliados/panel/documentos",
     });
 
     await sendEmail({

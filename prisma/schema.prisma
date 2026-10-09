@@ -8,17 +8,18 @@ datasource db {
 }
 
 model Contact {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String
-  service     String?
-  message     String    @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at")
-  read        Boolean   @default(false)
-  affiliateId Int?
-  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
-  clickId     Int?
-  sales       Sale[]
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String
+  service           String?
+  message           String    @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  read              Boolean   @default(false)
+  affiliateId       Int?
+  affiliate         Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  clickId           Int?
+  attributionSource String?   @db.VarChar(20) // COOKIE | CODE | URL | IP_MATCH | MANUAL
+  sales             Sale[]
 
   @@index([affiliateId])
   @@map("contacts")
@@ -144,11 +145,13 @@ model Click {
   userAgent   String?   @db.VarChar(500)
   referrer    String?   @db.VarChar(500)
   destination String?
+  visitorId   String?   @db.VarChar(64) // cookie cask_visit: dedup de clics repetidos del mismo visitante
   createdAt   DateTime @default(now()) @map("created_at")
   convertedAt DateTime?
   saleId      Int?
 
   @@index([affiliateId, createdAt])
+  @@index([affiliateId, visitorId])
   @@map("affiliate_clicks")
 }
 
@@ -315,4 +318,24 @@ model AnnouncementRead {
   @@unique([announcementId, affiliateId])
   @@index([affiliateId])
   @@map("announcement_reads")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Centro de notificaciones internas (admin y afiliados, sin email)
+// ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id            Int      @id @default(autoincrement())
+  recipientType String // ADMIN | AFFILIATE
+  recipientId   Int?     // id del afiliado cuando recipientType = AFFILIATE; null para ADMIN
+  kind          String   @default("INFO") // NEW_LEAD | LEAD_ASSIGNED | SALE | KYC | WITHDRAWAL | TICKET | INFO
+  title         String   @db.VarChar(160)
+  body          String?  @db.Text
+  linkUrl       String?  @db.VarChar(500)
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([recipientType, read, createdAt])
+  @@index([recipientType, recipientId, read])
+  @@map("notifications")
 }

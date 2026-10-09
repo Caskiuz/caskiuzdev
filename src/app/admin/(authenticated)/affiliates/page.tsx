@@ -28,7 +28,7 @@ export default async function AdminAffiliatesPage() {
   const affiliates = await prisma.affiliate.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      _count: { select: { clicks: true, sales: true } },
+      _count: { select: { clicks: true, sales: true, contacts: true } },
       commissions: { where: { status: { in: ["AVAILABLE", "HOLD", "WITHDRAWING"] } }, select: { amount: true, status: true } },
       documents: { where: { status: "PENDING" }, select: { id: true, type: true } },
     },
@@ -117,7 +117,13 @@ export default async function AdminAffiliatesPage() {
                 <span>
                   {affiliate._count.sales} ventas · {formatUsd(affiliate.lifetimeRevenue)}
                 </span>
-                <span>{affiliate._count.clicks} clics</span>
+                <span>
+                  {affiliate._count.clicks} clics · {affiliate._count.contacts} leads ·{" "}
+                  {affiliate._count.clicks > 0
+                    ? Math.round((affiliate._count.contacts / affiliate._count.clicks) * 100)
+                    : 0}
+                  % conv.
+                </span>
               </div>
 
               <div className="mt-2 flex items-center justify-between text-xs">
@@ -141,7 +147,7 @@ export default async function AdminAffiliatesPage() {
       {/* Escritorio: tabla */}
       <div className="hidden sm:block rounded-2xl border border-border bg-surface overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+          <table className="w-full min-w-[960px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase tracking-wider">
                 <th className="px-5 py-3">Afiliado</th>
@@ -149,6 +155,8 @@ export default async function AdminAffiliatesPage() {
                 <th className="px-5 py-3">Nivel</th>
                 <th className="px-5 py-3">Ventas referidas</th>
                 <th className="px-5 py-3">Clics</th>
+                <th className="px-5 py-3">Leads</th>
+                <th className="px-5 py-3">Conv.</th>
                 <th className="px-5 py-3">Saldo pendiente</th>
                 <th className="px-5 py-3">Estado</th>
                 <th className="px-5 py-3" />
@@ -159,6 +167,10 @@ export default async function AdminAffiliatesPage() {
                 const statusInfo = STATUS_LABELS[affiliate.status] ?? STATUS_LABELS.PENDING;
                 const tier = getTierInfo(affiliate.tier);
                 const pendingBalance = affiliate.commissions.reduce((acc, c) => acc + c.amount, 0);
+                const conversion =
+                  affiliate._count.clicks > 0
+                    ? Math.round((affiliate._count.contacts / affiliate._count.clicks) * 100)
+                    : 0;
                 return (
                   <tr key={affiliate.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
                     <td className="px-5 py-3.5">
@@ -176,6 +188,16 @@ export default async function AdminAffiliatesPage() {
                       {affiliate._count.sales} · {formatUsd(affiliate.lifetimeRevenue)}
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">{affiliate._count.clicks}</td>
+                    <td className="px-5 py-3.5 text-muted-foreground">{affiliate._count.contacts}</td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={`font-semibold ${
+                          conversion >= 5 ? "text-green-500" : conversion > 0 ? "text-yellow-500" : "text-muted-foreground"
+                        }`}
+                      >
+                        {conversion}%
+                      </span>
+                    </td>
                     <td className="px-5 py-3.5 font-medium">{formatUsd(pendingBalance)}</td>
                     <td className="px-5 py-3.5">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
@@ -195,7 +217,7 @@ export default async function AdminAffiliatesPage() {
               })}
               {affiliates.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-5 py-10 text-center text-muted-foreground">
                     Aún no hay afiliados registrados.
                   </td>
                 </tr>

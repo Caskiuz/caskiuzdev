@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { sendEmail, emailShell } from "@/lib/email";
+import { notifyInApp } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,16 @@ export async function POST(
       return tx.ticketReply.create({
         data: { ticketId, author: "ADMIN", message: String(message).trim() },
       });
+    });
+
+    // Aviso interno en el panel del afiliado (no depende de email)
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: ticket.affiliateId,
+      kind: "TICKET",
+      title: "💬 Nueva respuesta de soporte",
+      body: `Tu ticket "${ticket.subject.slice(0, 60)}" tiene una respuesta.`,
+      linkUrl: "/afiliados/panel/soporte",
     });
 
     await sendEmail({

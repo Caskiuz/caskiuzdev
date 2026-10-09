@@ -45,12 +45,16 @@ export function Contact({ config = {} }: ContactProps) {
     setFormState("submitting");
 
     const formData = new FormData(e.currentTarget);
+    // El código viaja por dos vías: el campo visible (si el cliente lo escribe)
+    // y el campo oculto (auto-rellenado con cookie/localStorage/URL).
+    const typedRef = String(formData.get("refCode") || "").trim();
+    const autoRef = String(formData.get("refCodeAuto") || "").trim();
     const data = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       service: formData.get("service") as string,
       message: formData.get("message") as string,
-      refCode: formData.get("refCode") as string,
+      refCode: typedRef || autoRef,
     };
 
     try {
@@ -322,6 +326,9 @@ export function Contact({ config = {} }: ContactProps) {
                       placeholder="¿Te recomendó alguien? Escribe su código"
                       className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm uppercase"
                     />
+                    {/* Si el visitante llegó por el link de un afiliado, el código
+                        viaja automático aquí aunque no lo escriba a mano */}
+                    <input type="hidden" name="refCodeAuto" value={referralCode || ""} />
                   </div>
                   <div>
                     <label

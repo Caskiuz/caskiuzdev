@@ -67,6 +67,8 @@ export function nextTier(revenue: number) {
 export const MIN_WITHDRAWAL = 30; // USD
 export const REFERRAL_COOKIE = "cask_ref";
 export const REFERRAL_COOKIE_DAYS = 30;
+export const VISITOR_COOKIE = "cask_visit";
+export const VISITOR_COOKIE_DAYS = 730; // 2 años: identifica al visitante para no duplicar clics
 
 /** Lista de países del registro y del perfil (el país habilita métodos de pago locales) */
 export const COUNTRIES = [

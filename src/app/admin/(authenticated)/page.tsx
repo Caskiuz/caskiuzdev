@@ -13,10 +13,13 @@ export default async function AdminPage() {
   let pendingDocs = 0;
   let commissionsPaid = 0;
   let commissionsPending = 0;
+  let clicks7d = 0;
+  let leads7d = 0;
   let dbError: string | null = null;
 
   try {
-    const [messages, subs, posts, affiliates, withdrawals, docs, paidAgg, pendingAgg] =
+    const since7 = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+    const [messages, subs, posts, affiliates, withdrawals, docs, paidAgg, pendingAgg, clicksWeek, leadsWeek] =
       await Promise.all([
         prisma.contact.count({ where: { read: false } }),
         prisma.subscriber.count({ where: { active: true } }),
@@ -29,6 +32,8 @@ export default async function AdminPage() {
           where: { status: { in: ["HOLD", "AVAILABLE", "WITHDRAWING"] } },
           _sum: { amount: true },
         }),
+        prisma.click.count({ where: { createdAt: { gte: since7 } } }),
+        prisma.contact.count({ where: { createdAt: { gte: since7 } } }),
       ]);
 
     pendingMessages = messages;
@@ -39,6 +44,8 @@ export default async function AdminPage() {
     pendingDocs = docs;
     commissionsPaid = paidAgg._sum.amount ?? 0;
     commissionsPending = pendingAgg._sum.amount ?? 0;
+    clicks7d = clicksWeek;
+    leads7d = leadsWeek;
   } catch (error) {
     console.error("Error al conectar con la base de datos:", error);
     const msg =
@@ -114,6 +121,20 @@ export default async function AdminPage() {
             <div className="text-4xl font-bold text-green-500 mb-2">{formatUsd(commissionsPaid)}</div>
             <div className="text-sm font-medium">Comisiones pagadas totales</div>
           </div>
+          <Link
+            href="/admin/affiliates"
+            className="glass-card p-6 hover:scale-[1.01] transition-transform"
+          >
+            <div className="text-4xl font-bold text-aff-cyan mb-2">{clicks7d.toLocaleString("en-US")}</div>
+            <div className="text-sm font-medium">Clics de afiliados (últimos 7 días)</div>
+          </Link>
+          <Link
+            href="/admin/messages"
+            className="glass-card p-6 hover:scale-[1.01] transition-transform"
+          >
+            <div className="text-4xl font-bold text-aff-cyan mb-2">{leads7d.toLocaleString("en-US")}</div>
+            <div className="text-sm font-medium">Leads nuevos (últimos 7 días)</div>
+          </Link>
         </div>
 
         {dbError ? (

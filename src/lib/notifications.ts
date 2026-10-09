@@ -11,6 +11,122 @@ function escapeHtml(text: string): string {
 /** Tope de correos por anuncio (protege la cuota gratuita de Brevo: 300/día). */
 export const ANNOUNCEMENT_EMAIL_LIMIT = 200;
 
+// ─── Centro de notificaciones internas (no depende de email) ───
+
+export type NotificationRecipient = "ADMIN" | "AFFILIATE";
+export type NotificationKind =
+  | "NEW_LEAD"
+  | "LEAD_ASSIGNED"
+  | "SALE"
+  | "KYC"
+  | "WITHDRAWAL"
+  | "TICKET"
+  | "INFO";
+
+const NOTIFICATION_RETENTION_DAYS = 90;
+
+/**
+ * Crea una notificación interna (campanita del panel). Nunca lanza errores:
+ * si la BD falla, el flujo principal sigue funcionando.
+ */
+export async function notifyInApp(options: {
+  recipientType: NotificationRecipient;
+  recipientId?: number | null;
+  kind?: NotificationKind;
+  title: string;
+  body?: string | null;
+  linkUrl?: string | null;
+}): Promise<void> {
+  try {
+    const recipientId = options.recipientType === "AFFILIATE" ? options.recipientId ?? null : null;
+    await prisma.notification.create({
+      data: {
+        recipientType: options.recipientType,
+        recipientId,
+        kind: options.kind ?? "INFO",
+        title: options.title.slice(0, 160),
+        body: options.body || null,
+        linkUrl: options.linkUrl || null,
+      },
+    });
+
+    // Podar notificaciones viejas del mismo destinatario para que no crezcan sin fin
+    const cutoff = new Date(Date.now() - NOTIFICATION_RETENTION_DAYS * 24 * 3600 * 1000);
+    await prisma.notification.deleteMany({
+      where: { recipientType: options.recipientType, recipientId, createdAt: { lt: cutoff } },
+    });
+  } catch (error) {
+    console.error("Error creando notificación interna:", error);
+  }
+}
+
+/**
+ * Avisa por el sistema cuando llega un lead nuevo:
+ * - Al ADMIN siempre (atribuido o no, con enlace al buzón).
+ * - Al AFILIADO cuando el lead quedó atribuido a su nombre.
+ */
+export async function notifyNewLead(contactId: number): Promise<void> {
+  try {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        message: true,
+        affiliateId: true,
+        affiliate: { select: { id: true, name: true } },
+      },
+    });
+    if (!contact) return;
+
+    if (contact.affiliateId && contact.affiliate) {
+      await notifyInApp({
+        recipientType: "AFFILIATE",
+        recipientId: contact.affiliateId,
+        kind: "NEW_LEAD",
+        title: `¡Nuevo lead! ${contact.name} te escribió`,
+        body: contact.message.slice(0, 280) || contact.email,
+        linkUrl: "/afiliados/panel/leads",
+      });
+    }
+
+    await notifyInApp({
+      recipientType: "ADMIN",
+      kind: "NEW_LEAD",
+      title: `Nuevo lead: ${contact.name}`,
+      body: contact.affiliate
+        ? `Atribuido a ${contact.affiliate.name} · ${contact.email}`
+        : `Sin afiliado · ${contact.email}`,
+      linkUrl: "/admin/messages",
+    });
+  } catch (error) {
+    console.error("Error notificando lead nuevo:", error);
+  }
+}
+
+/** Avisa al afiliado cuando el admin le asigna un lead que estaba sin dueño. */
+export async function notifyLeadAssigned(contactId: number): Promise<void> {
+  try {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: { id: true, name: true, email: true, affiliateId: true },
+    });
+    if (!contact || !contact.affiliateId) return;
+
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: contact.affiliateId,
+      kind: "LEAD_ASSIGNED",
+      title: `Te asignaron un lead: ${contact.name}`,
+      body: `El equipo de Caskiuz te atribuyó el contacto de ${contact.email}.`,
+      linkUrl: "/afiliados/panel/leads",
+    });
+  } catch (error) {
+    console.error("Error notificando lead asignado:", error);
+  }
+}
+
 /**
  * Notifica al afiliado por email cuando se registra una venta a su nombre
  * o cuando cambia el estado de cobro de una venta existente.
@@ -29,6 +145,19 @@ export async function notifyAffiliateSale(
 
     const statusLabel = getSaleStatusLabel(sale.status);
     const panelUrl = "https://caskiuz.vercel.app/afiliados/panel/comisiones";
+
+    // Aviso interno en el panel (el canal principal: no depende de email)
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: sale.affiliateId,
+      kind: "SALE",
+      title:
+        event === "created"
+          ? `Nueva venta registrada: ${sale.serviceTitle}`
+          : `Tu venta cambió de estado: ${sale.serviceTitle}`,
+      body: `Monto: $${sale.amount.toFixed(2)} USD · Estado: ${statusLabel} · Tu comisión: $${sale.commissionTotal.toFixed(2)} USD`,
+      linkUrl: "/afiliados/panel/comisiones",
+    });
 
     await sendEmail({
       to: sale.affiliate.email,

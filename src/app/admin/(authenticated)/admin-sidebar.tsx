@@ -15,6 +15,7 @@ import {
   Megaphone,
   CreditCard,
   Send,
+  Bell,
   Menu,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { LogoutButton } from "./logout-button";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/messages", label: "Mensajes", icon: MessageSquare },
+  { href: "/admin/notificaciones", label: "Notificaciones", icon: Bell },
 ];
 
 const affiliateItems = [
@@ -43,7 +45,7 @@ const settingsItems = [
   { href: "/admin/settings/affiliates", label: "Red de Afiliados", icon: Send },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -68,17 +70,25 @@ export function AdminSidebar() {
         : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
     );
 
-  const renderItem = (item: { href: string; label: string; icon: typeof Settings; exact?: boolean }) => (
-    <Link
-      key={item.href}
-      href={item.href}
-      onClick={() => setOpen(false)}
-      className={linkClass(isActive(item))}
-    >
-      <item.icon className="w-5 h-5 shrink-0" />
-      {item.label}
-    </Link>
-  );
+  const renderItem = (item: { href: string; label: string; icon: typeof Settings; exact?: boolean }) => {
+    const showBadge = item.href === "/admin/notificaciones" && notificationsCount > 0;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setOpen(false)}
+        className={linkClass(isActive(item))}
+      >
+        <item.icon className="w-5 h-5 shrink-0" />
+        {item.label}
+        {showBadge && (
+          <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-white text-[10px] font-bold">
+            {notificationsCount > 9 ? "9+" : notificationsCount}
+          </span>
+        )}
+      </Link>
+    );
+  };
 
   const nav = (
     <>

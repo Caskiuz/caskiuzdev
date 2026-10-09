@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AiChatWidget } from "@/components/ui/ai-chat-widget";
+import { ReferralCapture } from "@/components/layout/referral-capture";
 import { getSiteConfig } from "@/lib/site-config";
 import { SiteSession } from "@/components/layout/site-session";
 
@@ -23,6 +24,7 @@ export default async function SiteLayout({
       <main className="flex-1">{children}</main>
       <Footer config={config} />
       <AiChatWidget whatsapp={config.contact_whatsapp || "584262931869"} />
+      <ReferralCapture />
     </div>
   );
 }

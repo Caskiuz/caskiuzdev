@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { sendEmail, emailShell } from "@/lib/email";
 import { payoutMethodDetail } from "@/lib/affiliate";
+import { notifyInApp } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,23 @@ export async function PATCH(
         });
       }
       return result;
+    });
+
+    // Aviso interno en el panel del afiliado (no depende de email)
+    const statusLabel =
+      status === "PAID" ? "pagado" : status === "REJECTED" ? "rechazado" : "aprobado (en proceso de pago)";
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: withdrawal.affiliateId,
+      kind: "WITHDRAWAL",
+      title:
+        status === "PAID"
+          ? "✅ Tu retiro fue pagado"
+          : status === "REJECTED"
+            ? "⚠️ Tu retiro fue rechazado"
+            : "🕓 Tu retiro fue aprobado",
+      body: `Retiro de $${withdrawal.netAmount.toFixed(2)} USD ${statusLabel}.`,
+      linkUrl: "/afiliados/panel/comisiones",
     });
 
     // Notificar por email (si Resend está configurado)

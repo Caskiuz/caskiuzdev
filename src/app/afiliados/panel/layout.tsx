@@ -23,24 +23,29 @@ export default async function AffiliatePanelLayout({
   // Anuncios activos que este afiliado aún no ha leído: se muestran en un modal
   // que debe confirmar con "Enterado" (en cualquier página del panel).
   const now = new Date();
-  const unreadAnnouncements = await prisma.announcement.findMany({
-    where: {
-      active: true,
-      startsAt: { lte: now },
-      endsAt: { gt: now },
-      reads: { none: { affiliateId: affiliate.id } },
-    },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      kind: true,
-      linkUrl: true,
-      linkLabel: true,
-      endsAt: true,
-    },
-  });
+  const [unreadAnnouncements, notificationsCount] = await Promise.all([
+    prisma.announcement.findMany({
+      where: {
+        active: true,
+        startsAt: { lte: now },
+        endsAt: { gt: now },
+        reads: { none: { affiliateId: affiliate.id } },
+      },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        kind: true,
+        linkUrl: true,
+        linkLabel: true,
+        endsAt: true,
+      },
+    }),
+    prisma.notification.count({
+      where: { recipientType: "AFFILIATE", recipientId: affiliate.id, read: false },
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,6 +55,7 @@ export default async function AffiliatePanelLayout({
         referralCode={affiliateRef(affiliate.slug, affiliate.referralCode)}
         avatarUrl={affiliate.avatar}
         announcementsCount={unreadAnnouncements.length}
+        notificationsCount={notificationsCount}
       />
       <div className="lg:pl-64">
         {/* Barra superior (solo desktop; en móvil la navegación vive en el drawer) */}

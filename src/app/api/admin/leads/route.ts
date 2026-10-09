@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
+import { notifyInApp } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +59,18 @@ export async function POST(request: NextRequest) {
         service: service ? String(service).trim().slice(0, 120) : null,
         message: String(message || "").trim().slice(0, 2000) || "Lead registrado manualmente desde WhatsApp.",
         affiliateId: affiliate.id,
+        attributionSource: "MANUAL",
       },
+    });
+
+    // Aviso interno al afiliado: ya tiene el lead en su panel
+    await notifyInApp({
+      recipientType: "AFFILIATE",
+      recipientId: affiliate.id,
+      kind: "NEW_LEAD",
+      title: `¡Nuevo lead! ${contact.name} te escribió`,
+      body: "Lead registrado por el equipo de Caskiuz (WhatsApp u otro canal).",
+      linkUrl: "/afiliados/panel/leads",
     });
 
     console.log(`👤 Lead #${contact.id} registrado para afiliado #${affiliate.id}`);

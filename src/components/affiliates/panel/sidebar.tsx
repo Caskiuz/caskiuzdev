@@ -10,6 +10,7 @@ import {
   Store,
   Megaphone,
   Bell,
+  Inbox,
   Wallet,
   FileText,
   User,
@@ -26,6 +27,7 @@ import { BrandLogo } from "@/components/ui/brand-logo";
 
 const navItems = [
   { href: "/afiliados/panel", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/afiliados/panel/notificaciones", label: "Notificaciones", icon: Inbox },
   { href: "/afiliados/panel/anuncios", label: "Anuncios", icon: Bell },
   { href: "/afiliados/panel/leads", label: "Mis leads", icon: Users },
   { href: "/afiliados/panel/enlaces", label: "Mis enlaces", icon: Link2 },
@@ -44,12 +46,14 @@ export function PanelSidebar({
   referralCode,
   avatarUrl,
   announcementsCount = 0,
+  notificationsCount = 0,
 }: {
   name: string;
   tier: string;
   referralCode: string;
   avatarUrl?: string | null;
   announcementsCount?: number;
+  notificationsCount?: number;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -87,7 +91,12 @@ export function PanelSidebar({
     <nav className="mt-6 space-y-1">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
-        const showBadge = item.href === "/afiliados/panel/anuncios" && announcementsCount > 0;
+        const isAnnouncements = item.href === "/afiliados/panel/anuncios";
+        const isNotifications = item.href === "/afiliados/panel/notificaciones";
+        const showBadge =
+          (isAnnouncements && announcementsCount > 0) ||
+          (isNotifications && notificationsCount > 0);
+        const badgeCount = isNotifications ? notificationsCount : announcementsCount;
         return (
           <Link
             key={item.href}
@@ -104,7 +113,7 @@ export function PanelSidebar({
             {item.label}
             {showBadge && (
               <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold">
-                {announcementsCount > 9 ? "9+" : announcementsCount}
+                {badgeCount > 9 ? "9+" : badgeCount}
               </span>
             )}
           </Link>

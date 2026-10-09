@@ -26,7 +26,8 @@ export default async function AdminAffiliateDetailPage({
       commissions: { orderBy: { createdAt: "desc" }, take: 50 },
       withdrawals: { orderBy: { createdAt: "desc" }, take: 20 },
       contacts: { orderBy: { createdAt: "desc" }, take: 20 },
-      _count: { select: { clicks: true } },
+      clicks: { orderBy: { createdAt: "desc" }, take: 20 },
+      _count: { select: { clicks: true, contacts: true } },
     },
   });
 
@@ -45,6 +46,11 @@ export default async function AdminAffiliateDetailPage({
   const withdrawals = serialize(affiliate.withdrawals);
   const commissions = serialize(affiliate.commissions);
   const contacts = serialize(affiliate.contacts);
+  const clicks = serialize(affiliate.clicks);
+  const conversionRate =
+    affiliate._count.clicks > 0
+      ? Math.round((affiliate._count.contacts / affiliate._count.clicks) * 100)
+      : 0;
 
   return (
     <div className="p-4 space-y-6 sm:p-6 sm:space-y-8 lg:p-8">
@@ -104,10 +110,11 @@ export default async function AdminAffiliateDetailPage({
       </div>
 
       {/* Métricas rápidas */}
-      <div className="grid sm:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: "Clics", value: affiliate._count.clicks.toLocaleString("en-US") },
-          { label: "Leads", value: affiliate.contacts.length.toLocaleString("en-US") },
+          { label: "Leads", value: affiliate._count.contacts.toLocaleString("en-US") },
+          { label: "Conversión (leads/clics)", value: `${conversionRate}%` },
           { label: "Ventas", value: sales.length.toLocaleString("en-US") },
           {
             label: "Saldo pendiente",
@@ -232,6 +239,68 @@ export default async function AdminAffiliateDetailPage({
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Últimos clics */}
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-bold mb-4">Últimos clics ({clicks.length})</h2>
+        {clicks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sin clics registrados aún.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full sm:min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
+                  <th className="px-3 py-2">Fecha</th>
+                  <th className="px-3 py-2">Destino</th>
+                  <th className="px-3 py-2">Sub-ID</th>
+                  <th className="px-3 py-2">Referente</th>
+                  <th className="px-3 py-2">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clicks.map((click) => {
+                  let referrerDomain = null;
+                  try {
+                    referrerDomain = click.referrer
+                      ? new URL(click.referrer).hostname.replace(/^www\./, "")
+                      : null;
+                  } catch {
+                    referrerDomain = click.referrer;
+                  }
+                  return (
+                    <tr key={click.id} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                        {new Date(click.createdAt).toLocaleString("es-VE", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-xs">{click.destination || "/"}</td>
+                      <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                        {click.subId || "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                        {referrerDomain || "Directo"}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {click.convertedAt ? (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-500/10 text-green-500">
+                            Convertido
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-hover text-muted-foreground">
+                            Sin convertir
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

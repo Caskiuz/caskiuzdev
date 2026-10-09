@@ -70,6 +70,10 @@ export default async function LinksPage() {
         {/* Clics recientes */}
         <div className="metal-card rounded-2xl p-6">
           <h2 className="font-bold mb-4">Clics recientes ({totalClicks.toLocaleString("en-US")} totales)</h2>
+          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+            Los clics son visitas reales: los robots y las vistas previas de redes
+            sociales no se cuentan, y los re-clics del mismo visitante en 24h no se duplican.
+          </p>
           {recentClicks.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Aún no hay clics. ¡Comparte tu link para empezar!
@@ -81,8 +85,15 @@ export default async function LinksPage() {
                   key={click.id}
                   className="flex items-center justify-between gap-3 text-sm py-2 border-b border-border last:border-0"
                 >
-                  <span className="text-muted-foreground truncate">
-                    {click.destination || "/"} {click.subId ? `· ${click.subId}` : ""}
+                  <span className="text-muted-foreground truncate flex items-center gap-2 min-w-0">
+                    <span className="truncate">
+                      {click.destination || "/"} {click.subId ? `· ${click.subId}` : ""}
+                    </span>
+                    {click.convertedAt && (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500">
+                        Convertido
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs text-muted-foreground shrink-0">
                     {click.createdAt.toLocaleDateString("es-ES", {

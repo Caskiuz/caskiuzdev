@@ -245,7 +245,9 @@ export function SalesManager({
     e.preventDefault();
     setBusy(true);
     const affId =
-      mode === "contact" ? String(selectedContact?.affiliateId ?? "") : String(selectedAffiliate?.id ?? "");
+      mode === "contact"
+        ? String(selectedContact?.affiliateId ?? selectedAffiliate?.id ?? "")
+        : String(selectedAffiliate?.id ?? "");
     try {
       const res = await fetch("/api/admin/sales", {
         method: "POST",
@@ -491,14 +493,25 @@ export function SalesManager({
                         {c.name} ({c.email}) — {c.service || "sin servicio"}
                         {c.affiliateId
                           ? ` · ${affiliates.find((a) => a.id === c.affiliateId)?.name ?? `Afiliado #${c.affiliateId}`}`
-                          : ""}
+                          : " · SIN AFILIADO"}
                       </option>
                     ))}
                   </select>
                   {selectedContact && !selectedContact.affiliateId && (
-                    <p className="text-xs text-accent mt-1.5">
-                      ⚠️ Este lead no tiene afiliado atribuido. Usa el modo manual para asignarlo.
-                    </p>
+                    <div className="mt-3 space-y-1">
+                      <p className="text-xs text-accent">
+                        ⚠️ Este lead no tiene afiliado. Elige uno y al crear la venta el
+                        lead quedará atribuido a su nombre.
+                      </p>
+                      <AffiliatePicker
+                        affiliates={affiliates}
+                        selected={selectedAffiliate}
+                        onSelect={(a, raw) => {
+                          setSelectedAffiliate(a);
+                          setAffiliateRawQuery(raw);
+                        }}
+                      />
+                    </div>
                   )}
                   {contactAffiliate && (
                     <p className="text-xs text-green-500 mt-1.5 flex items-center gap-1.5">

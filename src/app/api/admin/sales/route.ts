@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { syncSaleCommission } from "@/lib/commissions";
-import { notifyAffiliateSale } from "@/lib/notifications";
+import { notifyAffiliateSale, notifyLeadAssigned } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +112,18 @@ export async function POST(request: NextRequest) {
         source: resolvedSource,
       },
     });
+
+    // Cierra el loop: si la venta salió de un lead existente que estaba sin
+    // afiliado, se le atribuye al afiliado de la venta y se le avisa por el sistema.
+    if (resolvedContactId) {
+      const attached = await prisma.contact.updateMany({
+        where: { id: resolvedContactId, affiliateId: null },
+        data: { affiliateId: affiliate.id, attributionSource: "MANUAL" },
+      });
+      if (attached.count > 0) {
+        await notifyLeadAssigned(resolvedContactId);
+      }
+    }
 
     await syncSaleCommission(sale.id);
     await notifyAffiliateSale(sale.id, "created");

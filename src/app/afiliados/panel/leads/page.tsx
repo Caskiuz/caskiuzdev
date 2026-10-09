@@ -15,6 +15,10 @@ const SERVICE_LABELS: Record<string, string> = {
   other: "Otro",
 };
 
+// Un lead se marca "Nuevo" durante sus primeros 7 días (corte fijo por instancia
+// del servidor; no depende del reloj durante el render).
+const NEW_LEAD_CUTOFF_MS = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
 export default async function LeadsPage() {
   const affiliate = await requireAffiliate();
 
@@ -109,12 +113,18 @@ export default async function LeadsPage() {
             const isRegistered = lead.saleStatus === "LEAD";
             const isConverted =
               lead.saleStatus && lead.saleStatus !== "LEAD" && lead.saleStatus !== "REFUNDED";
+            const isNew = new Date(lead.createdAt).getTime() > NEW_LEAD_CUTOFF_MS;
             return (
               <div key={lead.id} className="metal-card rounded-2xl p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold flex items-center gap-2 flex-wrap">
                       {lead.name}
+                      {isNew && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-accent/10 text-accent">
+                          Nuevo
+                        </span>
+                      )}
                       {isConverted && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-500/10 text-green-500">
                           <ShoppingCart className="w-3 h-3" /> Convertido a venta
@@ -157,8 +167,13 @@ export default async function LeadsPage() {
         <Link href="/afiliados/panel/comisiones" className="text-aff-cyan hover:underline">
           Comisiones
         </Link>{" "}
-        con su estado de cobro. Además recibes un correo con cada novedad. Los contactos que llegan
-        por WhatsApp aparecen aquí cuando el equipo los registra desde su panel.
+        con su estado de cobro. Cada novedad (lead nuevo, venta, documentos, retiros) te llega
+        al instante en tu{" "}
+        <Link href="/afiliados/panel/notificaciones" className="text-aff-cyan hover:underline">
+          centro de notificaciones
+        </Link>
+        . Los contactos que llegan por WhatsApp aparecen aquí cuando el equipo los registra
+        desde su panel.
       </div>
     </div>
   );

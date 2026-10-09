@@ -16,7 +16,6 @@ export default async function AdminSalesPage() {
       take: 300,
     }),
     prisma.contact.findMany({
-      where: { affiliateId: { not: null } },
       orderBy: { createdAt: "desc" },
       take: 300,
     }),
