@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, CheckCircle2, AlertCircle, Eye, X, Download } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Eye, X, Download, ScanFace } from "lucide-react";
+import { namesMatch } from "@/lib/kyc-verification";
 
 interface DocItem {
   id: number;
@@ -9,6 +10,7 @@ interface DocItem {
   fileName: string | null;
   status: string;
   notes: string | null;
+  extractedName: string | null;
   createdAt: string;
 }
 
@@ -18,7 +20,13 @@ const TYPE_LABELS: Record<string, string> = {
   CONTRACT: "Contrato",
 };
 
-export function DocumentReview({ documents }: { documents: DocItem[] }) {
+export function DocumentReview({
+  documents,
+  affiliateName,
+}: {
+  documents: DocItem[];
+  affiliateName: string;
+}) {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [viewing, setViewing] = useState<{ fileName: string | null; fileData: string } | null>(null);
   const [notes, setNotes] = useState<Record<number, string>>({});
@@ -101,6 +109,33 @@ export function DocumentReview({ documents }: { documents: DocItem[] }) {
                 {doc.status === "APPROVED" ? "Aprobado" : doc.status === "REJECTED" ? "Rechazado" : "Pendiente"}
               </span>
             </div>
+
+            {/* Nombre leído por la IA en el documento: solo informa, tú decides */}
+            {doc.type === "ID" && (doc.extractedName || doc.status === "PENDING") && (
+              <div
+                className={`flex items-start gap-2 text-xs rounded-lg px-3 py-2 border ${
+                  doc.extractedName
+                    ? namesMatch(affiliateName, doc.extractedName)
+                      ? "bg-green-500/5 border-green-500/20 text-green-500"
+                      : "bg-accent/5 border-accent/20 text-accent"
+                    : "bg-surface border-border text-muted-foreground"
+                }`}
+              >
+                <ScanFace className="w-4 h-4 shrink-0 mt-0.5" />
+                {doc.extractedName ? (
+                  <span>
+                    La IA leyó en la foto: <strong>«{doc.extractedName}»</strong>
+                    {namesMatch(affiliateName, doc.extractedName) ? (
+                      <> · ✅ Coincide con <strong>{affiliateName}</strong></>
+                    ) : (
+                      <> · ⚠️ NO coincide con <strong>{affiliateName}</strong> — revisa la foto antes de aprobar</>
+                    )}
+                  </span>
+                ) : (
+                  <span>La IA no pudo leer el nombre en este documento; revísalo a ojo como siempre.</span>
+                )}
+              </div>
+            )}
 
             {/* Ver archivo está disponible siempre (también para aprobados y rechazados) */}
             <div className="flex flex-wrap items-center gap-2">

@@ -186,9 +186,10 @@ model AffiliateDocument {
   affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
   type        String // ID | TAX_FORM | CONTRACT
   fileName    String?
-  fileData    String   @db.LongText // base64, max ~2MB
+  fileData    String   @db.LongText // base64, max ~3MB
   status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
   notes       String?
+  extractedName String? @db.VarChar(200) // nombre leído por la IA en el documento (solo lectura; la aprobación es manual)
   createdAt   DateTime @default(now()) @map("created_at")
   reviewedAt  DateTime?
 

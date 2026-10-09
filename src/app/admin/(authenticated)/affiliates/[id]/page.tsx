@@ -40,6 +40,7 @@ export default async function AdminAffiliateDetailPage({
     fileName: d.fileName,
     status: d.status,
     notes: d.notes,
+    extractedName: d.extractedName,
     createdAt: d.createdAt.toISOString(),
   }));
   const sales = serialize(affiliate.sales);
@@ -161,7 +162,7 @@ export default async function AdminAffiliateDetailPage({
         {/* Documentos */}
         <div className="rounded-2xl border border-border bg-surface p-6">
           <h2 className="font-bold mb-4">Documentos (KYC)</h2>
-          <DocumentReview documents={docs} />
+          <DocumentReview documents={docs} affiliateName={affiliate.name} />
         </div>
       </div>
 

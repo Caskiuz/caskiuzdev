@@ -25,61 +25,194 @@ const STATUS_LABELS: Record<string, string> = {
 // navegador antes de subirlas y los PDF tienen un tope de 3 MB.
 const MAX_PDF_BYTES = 3 * 1024 * 1024;
 const MAX_DATA_URL_LENGTH = 4_000_000;
-const IMAGE_MAX_SIDE = 2000;
-const IMAGE_QUALITY = 0.85;
+const IMAGE_QUALITY = 0.82;
+const IMAGE_ATTEMPTS: Array<[number, number]> = [
+  [1600, IMAGE_QUALITY],
+  [1400, 0.75],
+  [1200, 0.65],
+  [1000, 0.55],
+];
 
-function readAsDataURL(file: File): Promise<string> {
+type UploadStage = { label: string; percent: number | null } | null;
+
+/** Lee un archivo como data URL, informando el porcentaje leído. */
+function readAsDataURL(file: File, onProgress?: (percent: number) => void): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
     reader.readAsDataURL(file);
   });
 }
 
-function loadImage(dataUrl: string): Promise<HTMLImageElement> {
+function loadImageElement(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Formato de imagen no soportado."));
-    img.src = dataUrl;
+    img.src = src;
   });
 }
 
-function drawToJpeg(img: HTMLImageElement, maxSide: number, quality: number): string {
-  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+interface DecodedImage {
+  width: number;
+  height: number;
+  drawable: CanvasImageSource;
+  cleanup: () => void;
+}
+
+/**
+ * Decodifica la foto con varias estrategias, en orden de eficiencia:
+ * 1) createImageBitmap(file): decodifica directo desde el archivo, sin crear
+ *    la cadena base64 gigante que hace fallar fotos de 20–50 MP en teléfonos
+ *    con poca memoria. La memoria se libera con cleanup().
+ * 2) objectURL + <img>: cubre formatos que solo el decodificador nativo
+ *    entiende (p. ej. HEIC en Safari de iPhone).
+ * 3) base64 + <img>: último recurso.
+ */
+async function decodeImage(file: File): Promise<DecodedImage> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const bitmap = await createImageBitmap(file);
+      return {
+        width: bitmap.width,
+        height: bitmap.height,
+        drawable: bitmap,
+        cleanup: () => bitmap.close(),
+      };
+    } catch {
+      // formato no decodable por esta vía: probamos con <img>
+    }
+  }
+
+  let objectUrl: string | null = null;
+  try {
+    objectUrl = URL.createObjectURL(file);
+    const img = await loadImageElement(objectUrl);
+    const cleanup = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+    return {
+      width: img.naturalWidth || img.width,
+      height: img.naturalHeight || img.height,
+      drawable: img,
+      cleanup,
+    };
+  } catch {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  }
+
+  const dataUrl = await readAsDataURL(file);
+  const img = await loadImageElement(dataUrl);
+  return {
+    width: img.naturalWidth || img.width,
+    height: img.naturalHeight || img.height,
+    drawable: img,
+    cleanup: () => {},
+  };
+}
+
+function drawToJpeg(
+  source: CanvasImageSource,
+  sourceWidth: number,
+  sourceHeight: number,
+  maxSide: number,
+  quality: number
+): string {
+  const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(img.width * scale));
-  canvas.height = Math.max(1, Math.round(img.height * scale));
+  canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+  canvas.height = Math.max(1, Math.round(sourceHeight * scale));
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Sin soporte de canvas.");
   // Fondo blanco para que las zonas transparentes de un PNG no salgan negras
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", quality);
 }
 
 /** Reduce la foto (tamaño y calidad) hasta que quepa bajo el límite de subida. */
-async function optimizeImage(file: File): Promise<string> {
-  const original = await readAsDataURL(file);
-  const img = await loadImage(original);
-  const attempts: Array<[number, number]> = [
-    [IMAGE_MAX_SIDE, IMAGE_QUALITY],
-    [1600, 0.78],
-    [1280, 0.7],
-  ];
-  let result = "";
-  for (const [maxSide, quality] of attempts) {
-    result = drawToJpeg(img, maxSide, quality);
-    if (result.length <= MAX_DATA_URL_LENGTH) break;
+async function optimizeImage(file: File, onStage: (label: string) => void): Promise<string> {
+  onStage("Optimizando foto…");
+  const decoded = await decodeImage(file);
+  try {
+    let result = "";
+    for (const [maxSide, quality] of IMAGE_ATTEMPTS) {
+      result = drawToJpeg(decoded.drawable, decoded.width, decoded.height, maxSide, quality);
+      if (result.length <= MAX_DATA_URL_LENGTH) break;
+    }
+    return result;
+  } finally {
+    decoded.cleanup();
   }
-  return result;
 }
+
+/** Sube el JSON con XMLHttpRequest para tener progreso real de subida (%). */
+function uploadWithProgress(
+  url: string,
+  payload: unknown,
+  onProgress: (percent: number) => void
+): Promise<{ status: number; json: { error?: string; document?: DocumentItem } | null }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      let json: { error?: string; document?: DocumentItem } | null = null;
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch {
+        json = null;
+      }
+      resolve({ status: xhr.status, json });
+    };
+    xhr.onerror = () => reject(new Error("Error de conexión."));
+    xhr.ontimeout = () => reject(new Error("Tiempo de espera agotado."));
+    try {
+      xhr.send(JSON.stringify(payload));
+    } catch {
+      reject(new Error("No se pudo enviar el archivo."));
+    }
+  });
+}
+
+type FileKind = "pdf" | "image" | "other";
+
+/** Clasifica lo que el teléfono haya producido: PDF, imagen (cualquier formato) u otro. */
+function detectKind(file: File): FileKind {
+  const name = file.name || "";
+  if (file.type === "application/pdf" || /\.pdf$/i.test(name)) return "pdf";
+  if (file.type.startsWith("image/")) return "image";
+  if (/\.(jpe?g|png|webp|heic|heif|gif|bmp|avif|tiff?)$/i.test(name)) return "image";
+  // Cámaras que no reportan tipo ni extensión: se intenta como imagen igualmente
+  if (!file.type && !/\.[a-z0-9]{1,5}$/i.test(name)) return "image";
+  return "other";
+}
+
+function isHeic(file: File): boolean {
+  return /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name || "");
+}
+
+const HEIC_HELP =
+  "Tu teléfono guardó la foto en formato HEIC y este navegador no puede leerla. " +
+  "Solución rápida: abre la foto y haz una captura de pantalla; sube esa captura. " +
+  "(En iPhone también puedes ir a Ajustes → Cámara → Formatos → «Más compatible»).";
 
 export function DocumentsClient({ initialDocuments }: { initialDocuments: DocumentItem[] }) {
   const [documents, setDocuments] = useState<DocumentItem[]>(initialDocuments);
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<UploadStage>(null);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [viewing, setViewing] = useState<{ fileName: string | null; fileData: string } | null>(null);
   const [viewBusyId, setViewBusyId] = useState<number | null>(null);
@@ -87,7 +220,7 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
 
   function flash(type: "ok" | "error", text: string) {
     setMessage({ type, text });
-    setTimeout(() => setMessage(null), 5000);
+    setTimeout(() => setMessage(null), type === "error" ? 9000 : 6000);
   }
 
   async function view(id: number) {
@@ -110,69 +243,90 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const input = e.currentTarget;
     const file = input.files?.[0];
-    if (!file) return;
+    if (!file || busy) return;
 
     setBusy(true);
+    setMessage(null);
+
     try {
-      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-      const isImage =
-        file.type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name);
+      const kind = detectKind(file);
+      if (kind === "other") {
+        flash("error", "Formato no permitido. Sube una foto (JPG, PNG, HEIC…) o un PDF.");
+        return;
+      }
 
       let fileData: string;
-      let uploadName = file.name;
+      let uploadName = file.name || "documento";
       let optimized = false;
 
       try {
-        if (isPdf) {
+        if (kind === "pdf") {
           if (file.size > MAX_PDF_BYTES) {
-            flash("error", "El PDF supera 3 MB. Envíalo como foto (se optimiza sola) o comprímelo.");
+            flash("error", "El PDF pesa más de 3 MB. Envíalo como foto (se optimiza sola) o comprímelo.");
             return;
           }
-          fileData = await readAsDataURL(file);
-        } else if (isImage) {
-          fileData = await optimizeImage(file);
+          setStage({ label: "Leyendo PDF…", percent: 0 });
+          fileData = await readAsDataURL(file, (percent) =>
+            setStage({ label: "Leyendo PDF…", percent })
+          );
+        } else {
+          setStage({ label: "Preparando foto…", percent: null });
+          fileData = await optimizeImage(file, (label) => setStage({ label, percent: null }));
           if (fileData.length > MAX_DATA_URL_LENGTH) {
             flash(
               "error",
-              "La imagen es demasiado grande incluso optimizada. Prueba con otra foto o un PDF."
+              "La imagen es demasiado grande incluso optimizada. Intenta con una captura de pantalla de la foto o un PDF."
             );
             return;
           }
           optimized = file.size > 1_500_000;
-          uploadName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-        } else {
-          flash("error", "Formato no permitido. Sube una foto (JPG, PNG, HEIC) o un PDF.");
-          return;
+          uploadName = uploadName.replace(/\.[^.]+$/, "") + ".jpg";
         }
       } catch {
-        flash("error", "No se pudo procesar el archivo. Prueba con una foto JPG/PNG o un PDF.");
+        flash("error", isHeic(file) ? HEIC_HELP : "No se pudo procesar el archivo. Prueba con otra foto o un PDF.");
         return;
       }
 
-      try {
-        const res = await fetch("/api/affiliate/documents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "ID", fileName: uploadName, fileData }),
-        });
-        const json = await res.json();
-        if (!res.ok) {
-          flash("error", json.error || "No se pudo subir el documento.");
-          return;
+      setStage({ label: "Subiendo…", percent: 0 });
+      const { status, json } = await uploadWithProgress(
+        "/api/affiliate/documents",
+        { type: "ID", fileName: uploadName, fileData },
+        (percent) => {
+          // Al terminar la subida, el servidor aún verifica el documento
+          if (percent >= 100) setStage({ label: "Verificando documento…", percent: null });
+          else setStage({ label: "Subiendo…", percent });
         }
-        flash(
-          "ok",
-          optimized
-            ? "Documento subido (tu foto se optimizó automáticamente). Lo revisaremos en un máximo de 72 horas."
-            : "Documento subido. Lo revisaremos en un máximo de 72 horas."
-        );
-        setDocuments((prev) => [{ ...json.document, notes: null, reviewedAt: null }, ...prev]);
-        setViewing({ fileName: uploadName, fileData });
-      } catch {
-        flash("error", "Error de conexión.");
+      );
+
+      if (status < 200 || status >= 300) {
+        flash("error", json?.error || "No se pudo subir el documento.");
+        return;
       }
+
+      flash(
+        "ok",
+        optimized
+          ? "Documento subido ✅ (tu foto se optimizó automáticamente). Quedó en revisión; te avisaremos con una notificación en tu panel."
+          : "Documento subido ✅. Quedó en revisión; te avisaremos con una notificación en tu panel."
+      );
+      setDocuments((prev) => [
+        {
+          id: json?.document?.id ?? Date.now(),
+          type: json?.document?.type ?? "ID",
+          fileName: json?.document?.fileName ?? uploadName,
+          status: json?.document?.status ?? "PENDING",
+          notes: null,
+          createdAt: json?.document?.createdAt ?? new Date().toISOString(),
+          reviewedAt: null,
+        },
+        ...prev,
+      ]);
+      setViewing({ fileName: uploadName, fileData });
+    } catch {
+      flash("error", "Error de conexión. Revisa tu internet e inténtalo de nuevo.");
     } finally {
       setBusy(false);
+      setStage(null);
       input.value = "";
     }
   }
@@ -209,7 +363,8 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
       ) : pending ? (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-aff-blue/10 border border-aff-blue/20 text-sm text-aff-cyan">
           <Clock className="w-5 h-5 shrink-0 mt-0.5" />
-          Tu documento está en revisión. Te notificaremos por email cuando sea aprobado (máximo 72 horas).
+          Tu documento está en revisión. Te avisaremos con una notificación en tu panel
+          cuando sea revisado (máximo 72 horas).
         </div>
       ) : (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-600 dark:text-yellow-400">
@@ -247,7 +402,7 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
             >
               <Upload className="w-4 h-4" />{" "}
               {busy
-                ? "Procesando…"
+                ? "Subiendo…"
                 : documents.length > 0
                   ? "Subir nuevo documento"
                   : "Subir documento"}
@@ -266,15 +421,40 @@ export function DocumentsClient({ initialDocuments }: { initialDocuments: Docume
               </span>
             )}
           </div>
+
+          {/* Progreso visible de la subida: etapas + porcentaje real */}
+          {stage && (
+            <div className="mt-4 space-y-1.5" role="status" aria-live="polite">
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-aff-cyan" />
+                  {stage.label}
+                  {stage.percent !== null ? ` ${stage.percent}%` : ""}
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-surface-hover border border-border overflow-hidden">
+                {stage.percent === null ? (
+                  <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-aff-blue-deep to-aff-sky animate-pulse" />
+                ) : (
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-aff-blue-deep to-aff-sky transition-all duration-200"
+                    style={{ width: `${Math.max(4, stage.percent)}%` }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-muted-foreground mt-3">
-            JPG, PNG o PDF · las fotos se optimizan automáticamente · PDF hasta 3 MB
+            JPG, PNG, HEIC o PDF · las fotos se optimizan y suben solas · PDF hasta 3 MB
           </p>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.pdf"
+            accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.avif,.tif,.tiff,.pdf,application/pdf"
             onChange={handleFile}
+            disabled={busy}
             className="hidden"
           />
         </div>
