@@ -54,11 +54,12 @@ export default async function AdminWithdrawalsPage() {
           <Wallet className="w-6 h-6 text-primary" /> Retiros ({pending} pendientes)
         </h1>
         <p className="text-muted-foreground mt-1">
-          Proceso de pago: paga manualmente desde Binance o tu wallet, pega la referencia del
-          pago y marca como pagado. Los retiros por Pago Móvil se pagan en bolívares al
-          afiliado venezolano; los de Nequi, Daviplata o Bancolombia en pesos colombianos; los
-          de Zelle en dólares. Las tasas de cambio (Bs y COP) se actualizan automáticamente
-          desde fuentes públicas. El afiliado recibe una notificación por email.
+          Proceso de pago: paga manualmente desde Binance, tu wallet o PayPal, pega la
+          referencia del pago y marca como pagado. Los retiros por Pago Móvil se pagan en
+          bolívares al afiliado venezolano; los de Nequi, Daviplata o Bancolombia en pesos
+          colombianos; los de Zelle y PayPal en dólares. Las tasas de cambio (Bs y COP) se
+          actualizan automáticamente desde fuentes públicas. El afiliado recibe una
+          notificación en su panel.
         </p>
       </div>
 

@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 export const metadata: Metadata = {
   title: "Preguntas Frecuentes — Programa de Afiliados | Caskiuz",
   description:
-    "Resolvemos tus dudas sobre el programa de afiliados de Caskiuz: comisiones de 10% a 40%, pagos en USDT, USDC, BTC y Binance Pay, retiros y más.",
+    "Resolvemos tus dudas sobre el programa de afiliados de Caskiuz: comisiones de 10% a 40%, pagos en USDT, USDC, BTC, Binance Pay y PayPal, retiros y más.",
   alternates: { canonical: "https://caskiuz.vercel.app/afiliados/faq" },
 };
 

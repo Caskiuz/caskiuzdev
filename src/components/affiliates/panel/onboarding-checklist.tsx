@@ -62,7 +62,7 @@ export function OnboardingChecklist({
     },
     {
       label: "Registra tu método de pago",
-      hint: "Cripto, Pago Móvil, Nequi, Zelle… según tu país",
+      hint: "Cripto, PayPal, Pago Móvil, Nequi, Zelle… según tu país",
       href: "/afiliados/panel/comisiones",
       done: hasPayoutMethod,
       icon: CreditCard,

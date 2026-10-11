@@ -235,7 +235,8 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
               </select>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Tu país habilita los métodos de pago locales: Pago Móvil (Venezuela),
-                Nequi/Bancolombia/Daviplata (Colombia) o Zelle (Estados Unidos).
+                Nequi/Bancolombia/Daviplata (Colombia) o Zelle (Estados Unidos). PayPal y
+                cripto están disponibles para todos los países.
               </p>
             </div>
             <div>

@@ -17,7 +17,7 @@ const BASE_URL = "https://caskiuz.vercel.app";
 export const metadata: Metadata = {
   title: "Programa de Afiliados Caskiuz | Gana hasta 40% de comisión",
   description:
-    "Únete gratis a la red de afiliados de Caskiuz: gana entre 10% y 40% de comisión promocionando servicios de desarrollo web, apps, e-commerce y SEO. Pagos en USDT, USDC, Bitcoin y Binance Pay.",
+    "Únete gratis a la red de afiliados de Caskiuz: gana entre 10% y 40% de comisión promocionando servicios de desarrollo web, apps, e-commerce y SEO. Pagos en USDT, USDC, Bitcoin, Binance Pay y PayPal.",
   keywords: [
     "programa de afiliados",
     "ganar dinero online",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "Caskiuz Affiliates",
     title: "Programa de Afiliados Caskiuz | Gana hasta 40% de comisión",
     description:
-      "Comparte tu link único y gana entre 10% y 40% por cada venta de servicios digitales. Pagos en USDT, USDC, BTC y Binance Pay.",
+      "Comparte tu link único y gana entre 10% y 40% por cada venta de servicios digitales. Pagos en USDT, USDC, BTC, Binance Pay y PayPal.",
     url: `${BASE_URL}/afiliados`,
     images: [{ url: "/api/og/afiliados", width: 1200, height: 630, alt: "Caskiuz Affiliates" }],
   },
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Programa de Afiliados Caskiuz | Gana hasta 40% de comisión",
     description:
-      "Gana entre 10% y 40% de comisión promocionando servicios digitales. Pagos en USDT, USDC, BTC y Binance Pay.",
+      "Gana entre 10% y 40% de comisión promocionando servicios digitales. Pagos en USDT, USDC, BTC, Binance Pay y PayPal.",
     images: ["/api/og/afiliados"],
   },
 };
@@ -77,7 +77,7 @@ const FAQ_JSON_LD = {
       name: "¿Cómo pagan las comisiones?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin o vía Binance Pay. Además, según el país: bolívares por Pago Móvil en Venezuela, pesos por Nequi/Bancolombia/Daviplata en Colombia y Zelle en Estados Unidos. El retiro mínimo es de $30 USD.",
+        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin, vía Binance Pay o por PayPal en dólares desde cualquier país. Además, según el país: bolívares por Pago Móvil en Venezuela, pesos por Nequi/Bancolombia/Daviplata en Colombia y Zelle en Estados Unidos. El retiro mínimo es de $15 USD.",
       },
     },
   ],

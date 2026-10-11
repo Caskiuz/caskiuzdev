@@ -108,8 +108,8 @@ export default async function CommissionsPage() {
         intro="Tus comisiones llegan solas cuando el cliente paga. Para poder retirarlas solo necesitas dos cosas."
         steps={[
           "Verifica tu identidad en Documentos (solo la primera vez).",
-          "Registra tu método de pago: cripto, Pago Móvil, Nequi, Bancolombia, Daviplata o Zelle.",
-          "Cuando tengas $30 USD o más disponibles, pulsa «Solicitar retiro».",
+          "Registra tu método de pago: cripto, PayPal o el método local de tu país (Pago Móvil, Nequi, Bancolombia, Daviplata, Zelle).",
+          "Cuando tengas $15 USD o más disponibles, pulsa «Solicitar retiro».",
         ]}
         helpHref="/afiliados/panel/ayuda#cobrar"
       />

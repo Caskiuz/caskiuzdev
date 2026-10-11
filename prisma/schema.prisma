@@ -159,7 +159,7 @@ model PayoutMethod {
   id            Int      @id @default(autoincrement())
   affiliateId   Int
   affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  type          String // BINANCE_PAY | WALLET | PAGO_MOVIL | NEQUI | DAVIPLATA | BANCOLOMBIA | ZELLE
+  type          String // BINANCE_PAY | WALLET | PAGO_MOVIL | NEQUI | DAVIPLATA | BANCOLOMBIA | ZELLE | PAYPAL
   binanceId     String?
   binanceEmail  String?
   currency      String // USDT | USDC | BTC | VES | COP | USD
@@ -170,7 +170,7 @@ model PayoutMethod {
   pagoMovilBank   String?
   pagoMovilHolder String?
   pagoMovilId     String?
-  accountData   Json? // NEQUI/DAVIPLATA {phone,holder} · BANCOLOMBIA {accountType,accountNumber,holder} · ZELLE {account,holder}
+  accountData   Json? // NEQUI/DAVIPLATA {phone,holder} · BANCOLOMBIA {accountType,accountNumber,holder} · ZELLE/PAYPAL {account,holder}
   isDefault     Boolean  @default(false)
   createdAt     DateTime @default(now()) @map("created_at")
 

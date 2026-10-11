@@ -64,7 +64,7 @@ export function nextTier(revenue: number) {
 }
 
 // ─── Constantes de negocio ───
-export const MIN_WITHDRAWAL = 30; // USD
+export const MIN_WITHDRAWAL = 15; // USD
 export const REFERRAL_COOKIE = "cask_ref";
 export const REFERRAL_COOKIE_DAYS = 30;
 export const VISITOR_COOKIE = "cask_visit";
@@ -208,6 +208,12 @@ export function normalizeZelleAccount(value: string): string | null {
   return /^\d{10}$/.test(local) ? local : null;
 }
 
+/** Email de la cuenta PayPal (método global): email válido en minúsculas o null */
+export function normalizePayPalEmail(value: string): string | null {
+  const trimmed = value.trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed.toLowerCase() : null;
+}
+
 // ─── Formateo único de métodos de pago (panel, admin y emails) ───
 export interface PayoutMethodLike {
   type: string;
@@ -254,6 +260,8 @@ export function payoutMethodLabel(m: PayoutMethodLike): string {
       return `Bancolombia — ${acc.accountType} ${acc.accountNumber}`;
     case "ZELLE":
       return `Zelle — ${acc.account}`;
+    case "PAYPAL":
+      return `PayPal — ${acc.account}`;
     default:
       return `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`;
   }
@@ -274,6 +282,8 @@ export function payoutMethodShortName(m: PayoutMethodLike): string {
       return "Bancolombia (pesos)";
     case "ZELLE":
       return "Zelle (USD)";
+    case "PAYPAL":
+      return "PayPal (USD)";
     default:
       return `${m.currency} ${m.network}`;
   }
@@ -295,6 +305,8 @@ export function payoutMethodDetail(m: PayoutMethodLike): string {
       return `Bancolombia (COP) — Cuenta ${acc.accountType} ${acc.accountNumber} · ${acc.holder}`;
     case "ZELLE":
       return `Zelle (USD) — ${acc.account} · ${acc.holder}`;
+    case "PAYPAL":
+      return `PayPal (USD) — ${acc.account} · ${acc.holder}`;
     default:
       return `${m.currency} (${m.network}) — ${m.address}`;
   }

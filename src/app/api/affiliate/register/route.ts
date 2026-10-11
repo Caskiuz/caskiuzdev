@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         <h3 style="margin:24px 0 8px;">Tus 3 primeros pasos</h3>
         <ol style="margin:0 0 8px;padding-left:20px;line-height:1.8;">
           <li><strong>Sube tu documento de identidad</strong> en tu panel (sección Documentos) para habilitar los retiros.</li>
-          <li><strong>Registra tu método de pago</strong> en Comisiones y retiros (cripto, Pago Móvil, Nequi, Zelle…).</li>
+          <li><strong>Registra tu método de pago</strong> en Comisiones y retiros (cripto, PayPal, Pago Móvil, Nequi, Zelle…).</li>
           <li><strong>Comparte tu link</strong> en tus redes y chats: cada venta que llegue por él te deja hasta 40% de comisión.</li>
         </ol>
         <p>Entra ya a tu panel: <a href="https://caskiuz.vercel.app/afiliados/panel" style="display:inline-block;margin-top:8px;padding:10px 18px;background:#0ea5e9;color:#ffffff;border-radius:8px;text-decoration:none;">Ir a mi panel</a></p>

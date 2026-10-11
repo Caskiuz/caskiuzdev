@@ -194,7 +194,7 @@ export function WithdrawalsManager({
                         <input
                           value={txInputs[w.id] ?? ""}
                           onChange={(e) => setTxInputs((prev) => ({ ...prev, [w.id]: e.target.value }))}
-                          placeholder="Referencia del pago (hash / TranId / comprobante)"
+                          placeholder="Referencia del pago (hash / TranId / ID de PayPal / comprobante)"
                           className="flex-1 px-3 py-2 rounded-lg bg-surface border border-border text-sm"
                         />
                         <button
@@ -230,7 +230,7 @@ export function WithdrawalsManager({
                         <input
                           value={txInputs[w.id] ?? ""}
                           onChange={(e) => setTxInputs((prev) => ({ ...prev, [w.id]: e.target.value }))}
-                          placeholder="Referencia del pago (hash / TranId / comprobante)"
+                          placeholder="Referencia del pago (hash / TranId / ID de PayPal / comprobante)"
                           className="flex-1 px-3 py-2 rounded-lg bg-surface border border-border text-sm"
                         />
                         <button

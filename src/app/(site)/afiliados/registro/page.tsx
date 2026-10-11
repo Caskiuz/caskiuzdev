@@ -24,7 +24,7 @@ export default async function RegisterPage() {
           <AffiliateBrandHeader />
           <h1 className="mt-4 text-3xl font-bold">Crea tu cuenta de afiliado</h1>
           <p className="mt-2 text-muted-foreground">
-            Gratis · Sin cuotas · Pagos en USDT, USDC, BTC y Binance Pay
+            Gratis · Sin cuotas · Pagos en USDT, USDC, BTC, Binance Pay y PayPal
           </p>
         </div>
         {hasActiveSession && affiliate && (

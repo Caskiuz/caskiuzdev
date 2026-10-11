@@ -62,7 +62,7 @@ export function AffiliateHero() {
           <motion.p variants={itemVariants} className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
             Únete gratis, comparte tu link único y cobra comisiones en{" "}
             <strong className="text-foreground">
-              USDT, USDC, Bitcoin o Binance Pay — y en tu moneda local: Pago Móvil (Venezuela),
+              USDT, USDC, Bitcoin, Binance Pay o PayPal — y en tu moneda local: Pago Móvil (Venezuela),
               Nequi/Bancolombia/Daviplata (Colombia) o Zelle (EE. UU.)
             </strong>{" "}
             por cada venta de desarrollo web, apps, e-commerce y SEO que refieras.
@@ -98,7 +98,7 @@ export function AffiliateHero() {
 
           <motion.div variants={itemVariants} className="mt-6 flex flex-wrap gap-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan">
-              <Smartphone className="w-3.5 h-3.5" /> Métodos locales: Pago Móvil 🇻🇪 · Nequi/Bancolombia/Daviplata 🇨🇴 · Zelle 🇺🇸
+              <Smartphone className="w-3.5 h-3.5" /> Cobros: PayPal 🌎 · Pago Móvil 🇻🇪 · Nequi/Bancolombia/Daviplata 🇨🇴 · Zelle 🇺🇸
             </span>
           </motion.div>
 
@@ -107,7 +107,7 @@ export function AffiliateHero() {
               <ShieldCheck className="w-4 h-4 text-aff-cyan" /> Pagos verificados
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Wallet className="w-4 h-4 text-aff-cyan" /> Retiros desde $30 USD
+              <Wallet className="w-4 h-4 text-aff-cyan" /> Retiros desde $15 USD
             </span>
           </motion.div>
         </motion.div>

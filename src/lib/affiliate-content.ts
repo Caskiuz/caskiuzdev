@@ -19,11 +19,11 @@ export const AFFILIATE_FAQS: FaqItem[] = [
   },
   {
     q: "¿Cuándo puedo retirar mis comisiones?",
-    a: "Al instante: en cuanto el cliente paga (el 50% de anticipo o el total), tu comisión sobre ese dinero queda disponible de inmediato y puedes solicitar retiro desde $30 USD.",
+    a: "Al instante: en cuanto el cliente paga (el 50% de anticipo o el total), tu comisión sobre ese dinero queda disponible de inmediato y puedes solicitar retiro desde $15 USD.",
   },
   {
     q: "¿En qué monedas me pagan?",
-    a: "Puedes cobrar en USDT o USDC en las redes Tron (TRC-20), Ethereum (ERC-20), BNB Smart Chain (BEP-20), Solana, Polygon y Arbitrum; también en Bitcoin (BTC) o directamente vía Binance Pay usando tu Binance ID o email. Además, según tu país puedes usar métodos locales: en Venezuela, bolívares por Pago Móvil; en Colombia, pesos por Nequi, Bancolombia o Daviplata; y en Estados Unidos, Zelle en dólares. Registras tus datos en la sección Comisiones y retiros.",
+    a: "Puedes cobrar en USDT o USDC en las redes Tron (TRC-20), Ethereum (ERC-20), BNB Smart Chain (BEP-20), Solana, Polygon y Arbitrum; también en Bitcoin (BTC), vía Binance Pay usando tu Binance ID o email, o por PayPal en dólares desde cualquier país (con el email de tu cuenta PayPal). Además, según tu país puedes usar métodos locales: en Venezuela, bolívares por Pago Móvil; en Colombia, pesos por Nequi, Bancolombia o Daviplata; y en Estados Unidos, Zelle en dólares. Registras tus datos en la sección Comisiones y retiros.",
   },
   {
     q: "¿Cómo sé que una venta es mía?",
@@ -31,7 +31,7 @@ export const AFFILIATE_FAQS: FaqItem[] = [
   },
   {
     q: "¿Cómo pagan los clientes que refiero?",
-    a: "Los clientes pueden pagar con Zelle, PayPal, Western Union, Binance o envíos cripto (USDT, USDC o BTC) a las wallets de Caskiuz, con el esquema 50% de anticipo y 50% al finalizar. Los datos de pago aparecen en la landing de afiliados y en tu panel. Tu comisión se te paga aparte, en USDT, USDC, BTC o Binance Pay para todos y, según tu país, también por métodos locales: Pago Móvil en Venezuela, Nequi/Bancolombia/Daviplata en Colombia y Zelle en Estados Unidos.",
+    a: "Los clientes pueden pagar con Zelle, PayPal, Western Union, Binance o envíos cripto (USDT, USDC o BTC) a las wallets de Caskiuz, con el esquema 50% de anticipo y 50% al finalizar. Los datos de pago aparecen en la landing de afiliados y en tu panel. Tu comisión se te paga aparte, en USDT, USDC, BTC, Binance Pay o PayPal para todos y, según tu país, también por métodos locales: Pago Móvil en Venezuela, Nequi/Bancolombia/Daviplata en Colombia y Zelle en Estados Unidos.",
   },
   {
     q: "¿Puedo comprar para mí mismo y cobrar la comisión?",
@@ -86,7 +86,7 @@ export const AFFILIATE_TERMS: TermSection[] = [
   {
     title: "6. Pagos y retiros",
     paragraphs: [
-      "Los pagos se realizan en USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon o Arbitrum), Bitcoin (BTC) o Binance Pay (Binance ID o email). Además, según el país de residencia del afiliado: en Venezuela se puede cobrar en bolívares vía Pago Móvil (teléfono, banco, titular y cédula); en Colombia, en pesos vía Nequi, Bancolombia o Daviplata (teléfono o cuenta bancaria y titular); y en Estados Unidos, vía Zelle en dólares (email o teléfono y titular). Las conversiones de moneda local se hacen con la tasa de referencia vigente al momento del pago (promedio del mercado paralelo para bolívares y TRM oficial de Colombia para pesos). El retiro mínimo es de $30 USD. Para el primer retiro se exige verificación de identidad aprobada. El afiliado es responsable de proporcionar una dirección, ID de Binance o datos de cobro correctos; los envíos a destinos incorrectos no son reembolsables. Los retiros se procesan de forma manual y pueden demorar hasta 7 días hábiles.",
+      "Los pagos se realizan en USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon o Arbitrum), Bitcoin (BTC), Binance Pay (Binance ID o email) o PayPal en dólares (email de la cuenta PayPal y titular) para cualquier país. Además, según el país de residencia del afiliado: en Venezuela se puede cobrar en bolívares vía Pago Móvil (teléfono, banco, titular y cédula); en Colombia, en pesos vía Nequi, Bancolombia o Daviplata (teléfono o cuenta bancaria y titular); y en Estados Unidos, vía Zelle en dólares (email o teléfono y titular). Las conversiones de moneda local se hacen con la tasa de referencia vigente al momento del pago (promedio del mercado paralelo para bolívares y TRM oficial de Colombia para pesos). El retiro mínimo es de $15 USD. Para el primer retiro se exige verificación de identidad aprobada. El afiliado es responsable de proporcionar una dirección, ID de Binance o datos de cobro correctos; los envíos a destinos incorrectos no son reembolsables. Los retiros se procesan de forma manual y pueden demorar hasta 7 días hábiles.",
     ],
   },
   {

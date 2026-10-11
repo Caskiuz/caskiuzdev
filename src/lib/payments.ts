@@ -7,7 +7,8 @@
  * Los métodos locales NO son de clientes: son métodos de COBRO de
  * comisiones según el país del afiliado (se registran en el panel del
  * afiliado, sección Comisiones y retiros): Pago Móvil (Venezuela),
- * Nequi/Bancolombia/Daviplata (Colombia) y Zelle (Estados Unidos).
+ * Nequi/Bancolombia/Daviplata (Colombia), Zelle (Estados Unidos) y
+ * PayPal (cualquier país).
  */
 
 export interface PaymentMethodInfo {

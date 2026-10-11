@@ -8,7 +8,7 @@ import { LoginForm } from "./login-form";
 export const metadata: Metadata = {
   title: "Iniciar sesión | Caskiuz Affiliates",
   description:
-    "Accede a tu panel de afiliado de Caskiuz: estadísticas, comisiones, enlaces y retiros en USDT, USDC, BTC y Binance Pay.",
+    "Accede a tu panel de afiliado de Caskiuz: estadísticas, comisiones, enlaces y retiros en USDT, USDC, BTC, Binance Pay y PayPal.",
   robots: { index: true, follow: true },
   alternates: { canonical: "https://caskiuz.vercel.app/afiliados/login" },
 };

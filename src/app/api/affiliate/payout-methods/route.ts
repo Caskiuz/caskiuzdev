@@ -9,6 +9,7 @@ import {
   normalizeBancolombiaAccount,
   normalizeColombianPhone,
   normalizeZelleAccount,
+  normalizePayPalEmail,
 } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
@@ -227,6 +228,39 @@ export async function POST(request: NextRequest) {
           address: null,
           accountData: { account, holder: holder.slice(0, 120) },
           label: label ? String(label).slice(0, 40) : "Zelle (Estados Unidos)",
+          isDefault: count === 0,
+        },
+      });
+      return NextResponse.json({ success: true, method }, { status: 201 });
+    }
+
+    // PayPal: cobro de comisiones GLOBAL (cualquier país), en dólares
+    if (type === "PAYPAL") {
+      const email = normalizePayPalEmail(String(accountData?.account || ""));
+      const holder = String(accountData?.holder || "").trim();
+      if (!email) {
+        return NextResponse.json(
+          { error: "Ingresa el email de tu cuenta PayPal." },
+          { status: 400 }
+        );
+      }
+      if (!holder) {
+        return NextResponse.json(
+          { error: "El titular de la cuenta PayPal es obligatorio." },
+          { status: 400 }
+        );
+      }
+      const method = await prisma.payoutMethod.create({
+        data: {
+          affiliateId: affiliate.id,
+          type: "PAYPAL",
+          binanceId: null,
+          binanceEmail: null,
+          currency: "USD",
+          network: null,
+          address: null,
+          accountData: { account: email, holder: holder.slice(0, 120) },
+          label: label ? String(label).slice(0, 40) : "PayPal",
           isDefault: count === 0,
         },
       });

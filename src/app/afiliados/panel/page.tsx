@@ -45,7 +45,7 @@ export default async function AffiliateDashboardPage({
   } else if (payoutCount === 0) {
     nextStep = {
       title: "Registra tu método de pago",
-      text: "Elige cómo quieres cobrar: cripto, Pago Móvil, Nequi, Bancolombia, Daviplata o Zelle según tu país.",
+      text: "Elige cómo quieres cobrar: cripto, Binance Pay o PayPal, y métodos locales según tu país (Pago Móvil, Nequi, Bancolombia, Daviplata, Zelle).",
       cta: "Registrar método",
       href: "/afiliados/panel/comisiones",
       copy: false,
@@ -266,7 +266,7 @@ export default async function AffiliateDashboardPage({
         {[
           { href: "/afiliados/panel/enlaces", title: "Obtener mi link", text: "Copia tu link único y empieza a compartir." },
           { href: "/afiliados/panel/catalogo", title: "Ver catálogo", text: "Servicios y comisiones por cada venta." },
-          { href: "/afiliados/panel/comisiones", title: "Cobrar mis comisiones", text: "Tu saldo disponible, solicita el retiro y registra tu wallet o Binance Pay." },
+          { href: "/afiliados/panel/comisiones", title: "Cobrar mis comisiones", text: "Tu saldo disponible, solicita el retiro y registra tu wallet, Binance Pay o PayPal." },
         ].map((quick) => (
           <Link
             key={quick.href}

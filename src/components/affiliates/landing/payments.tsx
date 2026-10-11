@@ -93,13 +93,13 @@ export function ClientPayments({ methods }: { methods: PaymentMethodInfo[] }) {
           )}
 
           <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-muted-foreground">
-            📲 ¿Eres afiliado? Cobra tus comisiones con método local según tu país: Pago Móvil
-            en Venezuela 🇻🇪, Nequi/Bancolombia/Daviplata en Colombia 🇨🇴 y Zelle en EE. UU. 🇺🇸,
-            desde tu panel → Comisiones y retiros.
+            📲 ¿Eres afiliado? Cobra tus comisiones por PayPal en cualquier país 🌎 o con método
+            local según tu país: Pago Móvil en Venezuela 🇻🇪, Nequi/Bancolombia/Daviplata en
+            Colombia 🇨🇴 y Zelle en EE. UU. 🇺🇸, desde tu panel → Comisiones y retiros.
           </motion.p>
 
           <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-muted-foreground">
-            💡 Tu comisión también se paga en USDT, USDC, BTC o Binance Pay.
+            💡 Tu comisión también se paga en USDT, USDC, BTC, Binance Pay o PayPal.
           </motion.p>
         </motion.div>
       </div>

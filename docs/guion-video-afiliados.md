@@ -64,8 +64,8 @@ Voz: "¿Y cuánto ganas? Empiezas ganando el 10% de cada venta, y mientras más 
 Visual: niveles.png con un contador animado subiendo de 10% a 40%.
 
 ESCENA 5 (1:10–1:30) — CÓMO COBRAS
-Texto: "USDT · USDC · BTC · BINANCE PAY · PAGO MÓVIL 🇻🇪"
-Voz: "Ahora lo más importante: el pago. Cobras desde 30 dólares, en USDT, USDC, Bitcoin o directo por Binance Pay. ¿Y si estás en Venezuela? Cobras en bolívares por Pago Móvil, directo a tu banco, con el monto calculado a la tasa del día. Todo desde tu panel, con un clic."
+Texto: "USDT · USDC · BTC · BINANCE PAY · PAYPAL 🌎 · PAGO MÓVIL 🇻🇪"
+Voz: "Ahora lo más importante: el pago. Cobras desde 15 dólares, en USDT, USDC, Bitcoin, Binance Pay o PayPal. ¿Y si estás en Venezuela? Cobras en bolívares por Pago Móvil, directo a tu banco, con el monto calculado a la tasa del día. Todo desde tu panel, con un clic."
 Visual: retiros.png.
 
 ESCENA 6 (1:30–1:46) — TE DAMOS TODO

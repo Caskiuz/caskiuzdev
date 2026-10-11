@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins, Smartphone, Landmark, CreditCard } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Trash2, Wallet, Coins, Smartphone, Landmark, CreditCard, Globe } from "lucide-react";
 import {
   SUPPORTED_CURRENCIES,
   NETWORK_LABELS,
@@ -72,7 +72,8 @@ type MethodForm =
   | { mode: "nequi" }
   | { mode: "daviplata" }
   | { mode: "bancolombia" }
-  | { mode: "zelle" };
+  | { mode: "zelle" }
+  | { mode: "paypal" };
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all text-sm";
@@ -118,6 +119,8 @@ export function WithdrawalsClient({
   const [coAccountNumber, setCoAccountNumber] = useState("");
   const [zelleAccount, setZelleAccount] = useState("");
   const [zelleHolder, setZelleHolder] = useState("");
+  const [paypalAccount, setPaypalAccount] = useState("");
+  const [paypalHolder, setPaypalHolder] = useState("");
 
   // Formulario de retiro
   const [withdrawMethod, setWithdrawMethod] = useState<string>("");
@@ -159,7 +162,9 @@ export function WithdrawalsClient({
                     }
                   : form.mode === "zelle"
                     ? { type: "ZELLE", accountData: { account: zelleAccount, holder: zelleHolder } }
-                    : { type: "WALLET", currency, network, address };
+                    : form.mode === "paypal"
+                      ? { type: "PAYPAL", accountData: { account: paypalAccount, holder: paypalHolder } }
+                      : { type: "WALLET", currency, network, address };
 
       const res = await fetch("/api/affiliate/payout-methods", {
         method: "POST",
@@ -185,6 +190,8 @@ export function WithdrawalsClient({
       setCoAccountNumber("");
       setZelleAccount("");
       setZelleHolder("");
+      setPaypalAccount("");
+      setPaypalHolder("");
     } catch {
       flash("error", "Error de conexión.");
     } finally {
@@ -272,7 +279,7 @@ export function WithdrawalsClient({
           <h2 className="font-bold mb-1">Solicitar retiro</h2>
           <p className="text-xs text-muted-foreground mb-4">
             Saldo disponible: {formatUsd(balanceAvailable)} · USDT · USDC (6 redes) · BTC ·
-            Binance ID/email{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""}
+            Binance ID/email · PayPal (USD) 🌎{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""}
             {isColombia ? " · Nequi · Daviplata · Bancolombia (COP) 🇨🇴" : ""}
             {isUSA ? " · Zelle (USD) 🇺🇸" : ""} · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
           </p>
@@ -403,6 +410,15 @@ export function WithdrawalsClient({
             >
               <Wallet className="w-5 h-5 mx-auto mb-2" />
               Wallet cripto
+            </button>
+            <button
+              onClick={() => setForm({ mode: "paypal" })}
+              className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                form.mode === "paypal" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+              }`}
+            >
+              <Globe className="w-5 h-5 mx-auto mb-2" />
+              PayPal 🌎
             </button>
             {isVenezuela && (
               <button
@@ -627,6 +643,42 @@ export function WithdrawalsClient({
               </div>
               <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Zelle"}
+              </button>
+            </form>
+          )}
+
+          {form.mode === "paypal" && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                🌎 Recibe tus comisiones en dólares directo a tu cuenta PayPal. Disponible
+                para cualquier país.
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Email de tu cuenta PayPal</label>
+                <input
+                  value={paypalAccount}
+                  onChange={(e) => setPaypalAccount(e.target.value)}
+                  required
+                  placeholder="tu@email.com"
+                  className={inputClass}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Debe ser el email con el que estás registrado en PayPal (es a donde se
+                  envía el pago).
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titular</label>
+                <input
+                  value={paypalHolder}
+                  onChange={(e) => setPaypalHolder(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar PayPal"}
               </button>
             </form>
           )}

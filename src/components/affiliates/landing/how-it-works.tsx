@@ -24,7 +24,7 @@ const steps = [
   {
     icon: DollarSign,
     title: "4. Cobra tu comisión",
-    text: "Gana entre 10% y 40% de cada venta cobrada. Retira desde $30 USD en USDT, USDC, BTC o Binance Pay.",
+    text: "Gana entre 10% y 40% de cada venta cobrada. Retira desde $15 USD en USDT, USDC, BTC, Binance Pay o PayPal.",
   },
 ];
 

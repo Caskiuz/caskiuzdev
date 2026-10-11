@@ -33,8 +33,8 @@ const QUICK_GUIDES = [
     title: "Cómo cobrar",
     steps: [
       "Sube tu documento de identidad en 'Documentos' y espera la aprobación.",
-      "Registra tu método de pago en 'Comisiones y retiros' (Binance Pay, wallet, Pago Móvil, Nequi/Bancolombia/Daviplata o Zelle según tu país).",
-      "Cuando tengas $30 USD o más disponibles, solicita el retiro.",
+      "Registra tu método de pago en 'Comisiones y retiros' (Binance Pay, wallet, PayPal o los métodos locales según tu país).",
+      "Cuando tengas $15 USD o más disponibles, solicita el retiro.",
       "Recibirás tu pago en un máximo de 7 días hábiles.",
     ],
   },
@@ -57,7 +57,7 @@ const SALE_STATUSES = [
 ];
 
 const COMMISSION_STATES = [
-  { state: "Disponible", meaning: "El cliente pagó y tu comisión queda disponible al instante (mínimo acumulado de $30 USD para retirar)." },
+  { state: "Disponible", meaning: "El cliente pagó y tu comisión queda disponible al instante (mínimo acumulado de $15 USD para retirar)." },
   { state: "En retiro", meaning: "Solicitaste el pago y está en proceso." },
   { state: "Pagada", meaning: "Ya te pagamos: ves el hash de la transacción en tu historial." },
   { state: "Reversada", meaning: "La venta fue reembolsada y la comisión se anuló." },
@@ -247,7 +247,7 @@ export default async function HelpPage() {
           items={[
             "El cliente paga el 50% de anticipo: tu comisión sobre esa mitad queda disponible al instante.",
             "Al entregar, el cliente paga el resto: la comisión se recalcula sobre el total cobrado y también queda disponible de inmediato.",
-            "Con $30 USD o más disponibles vas a «Comisiones y retiros», registras tu método y solicitas el pago (un retiro a la vez).",
+            "Con $15 USD o más disponibles vas a «Comisiones y retiros», registras tu método y solicitas el pago (un retiro a la vez).",
             "Recibes tu pago y ves el hash de la transacción en tu historial.",
           ]}
         />
@@ -263,10 +263,11 @@ export default async function HelpPage() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Métodos de pago: USDT o USDC (6 redes), Bitcoin y Binance Pay para todos; y métodos
-          locales según tu país — Venezuela: bolívares por Pago Móvil; Colombia: pesos por
-          Nequi, Bancolombia o Daviplata; Estados Unidos: Zelle en dólares. La verificación de
-          identidad (KYC) es requisito para el primer retiro.
+          Métodos de pago: USDT o USDC (6 redes), Bitcoin, Binance Pay y PayPal (en dólares,
+          desde cualquier país) para todos; y métodos locales según tu país — Venezuela:
+          bolívares por Pago Móvil; Colombia: pesos por Nequi, Bancolombia o Daviplata; Estados
+          Unidos: Zelle en dólares. La verificación de identidad (KYC) es requisito para el
+          primer retiro.
         </p>
       </SectionCard>
 
@@ -283,7 +284,7 @@ export default async function HelpPage() {
               "Una llena el formulario → 1 lead (tasa de conversión del 4%).",
               "Cotizas una tienda online de $999. El cliente paga el anticipo de $499.50 → ganas 10% = $49.95, disponible al instante.",
               "Al entregar, el cliente paga el resto: cobrado $999 → tu comisión se recalcula a $99.90 y queda disponible de inmediato.",
-              "Ya superas el mínimo de $30: solicitas el retiro y te pagan por Binance Pay.",
+              "Ya superas el mínimo de $15: solicitas el retiro y te pagan por Binance Pay.",
             ]}
           />
         </div>
