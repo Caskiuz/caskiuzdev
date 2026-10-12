@@ -16,8 +16,8 @@ async function checkAuth() {
 /**
  * Registra un lead (contacto) atribuido a un afiliado sin crear una venta.
  * Pensado para conversaciones de WhatsApp: el admin pega el código del
- * mensaje y los datos del cliente y el lead aparece al instante en
- * «Mis leads» del afiliado.
+ * mensaje y los datos del cliente y el posible cliente aparece al instante
+ * en «Posibles clientes» del afiliado.
  */
 export async function POST(request: NextRequest) {
   const authError = await checkAuth();
@@ -57,19 +57,21 @@ export async function POST(request: NextRequest) {
         name: cleanName.slice(0, 160),
         email: String(email || "").trim().slice(0, 200),
         service: service ? String(service).trim().slice(0, 120) : null,
-        message: String(message || "").trim().slice(0, 2000) || "Lead registrado manualmente desde WhatsApp.",
+        message:
+          String(message || "").trim().slice(0, 2000) ||
+          "Registrado por el equipo de Caskiuz (WhatsApp u otro canal).",
         affiliateId: affiliate.id,
         attributionSource: "MANUAL",
       },
     });
 
-    // Aviso interno al afiliado: ya tiene el lead en su panel
+    // Aviso interno al afiliado: ya tiene el posible cliente en su panel
     await notifyInApp({
       recipientType: "AFFILIATE",
       recipientId: affiliate.id,
       kind: "NEW_LEAD",
-      title: `¡Nuevo lead! ${contact.name} te escribió`,
-      body: "Lead registrado por el equipo de Caskiuz (WhatsApp u otro canal).",
+      title: `¡Nuevo posible cliente! ${contact.name} te escribió`,
+      body: "Registrado por el equipo de Caskiuz (WhatsApp u otro canal).",
       linkUrl: "/afiliados/panel/leads",
     });
 

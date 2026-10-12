@@ -186,12 +186,26 @@ async function main() {
   assert(caskRefCode === SLUG_A, "cookie cask_ref_code = slug", String(caskRefCode));
   assert(Boolean(caskVisit), "cookie cask_visit fijada", String(caskVisit));
   assert(location4.includes(`ref=${SLUG_A}`), "redirect lleva ?ref=<slug> en la URL", location4);
+  assert(new URL(location4).pathname === "/", "redirect va SIEMPRE a la página principal", location4);
   assert((await clickCountA()) === 1, "clic humano crea 1 clic", `clicks=${await clickCountA()}`);
 
   const clickRow = await prisma.click.findFirst({ where: { affiliateId: affA.id } });
   assert(clickRow.subId === "local-test", "subId guardado", clickRow.subId);
+  assert(clickRow.destination === "/", "destination guardado como /", String(clickRow.destination));
   assert(clickRow.ip === IP, "IP guardada", String(clickRow.ip));
   const clickId4 = clickRow.id;
+
+  // 4b) ?to= viejo se ignora: el link siempre lleva a la página principal
+  res = await fetchJson(`${BASE}/r/${SLUG_B}?to=/%23services`, {
+    redirect: "manual",
+    headers: { "User-Agent": UA_HUMAN, Accept: ACCEPT_HTML, "X-Forwarded-For": "198.51.100.42" },
+  });
+  const location4b = res.headers.get("location") || "";
+  assert(
+    new URL(location4b).pathname === "/" && !location4b.includes("#"),
+    "?to= ignorado: redirect al inicio sin ancla",
+    location4b
+  );
 
   // 5) Dedup 24h: mismo visitante re-clica el mismo link
   res = await fetchJson(`${BASE}/r/${SLUG_A}`, {

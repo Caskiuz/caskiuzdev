@@ -106,7 +106,7 @@ export default async function AffiliateDashboardPage({
       icon: MousePointerClick,
     },
     {
-      label: "Leads referidos",
+      label: "Posibles clientes",
       value: stats.totalLeads.toLocaleString("en-US"),
       sub: `${stats.conversionRate.toFixed(1)}% conversión`,
       icon: Users,
@@ -245,7 +245,7 @@ export default async function AffiliateDashboardPage({
         <ul className="space-y-3 text-sm text-muted-foreground">
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">1</span>
-            <span><strong className="text-foreground">Tu link + formulario:</strong> el cliente entra por tu link y llena el formulario → el lead queda a tu nombre automáticamente.</span>
+            <span><strong className="text-foreground">Tu link + formulario:</strong> el cliente entra por tu link y llena el formulario → queda a tu nombre automáticamente.</span>
           </li>
           <li className="flex gap-3">
             <span className="w-6 h-6 rounded-full bg-aff-blue/15 text-aff-cyan flex items-center justify-center text-xs font-bold shrink-0">2</span>

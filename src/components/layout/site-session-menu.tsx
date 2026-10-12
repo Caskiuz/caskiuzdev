@@ -188,7 +188,7 @@ export function SiteSessionMenu({
             <Link2 className="w-4 h-4 text-aff-cyan" /> Mis enlaces
           </Link>
           <Link href="/afiliados/panel/leads" onClick={close} className={menuItemClass}>
-            <Users className="w-4 h-4 text-aff-cyan" /> Mis leads
+            <Users className="w-4 h-4 text-aff-cyan" /> Posibles clientes
           </Link>
           <Link href="/afiliados/panel/materiales" onClick={close} className={menuItemClass}>
             <Megaphone className="w-4 h-4 text-aff-cyan" /> Materiales

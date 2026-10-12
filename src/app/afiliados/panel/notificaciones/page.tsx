@@ -22,7 +22,7 @@ export default async function AffiliateNotificationsPage() {
           <Bell className="w-7 h-7 text-aff-cyan" /> Notificaciones
         </h1>
         <p className="text-muted-foreground mt-1">
-          Leads nuevos, ventas, documentos y avisos del equipo de Caskiuz. Las no
+          Posibles clientes nuevos, ventas, documentos y avisos del equipo de Caskiuz. Las no
           leídas se marcan solas al abrir esta página.
         </p>
       </div>

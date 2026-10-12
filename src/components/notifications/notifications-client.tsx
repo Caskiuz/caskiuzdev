@@ -60,7 +60,7 @@ export function NotificationsClient({
         <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-semibold mb-2">Sin notificaciones</h3>
         <p className="text-muted-foreground">
-          Aquí verás los avisos del sistema: leads nuevos, ventas, documentos y más.
+          Aquí verás los avisos del sistema: posibles clientes nuevos, ventas, documentos y más.
         </p>
       </div>
     );

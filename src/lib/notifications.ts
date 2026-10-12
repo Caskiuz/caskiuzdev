@@ -85,7 +85,7 @@ export async function notifyNewLead(contactId: number): Promise<void> {
         recipientType: "AFFILIATE",
         recipientId: contact.affiliateId,
         kind: "NEW_LEAD",
-        title: `¡Nuevo lead! ${contact.name} te escribió`,
+        title: `¡Nuevo posible cliente! ${contact.name} te escribió`,
         body: contact.message.slice(0, 280) || contact.email,
         linkUrl: "/afiliados/panel/leads",
       });
@@ -118,7 +118,7 @@ export async function notifyLeadAssigned(contactId: number): Promise<void> {
       recipientType: "AFFILIATE",
       recipientId: contact.affiliateId,
       kind: "LEAD_ASSIGNED",
-      title: `Te asignaron un lead: ${contact.name}`,
+      title: `Te asignaron un posible cliente: ${contact.name}`,
       body: `El equipo de Caskiuz te atribuyó el contacto de ${contact.email}.`,
       linkUrl: "/afiliados/panel/leads",
     });

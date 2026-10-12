@@ -9,7 +9,7 @@ import { containerVariants, itemVariants } from "../variants";
 
 const tierPerks = [
   "Comisión sobre ventas cobradas",
-  "Link único + sub-IDs de campaña",
+  "Link único + links por red social",
   "Materiales promocionales incluidos",
   "Retiros en USDT, USDC, BTC, Binance Pay o PayPal",
 ];

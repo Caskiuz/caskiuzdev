@@ -99,7 +99,7 @@ export function getCommissionStatusLabel(status: string): string {
 export function getSaleStatusLabel(status: string): string {
   switch (status) {
     case "LEAD":
-      return "Lead";
+      return "Pendiente de pago";
     case "DEPOSIT_PAID":
       return "Anticipo pagado";
     case "FULLY_PAID":

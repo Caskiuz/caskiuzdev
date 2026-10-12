@@ -14,9 +14,11 @@ export const dynamic = "force-dynamic";
 
 /**
  * Link de referido: registra el clic, fija la cookie de atribución (30 días)
- * y redirige al destino con ?ref=<código> en la URL para que la atribución
- * sobreviva aunque el visitante borre las cookies.
+ * y redirige a la página principal con ?ref=<código> en la URL para que la
+ * atribución sobreviva aunque el visitante borre las cookies.
  * Acepta el slug bonito (/r/ricardo-agelvis) o el código legado (/r/XARUX5YH).
+ * El destino es siempre el inicio (así el visitante ve todo el contenido) y
+ * el ?subid= opcional solo etiqueta el clic para medir la red de origen.
  * Ejemplo: /r/ricardo-agelvis?subid=instagram
  */
 export async function GET(
@@ -25,12 +27,8 @@ export async function GET(
 ) {
   const { code } = await params;
   const subid = request.nextUrl.searchParams.get("subid");
-  const to = request.nextUrl.searchParams.get("to");
 
-  // Validar destino para evitar open redirects
-  const target = String(to || "").startsWith("/") && !String(to).startsWith("//")
-    ? String(to)
-    : "/#services";
+  const target = "/";
 
   const headersList = await headers();
   const userAgent = headersList.get("user-agent")?.slice(0, 480) || null;
@@ -81,7 +79,7 @@ export async function GET(
           ip,
           userAgent,
           referrer,
-          destination: to || "/#services",
+          destination: target,
           visitorId,
         },
       });

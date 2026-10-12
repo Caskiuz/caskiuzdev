@@ -29,7 +29,7 @@ const navItems = [
   { href: "/afiliados/panel", label: "Dashboard", icon: LayoutDashboard },
   { href: "/afiliados/panel/notificaciones", label: "Notificaciones", icon: Inbox },
   { href: "/afiliados/panel/anuncios", label: "Anuncios", icon: Bell },
-  { href: "/afiliados/panel/leads", label: "Mis leads", icon: Users },
+  { href: "/afiliados/panel/leads", label: "Posibles clientes", icon: Users },
   { href: "/afiliados/panel/enlaces", label: "Mis enlaces", icon: Link2 },
   { href: "/afiliados/panel/catalogo", label: "Catálogo", icon: Store },
   { href: "/afiliados/panel/materiales", label: "Materiales", icon: Megaphone },

@@ -24,8 +24,8 @@ const QUICK_GUIDES = [
     title: "Primeros pasos",
     steps: [
       "Ve a 'Mis enlaces' y copia tu link único.",
-      "Elige un destino (recomendado: sección de servicios).",
-      "Agrega un sub-ID para identificar tu campaña (ej: 'instagram').",
+      "Pulsa el botón de la red donde vas a compartir (Instagram, WhatsApp, TikTok…).",
+      "Tu link siempre lleva a la página principal: tu cliente ve todo el contenido.",
       "Comparte el link en tus redes y comunidades.",
     ],
   },
@@ -50,7 +50,7 @@ const QUICK_GUIDES = [
 ];
 
 const SALE_STATUSES = [
-  { status: "Lead", meaning: "El cliente llegó y preguntó, aún no paga nada." },
+  { status: "Pendiente de pago", meaning: "Ya registramos la venta a tu nombre, pero el cliente aún no ha pagado nada." },
   { status: "Anticipo pagado", meaning: "El cliente pagó el 50% para arrancar el proyecto." },
   { status: "Pagado completo", meaning: "El cliente pagó el 100% (anticipo + entrega)." },
   { status: "Reembolsado", meaning: "Se devolvió el dinero: la comisión se anula." },
@@ -158,17 +158,17 @@ export default async function HelpPage() {
           afiliado después, gana el último clic (así funciona en todas las redes de afiliados).
         </p>
         <p className="text-xs text-muted-foreground">
-          💡 En «Mis enlaces» puedes elegir a qué página llega el visitante: inicio,
-          servicios, formulario de contacto o blog.
+          💡 Tu link siempre lleva a la página principal de Caskiuz: tu cliente ve todos
+          los servicios, cómo trabajamos y el formulario de contacto.
         </p>
       </SectionCard>
 
       {/* 2. Campañas */}
-      <SectionCard icon={Megaphone} title="2. Las campañas (sub-IDs)">
+      <SectionCard icon={Megaphone} title="2. Compartir por red social">
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Una campaña es simplemente una <strong className="text-foreground">etiqueta</strong>{" "}
-          que le agregas a tu link para saber de qué canal vino cada persona. Es el mismo
-          link, con una etiqueta distinta por red social:
+          En «Mis enlaces» tienes un <strong className="text-foreground">botón por cada red
+          social</strong>: al pulsarlo se copia el mismo link con una etiqueta distinta, para
+          que sepas de qué canal vino cada persona:
         </p>
         <div className="space-y-2">
           {campaignExamples.map((campaign) => (
@@ -182,10 +182,10 @@ export default async function HelpPage() {
           ))}
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          En «Mis enlaces» ves la tabla <strong className="text-foreground">Clics por sub-ID</strong>:
-          ahí sabrás si Instagram te da 40 clics y WhatsApp 15, por ejemplo. La campaña{" "}
-          <strong className="text-foreground">no cambia tu comisión</strong>: solo te mide qué
-          canal te funciona mejor.
+          En «Mis enlaces» ves la lista <strong className="text-foreground">Clics por red
+          social</strong>: ahí sabrás si Instagram te da 40 clics y WhatsApp 15, por ejemplo.
+          La red <strong className="text-foreground">no cambia tu comisión</strong>: solo te
+          mide qué canal te funciona mejor.
         </p>
       </SectionCard>
 
@@ -197,10 +197,10 @@ export default async function HelpPage() {
         </p>
         <NumberedSteps
           items={[
-            "Tu link + formulario (automático): la persona hace clic en tu link, queda vinculada a ti por 30 días y llena el formulario de contacto → el lead es tuyo al instante.",
+            "Tu link + formulario (automático): la persona hace clic en tu link, queda vinculada a ti por 30 días y llena el formulario de contacto → el posible cliente es tuyo al instante.",
             "Tu link + WhatsApp o chat de IA de la web (automático): si le escriben por los botones de WhatsApp de la web o por el asistente, tu código viaja solo al final del mensaje.",
             "Si le escriben por otro canal (DM de Instagram, teléfono, un chat viejo): pídele que mencione tu código de referido. Con eso el equipo lo registra a tu nombre.",
-            "En tu dashboard ves subir el contador «Leads referidos»: señal de que tu promoción funciona.",
+            "En tu dashboard ves subir el contador «Posibles clientes»: señal de que tu promoción funciona.",
           ]}
         />
         <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
@@ -276,12 +276,12 @@ export default async function HelpPage() {
         <div className="rounded-xl bg-aff-blue/5 border border-aff-blue/15 p-4">
           <p className="text-sm text-muted-foreground leading-relaxed mb-3">
             Eres afiliado <strong className="text-foreground">Plata (10%)</strong> y compartes
-            tu link en Instagram con <code className="font-mono text-xs">?subid=instagram</code>.
+            tu link de Instagram (el botón «Instagram» de «Mis enlaces»).
           </p>
           <NumberedSteps
             items={[
               "25 personas hacen clic → tu dashboard muestra 25 clics.",
-              "Una llena el formulario → 1 lead (tasa de conversión del 4%).",
+              "Una llena el formulario → 1 posible cliente (tasa de conversión del 4%).",
               "Cotizas una tienda online de $999. El cliente paga el anticipo de $499.50 → ganas 10% = $49.95, disponible al instante.",
               "Al entregar, el cliente paga el resto: cobrado $999 → tu comisión se recalcula a $99.90 y queda disponible de inmediato.",
               "Ya superas el mínimo de $15: solicitas el retiro y te pagan por Binance Pay.",
@@ -299,9 +299,10 @@ export default async function HelpPage() {
       <SectionCard icon={LayoutDashboard} title="7. Qué ves en tu panel" id="panel">
         <div className="space-y-2">
           {[
-            ["Dashboard", "Clics, leads, ventas, conversión, EPC, saldo disponible y en retiro, y tu progreso al siguiente nivel."],
+            ["Dashboard", "Clics, posibles clientes, ventas, conversión, EPC, saldo disponible y en retiro, y tu progreso al siguiente nivel."],
             ["Anuncios", "Los avisos oficiales de la red: reuniones por Zoom con su enlace, clases y noticias del programa. Los nuevos aparecen al entrar al panel hasta que los lees."],
-            ["Mis enlaces", "Tu link, el generador con destinos y campañas, y el rendimiento por sub-ID."],
+            ["Posibles clientes", "Las personas que llegaron por tu link, con su estado: nuevos o convertidos a venta."],
+            ["Mis enlaces", "Tu link, los botones para copiarlo en cada red social y el rendimiento de clics por red."],
             ["Catálogo", "Los servicios, sus precios y cuánto ganas con cada uno según tu nivel."],
             ["Materiales", "Textos listos para copiar y pegar en WhatsApp y redes."],
             ["Comisiones y retiros", "Cada venta con su estado y lo que ganaste, tu saldo disponible, tus métodos de pago y el historial con hashes."],

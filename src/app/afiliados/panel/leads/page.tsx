@@ -59,7 +59,7 @@ export default async function LeadsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Users className="w-7 h-7 text-aff-cyan" /> Mis leads
+            <Users className="w-7 h-7 text-aff-cyan" /> Posibles clientes
           </h1>
           <p className="text-muted-foreground mt-1">
             Las personas que llegaron por tu link: {leads.length} en total · {converted}{" "}
@@ -67,7 +67,7 @@ export default async function LeadsPage() {
           </p>
         </div>
         <Link href="/afiliados/panel/enlaces" className="btn-aff metal-shine px-5 py-2.5 text-sm">
-          <ArrowRight className="w-4 h-4" /> Obtener más leads
+          <ArrowRight className="w-4 h-4" /> Obtener más posibles clientes
         </Link>
       </div>
 
@@ -86,7 +86,7 @@ export default async function LeadsPage() {
       {leads.length === 0 ? (
         <div className="metal-card rounded-2xl p-10 text-center">
           <UserPlus className="w-12 h-12 text-aff-cyan/50 mx-auto mb-4" />
-          <p className="font-semibold mb-2">Aún no tienes leads</p>
+          <p className="font-semibold mb-2">Aún no tienes posibles clientes</p>
           <div className="text-sm text-muted-foreground max-w-lg mx-auto mb-3 text-left space-y-2">
             <p>Cada persona que haga clic en tu link y luego se contacte aparecerá aquí:</p>
             <p>
@@ -95,8 +95,8 @@ export default async function LeadsPage() {
             </p>
             <p>
               📲 <strong className="text-foreground">WhatsApp:</strong> si te escriben por tu link de
-              WhatsApp o por los botones de la web, tu código viaja en el mensaje — el lead aparece
-              aquí cuando el equipo de Caskiuz lo registra.
+              WhatsApp o por los botones de la web, tu código viaja en el mensaje — el posible
+              cliente aparece aquí cuando el equipo de Caskiuz lo registra.
             </p>
           </div>
           <p className="text-xs text-muted-foreground max-w-lg mx-auto mb-6">
@@ -161,13 +161,13 @@ export default async function LeadsPage() {
       )}
 
       <div className="glass-card rounded-2xl p-5 text-sm text-muted-foreground leading-relaxed">
-        💡 <strong className="text-foreground">¿Cómo se convierte un lead en venta?</strong>{" "}
+        💡 <strong className="text-foreground">¿Cómo se convierte un posible cliente en venta?</strong>{" "}
         Cuando la persona contrata, el equipo de Caskiuz registra la venta a tu nombre y la
         ves en{" "}
         <Link href="/afiliados/panel/comisiones" className="text-aff-cyan hover:underline">
           Comisiones
         </Link>{" "}
-        con su estado de cobro. Cada novedad (lead nuevo, venta, documentos, retiros) te llega
+        con su estado de cobro. Cada novedad (posible cliente nuevo, venta, documentos, retiros) te llega
         al instante en tu{" "}
         <Link href="/afiliados/panel/notificaciones" className="text-aff-cyan hover:underline">
           centro de notificaciones

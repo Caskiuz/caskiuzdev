@@ -307,7 +307,7 @@ export function SalesManager({
         flash("error", json.error || "No se pudo registrar el lead.");
         return;
       }
-      flash("ok", "Lead registrado. Ya aparece en «Mis leads» del afiliado.");
+      flash("ok", "Lead registrado. Ya aparece en «Posibles clientes» del afiliado.");
       setShowLeadForm(false);
       setLeadName("");
       setLeadEmail("");
@@ -383,7 +383,7 @@ export function SalesManager({
             <h3 className="font-bold">Registrar lead</h3>
             <p className="text-xs text-muted-foreground mt-1">
               Para conversaciones de WhatsApp u otro canal: pega el código y los datos del cliente y el lead
-              aparece al instante en «Mis leads» del afiliado, sin crear una venta todavía.
+              aparece al instante en «Posibles clientes» del afiliado, sin crear una venta todavía.
             </p>
           </div>
 
@@ -555,7 +555,7 @@ export function SalesManager({
                 </div>
               </div>
               <p className="text-xs text-muted-foreground -mt-2">
-                Si pones los datos del cliente se crea también el lead atribuido al afiliado (visible en «Mis leads»).
+                Si pones los datos del cliente se crea también el lead atribuido al afiliado (visible en «Posibles clientes»).
               </p>
 
               <div>

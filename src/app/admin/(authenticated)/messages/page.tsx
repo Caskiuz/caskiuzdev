@@ -55,7 +55,7 @@ export default async function MessagesPage() {
         <p className="mt-2 text-muted-foreground">
           Gestiona los mensajes recibidos desde el formulario de contacto. Los
           leads sin afiliado se marcan en rojo: asígnalos con un clic y quedan
-          al instante en «Mis leads» del afiliado.
+          al instante en «Posibles clientes» del afiliado.
         </p>
       </div>
 

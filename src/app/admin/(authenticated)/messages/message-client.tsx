@@ -223,8 +223,8 @@ export function MessageClient({ messages, affiliates, markAsRead, markAsUnread }
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5">
-                    Al asignarlo, el lead aparece al instante en «Mis leads» del
-                    afiliado y le llega su notificación.
+                    Al asignarlo, el lead aparece al instante en «Posibles
+                    clientes» del afiliado y le llega su notificación.
                   </p>
                 </div>
               ) : (

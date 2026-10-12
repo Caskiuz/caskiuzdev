@@ -208,7 +208,7 @@ export const PROMO_BANNER = `<a href="[TU LINK]" style="display:inline-block;pad
 export const PROMO_TIPS: string[] = [
   "Publica en horarios de mayor actividad de tu audiencia (mañana 8-10am o noche 7-9pm).",
   "Personaliza cada mensaje: usar el nombre del negocio o del prospecto en DMs y emails multiplica las respuestas.",
-  "Usa un sub-ID distinto por red social para medir qué canal te da más ventas.",
+  "Copia el link de cada red social en «Mis enlaces» para saber qué canal te da más ventas.",
   "El 80% del resultado está en la constancia: publica al menos 3 veces por semana.",
   "Muestra resultados, no precios: comparte testimonios y casos de éxito reales de la página principal.",
   "Responde rápido a quien pregunte: los primeros minutos después de un mensaje marcan la diferencia.",

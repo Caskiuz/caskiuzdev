@@ -16,12 +16,12 @@ const benefits = [
   {
     icon: Link2,
     title: "Tu link único",
-    text: "URL corta con tu código + sub-IDs para medir cada campaña por separado.",
+    text: "URL corta con tu código + un link listo para cada red social, para medir qué canal funciona mejor.",
   },
   {
     icon: BarChart3,
     title: "Estadísticas en vivo",
-    text: "Clics, leads, ventas, EPC y tasa de conversión en tu dashboard personal.",
+    text: "Clics, posibles clientes, ventas, EPC y tasa de conversión en tu dashboard personal.",
   },
   {
     icon: Coins,

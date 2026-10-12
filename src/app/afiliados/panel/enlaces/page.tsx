@@ -1,8 +1,13 @@
 import { requireAffiliate } from "@/lib/affiliate-auth";
 import { prisma } from "@/lib/prisma/client";
 import { affiliateRef } from "@/lib/affiliate";
+import { platformFromSubId } from "@/lib/share-platforms";
 import { LinkBuilder } from "@/components/affiliates/panel/link-builder";
+import { PLATFORM_ICONS } from "@/components/affiliates/panel/social-icons";
 import { SectionGuide } from "@/components/affiliates/panel/section-guide";
+import { Globe } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function LinksPage() {
   const affiliate = await requireAffiliate();
@@ -57,7 +62,7 @@ export default async function LinksPage() {
         intro="Tu link único es lo que te acredita cada clic y cada venta. No necesitas vender nada: solo compartirlo."
         steps={[
           "Cópialo con el botón grande de arriba.",
-          "Agrega un sub-ID por red social (ej: instagram) para medir cada campaña.",
+          "Pulsa el botón de la red donde vas a compartir: el link se copia solo.",
           "Pégalo en tu bio, estados, grupos y chats.",
           "Cada clic aparece aquí en tiempo real, y la venta queda a tu nombre.",
         ]}
@@ -80,55 +85,78 @@ export default async function LinksPage() {
             </p>
           ) : (
             <ul className="space-y-2">
-              {recentClicks.map((click) => (
-                <li
-                  key={click.id}
-                  className="flex items-center justify-between gap-3 text-sm py-2 border-b border-border last:border-0"
-                >
-                  <span className="text-muted-foreground truncate flex items-center gap-2 min-w-0">
-                    <span className="truncate">
-                      {click.destination || "/"} {click.subId ? `· ${click.subId}` : ""}
+              {recentClicks.map((click) => {
+                const subId = click.subId?.trim() ?? "";
+                const platform = platformFromSubId(subId);
+                const source = !subId
+                  ? click.destination === "whatsapp"
+                    ? { label: "WhatsApp", icon: PLATFORM_ICONS.whatsapp }
+                    : { label: "Link directo", icon: Globe }
+                  : platform && subId.toLowerCase() === platform.slug
+                    ? { label: platform.label, icon: PLATFORM_ICONS[platform.slug] }
+                    : { label: subId, icon: platform ? PLATFORM_ICONS[platform.slug] : Globe };
+                const SourceIcon = source.icon;
+                return (
+                  <li
+                    key={click.id}
+                    className="flex items-center justify-between gap-3 text-sm py-2 border-b border-border last:border-0"
+                  >
+                    <span className="text-muted-foreground truncate flex items-center gap-2 min-w-0">
+                      <SourceIcon className="w-4 h-4 shrink-0 text-aff-cyan/70" />
+                      <span className="truncate">{source.label}</span>
+                      {click.convertedAt && (
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500">
+                          Convertido
+                        </span>
+                      )}
                     </span>
-                    {click.convertedAt && (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500">
-                        Convertido
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {click.createdAt.toLocaleDateString("es-ES", {
-                      day: "2-digit",
-                      month: "short",
-                    })}
-                  </span>
-                </li>
-              ))}
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {click.createdAt.toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
 
-        {/* Rendimiento por campaña */}
+        {/* Rendimiento por red social */}
         <div className="metal-card rounded-2xl p-6">
-          <h2 className="font-bold mb-4">Clics por sub-ID de campaña</h2>
+          <h2 className="font-bold mb-4">Clics por red social</h2>
           {clicksBySubId.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Crea sub-IDs (ej: &quot;facebook&quot;, &quot;youtube&quot;) para comparar tus campañas aquí.
+              Cuando compartas tus links por redes, aquí verás cuántos clics trae cada una.
             </p>
           ) : (
             <ul className="space-y-2">
-              {clicksBySubId.map((group) => (
-                <li
-                  key={group.subId ?? "sin-subid"}
-                  className="flex items-center justify-between gap-3 text-sm py-2 border-b border-border last:border-0"
-                >
-                  <span className="font-mono text-aff-cyan">
-                    {group.subId || "(sin sub-ID)"}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {group._count._all.toLocaleString("en-US")} clics
-                  </span>
-                </li>
-              ))}
+              {clicksBySubId.map((group) => {
+                const subId = group.subId?.trim() ?? "";
+                const platform = platformFromSubId(subId);
+                const label = !subId
+                  ? "Sin red (link directo)"
+                  : platform && subId.toLowerCase() === platform.slug
+                    ? platform.label
+                    : subId;
+                const GroupIcon = platform ? PLATFORM_ICONS[platform.slug] : Globe;
+                return (
+                  <li
+                    key={group.subId ?? "sin-subid"}
+                    className="flex items-center justify-between gap-3 text-sm py-2 border-b border-border last:border-0"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <GroupIcon className="w-4 h-4 shrink-0 text-aff-cyan/70" />
+                      <span className="truncate text-foreground">{label}</span>
+                    </span>
+                    <span className="text-muted-foreground shrink-0">
+                      {group._count._all.toLocaleString("en-US")}{" "}
+                      {group._count._all === 1 ? "clic" : "clics"}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
