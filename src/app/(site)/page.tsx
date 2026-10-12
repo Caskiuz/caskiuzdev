@@ -1,4 +1,5 @@
 import { getSiteConfig } from "@/lib/site-config";
+import { getActiveClientPaymentMethods, stripPaymentSecrets } from "@/lib/payments";
 import { Hero } from "@/components/sections/hero";
 import { Projects } from "@/components/sections/projects";
 import { Services } from "@/components/sections/services";
@@ -11,16 +12,20 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const config = await getSiteConfig();
+  // Los componentes de cliente reciben la configuración sin las cuentas de
+  // cobro: todo lo que se les pasa queda serializado en el HTML público.
+  const publicConfig = stripPaymentSecrets(config);
+  const paymentMethods = getActiveClientPaymentMethods(config);
 
   return (
     <>
-      <Hero config={config} />
+      <Hero config={publicConfig} />
       <Projects />
-      <Services config={config} />
+      <Services config={publicConfig} paymentMethods={paymentMethods} />
       <Testimonials />
       <TechStack />
-      <About config={config} />
-      <Contact config={config} />
+      <About config={publicConfig} />
+      <Contact config={publicConfig} />
     </>
   );
 }

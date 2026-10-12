@@ -26,7 +26,7 @@ const benefits = [
   {
     icon: Coins,
     title: "Pagos en cripto",
-    text: "USDT y USDC en 6 redes, Bitcoin, Binance Pay o PayPal. Retiros desde $15 USD.",
+    text: "USDT y USDC en 6 redes, Bitcoin, Binance Pay, PayPal o método local según tu país. Retiros desde $15 USD.",
   },
   {
     icon: FileText,

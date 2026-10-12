@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Check, X, Wallet } from "lucide-react";
-import { isColombianPayoutType, payoutMethodDetail } from "@/lib/affiliate";
-import { formatCop } from "@/lib/payments";
+import {
+  isColombianPayoutType,
+  isPeruvianPayoutType,
+  payoutMethodDetail,
+} from "@/lib/affiliate";
+import { formatCop, formatPen } from "@/lib/payments";
 
 interface WithdrawalRow {
   id: number;
@@ -47,14 +51,17 @@ export function WithdrawalsManager({
   withdrawals,
   usdVesRate,
   usdCopRate,
+  usdPenRate,
   ratesMeta,
 }: {
   withdrawals: WithdrawalRow[];
   usdVesRate: number | null;
   usdCopRate: number | null;
+  usdPenRate: number | null;
   ratesMeta?: {
     ves: { source: string | null; dateLabel: string | null };
     cop: { source: string | null; dateLabel: string | null };
+    pen: { source: string | null; dateLabel: string | null };
   };
 }) {
   const [items, setItems] = useState(withdrawals);
@@ -112,10 +119,13 @@ export function WithdrawalsManager({
             const pending = w.status === "REQUESTED" || w.status === "APPROVED";
             const isPagoMovil = w.payoutMethod.type === "PAGO_MOVIL";
             const isColombian = isColombianPayoutType(w.payoutMethod.type);
+            const isPeruvian = isPeruvianPayoutType(w.payoutMethod.type);
             const vesEquivalent =
               isPagoMovil && usdVesRate ? w.netAmount * usdVesRate : null;
             const copEquivalent =
               isColombian && usdCopRate ? w.netAmount * usdCopRate : null;
+            const penEquivalent =
+              isPeruvian && usdPenRate ? w.netAmount * usdPenRate : null;
 
             return (
               <div key={w.id} className="rounded-2xl border border-border bg-surface p-5">
@@ -156,6 +166,25 @@ export function WithdrawalsManager({
                               (tasa {usdCopRate?.toLocaleString("es-CO")} COP/USD
                               {ratesMeta?.cop.source ? ` · ${ratesMeta.cop.source}` : ""}
                               {ratesMeta?.cop.dateLabel ? ` · ${ratesMeta.cop.dateLabel}` : ""})
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-normal text-muted-foreground">
+                            {" "}(tasa no disponible aún: se reintenta automáticamente)
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {isPeruvian && (
+                      <p className="text-sm font-semibold text-aff-cyan mt-0.5">
+                        🇵🇪 Pagar en soles
+                        {penEquivalent ? (
+                          <>
+                            : {formatPen(penEquivalent)}{" "}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              (tasa {usdPenRate?.toLocaleString("es-PE")} PEN/USD
+                              {ratesMeta?.pen.source ? ` · ${ratesMeta.pen.source}` : ""}
+                              {ratesMeta?.pen.dateLabel ? ` · ${ratesMeta.pen.dateLabel}` : ""})
                             </span>
                           </>
                         ) : (

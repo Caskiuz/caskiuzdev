@@ -7,14 +7,18 @@
  * Los métodos locales NO son de clientes: son métodos de COBRO de
  * comisiones según el país del afiliado (se registran en el panel del
  * afiliado, sección Comisiones y retiros): Pago Móvil (Venezuela),
- * Nequi/Bancolombia/Daviplata (Colombia), Zelle (Estados Unidos) y
- * PayPal (cualquier país).
+ * Nequi/Bancolombia/Daviplata (Colombia), Yape (Perú), Zelle (Estados
+ * Unidos) y PayPal (cualquier país).
  */
 
 export interface PaymentMethodInfo {
   id: string;
   label: string;
-  /** Datos públicos del método (solo si el dueño los configuró) */
+  /**
+   * Datos de la cuenta (solo paneles PRIVADOS: panel del afiliado → Catálogo
+   * y admin). Nunca se renderizan en páginas públicas: la web solo muestra
+   * el nombre y el logo del método.
+   */
   detail: string | null;
 }
 
@@ -44,7 +48,8 @@ function readWallets(config: Record<string, string>): string[] {
 
 /**
  * Lista de métodos de pago de clientes que acepta Caskiuz.
- * Los que tienen datos configurados incluyen el detalle público.
+ * Los que tienen datos configurados incluyen el detalle (para los paneles
+ * privados; la web pública solo usa `label` y el id).
  */
 export function getClientPaymentMethods(
   config: Record<string, string>
@@ -110,4 +115,61 @@ export function formatCop(amount: number): string {
     currency: "COP",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/**
+ * Tasa de cambio USD → PEN configurada por el dueño para pagar las
+ * comisiones de afiliados peruanos por Yape.
+ * Retorna null si no está configurada.
+ */
+export function getUsdPenRate(config: Record<string, string>): number | null {
+  const raw = (config["payments_usd_pen_rate"] || "").trim().replace(",", ".");
+  const rate = Number(raw);
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+}
+
+export function formatPen(amount: number): string {
+  return new Intl.NumberFormat("es-PE", {
+    style: "currency",
+    currency: "PEN",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+// ─── Versiones públicas (sin datos de cuentas) ───
+
+/**
+ * Método de pago SIN los datos de la cuenta. Es la única forma que puede
+ * viajar a un componente de cliente público: todo lo que se pasa a un
+ * componente "use client" queda serializado en el HTML.
+ */
+export interface PublicPaymentMethodInfo {
+  id: string;
+  label: string;
+}
+
+/** Métodos configurados (activos) sin datos de cuenta, para la web pública. */
+export function getActiveClientPaymentMethods(
+  config: Record<string, string>
+): PublicPaymentMethodInfo[] {
+  return getClientPaymentMethods(config)
+    .filter((m) => m.detail)
+    .map(({ id, label }) => ({ id, label }));
+}
+
+/**
+ * Copia de la configuración sin los valores de las cuentas de cobro
+ * (claves payments_*). Los componentes de cliente públicos reciben esta
+ * versión para que los emails y wallets nunca lleguen al navegador.
+ */
+export function stripPaymentSecrets(
+  config: Record<string, string>
+): Record<string, string> {
+  const safe: Record<string, string> = {};
+  for (const [key, value] of Object.entries(config)) {
+    if (key.startsWith("payments_")) continue;
+    safe[key] = value;
+  }
+  return safe;
 }

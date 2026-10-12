@@ -10,6 +10,7 @@ import {
   payoutMethodLabel,
   payoutMethodShortName,
   BANCOLOMBIA_ACCOUNT_TYPES,
+  sameCountry,
 } from "@/lib/affiliate";
 import { getWithdrawalStatusLabel } from "@/lib/affiliate-queries";
 import Link from "next/link";
@@ -73,7 +74,8 @@ type MethodForm =
   | { mode: "daviplata" }
   | { mode: "bancolombia" }
   | { mode: "zelle" }
-  | { mode: "paypal" };
+  | { mode: "paypal" }
+  | { mode: "yape" };
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-aff-blue/50 transition-all text-sm";
@@ -92,9 +94,10 @@ export function WithdrawalsClient({
   initialMethods,
   initialWithdrawals,
 }: WithdrawalsProps) {
-  const isVenezuela = country === "Venezuela";
-  const isColombia = country === "Colombia";
-  const isUSA = country === "Estados Unidos";
+  const isVenezuela = sameCountry(country, "Venezuela");
+  const isColombia = sameCountry(country, "Colombia");
+  const isUSA = sameCountry(country, "Estados Unidos");
+  const isPeru = sameCountry(country, "Perú");
   const [balanceAvailable, setBalanceAvailable] = useState(initialBalanceAvailable);
   const kycApproved = initialKycApproved;
   const [methods, setMethods] = useState<PayoutMethod[]>(initialMethods);
@@ -119,6 +122,8 @@ export function WithdrawalsClient({
   const [coAccountNumber, setCoAccountNumber] = useState("");
   const [zelleAccount, setZelleAccount] = useState("");
   const [zelleHolder, setZelleHolder] = useState("");
+  const [yapePhone, setYapePhone] = useState("");
+  const [yapeHolder, setYapeHolder] = useState("");
   const [paypalAccount, setPaypalAccount] = useState("");
   const [paypalHolder, setPaypalHolder] = useState("");
 
@@ -162,9 +167,11 @@ export function WithdrawalsClient({
                     }
                   : form.mode === "zelle"
                     ? { type: "ZELLE", accountData: { account: zelleAccount, holder: zelleHolder } }
-                    : form.mode === "paypal"
-                      ? { type: "PAYPAL", accountData: { account: paypalAccount, holder: paypalHolder } }
-                      : { type: "WALLET", currency, network, address };
+                    : form.mode === "yape"
+                      ? { type: "YAPE", accountData: { phone: yapePhone, holder: yapeHolder } }
+                      : form.mode === "paypal"
+                        ? { type: "PAYPAL", accountData: { account: paypalAccount, holder: paypalHolder } }
+                        : { type: "WALLET", currency, network, address };
 
       const res = await fetch("/api/affiliate/payout-methods", {
         method: "POST",
@@ -190,6 +197,8 @@ export function WithdrawalsClient({
       setCoAccountNumber("");
       setZelleAccount("");
       setZelleHolder("");
+      setYapePhone("");
+      setYapeHolder("");
       setPaypalAccount("");
       setPaypalHolder("");
     } catch {
@@ -281,6 +290,7 @@ export function WithdrawalsClient({
             Saldo disponible: {formatUsd(balanceAvailable)} · USDT · USDC (6 redes) · BTC ·
             Binance ID/email · PayPal (USD) 🌎{isVenezuela ? " · Pago Móvil (Bs) 🇻🇪" : ""}
             {isColombia ? " · Nequi · Daviplata · Bancolombia (COP) 🇨🇴" : ""}
+            {isPeru ? " · Yape (PEN) 🇵🇪" : ""}
             {isUSA ? " · Zelle (USD) 🇺🇸" : ""} · Retiro mínimo {formatUsd(MIN_WITHDRAWAL)}
           </p>
           {methods.length === 0 ? (
@@ -461,6 +471,17 @@ export function WithdrawalsClient({
                   Bancolombia 🇨🇴
                 </button>
               </>
+            )}
+            {isPeru && (
+              <button
+                onClick={() => setForm({ mode: "yape" })}
+                className={`p-4 rounded-xl border text-sm font-medium transition-colors ${
+                  form.mode === "yape" ? "border-aff-cyan bg-aff-blue/10 text-aff-cyan" : "border-border hover:bg-surface-hover"
+                }`}
+              >
+                <Smartphone className="w-5 h-5 mx-auto mb-2" />
+                Yape 🇵🇪
+              </button>
             )}
             {isUSA && (
               <button
@@ -643,6 +664,42 @@ export function WithdrawalsClient({
               </div>
               <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Zelle"}
+              </button>
+            </form>
+          )}
+
+          {form.mode === "yape" && (
+            <form onSubmit={addMethod} className="space-y-4">
+              <p className="text-xs text-aff-cyan bg-aff-blue/5 border border-aff-blue/15 rounded-xl p-3">
+                📲 Cobra tus comisiones en soles directo a tu Yape. Exclusivo para afiliados en
+                Perú.
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Número de celular (Yape)</label>
+                <input
+                  value={yapePhone}
+                  onChange={(e) => setYapePhone(e.target.value)}
+                  required
+                  placeholder="987 654 321"
+                  className={inputClass}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Celular peruano de 9 dígitos (empieza por 9). Puedes escribirlo con o sin +51.
+                  Debe ser el número con el que estás registrado en Yape.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titular</label>
+                <input
+                  value={yapeHolder}
+                  onChange={(e) => setYapeHolder(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" disabled={busy} className="btn-aff metal-shine w-full px-6 py-3 text-sm disabled:opacity-60">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Agregar Yape"}
               </button>
             </form>
           )}

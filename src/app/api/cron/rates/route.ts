@@ -5,8 +5,8 @@ import { refreshStoredRates } from "@/lib/exchange-rates";
 export const dynamic = "force-dynamic";
 
 /**
- * Actualiza las tasas de cambio (USD → Bs paralelo y USD → COP TRM) y las
- * guarda en la configuración del sitio.
+ * Actualiza las tasas de cambio (USD → Bs paralelo, USD → COP TRM y
+ * USD → PEN) y las guarda en la configuración del sitio.
  *
  * Se invoca de dos formas:
  * - Cron de Vercel: Authorization: Bearer <CRON_SECRET>
@@ -24,7 +24,8 @@ async function handle(request: NextRequest) {
     const result = await refreshStoredRates();
     console.log(
       `💱 Tasas: Bs ${result.ves.rate ?? "sin dato"} (${result.ves.source ?? result.ves.error}) · ` +
-        `COP ${result.cop.rate ?? "sin dato"} (${result.cop.source ?? result.cop.error})`
+        `COP ${result.cop.rate ?? "sin dato"} (${result.cop.source ?? result.cop.error}) · ` +
+        `PEN ${result.pen.rate ?? "sin dato"} (${result.pen.source ?? result.pen.error})`
     );
     return NextResponse.json({ success: true, ...result });
   } catch (error) {

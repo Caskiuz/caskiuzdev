@@ -3,17 +3,13 @@ import { getSiteConfigByGroup } from "@/lib/site-config";
 import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 import { getTierInfo, formatUsd } from "@/lib/affiliate";
 import { getClientPaymentMethods } from "@/lib/payments";
-import { TrendingUp, Link2, Smartphone, Landmark, Wallet, Coins, CreditCard, Globe } from "lucide-react";
+import {
+  CLIENT_PAYMENT_ICONS,
+  CLIENT_ICON_CLASS_SM,
+} from "@/components/ui/payment-icons";
+import { TrendingUp, Link2 } from "lucide-react";
 import Link from "next/link";
 import { SectionGuide } from "@/components/affiliates/panel/section-guide";
-
-const METHOD_ICONS: Record<string, typeof Smartphone> = {
-  "zelle": Landmark,
-  "paypal": Wallet,
-  "binance": Coins,
-  "western-union": Globe,
-  "crypto": CreditCard,
-};
 
 function extractPrice(price: string): number | null {
   const match = price.replace(/,/g, "").match(/\$(\d+(?:\.\d+)?)/);
@@ -65,18 +61,15 @@ export default async function CatalogPage() {
         <p className="text-sm font-bold mb-3">💳 ¿Cómo pagan tus clientes?</p>
         <div className="flex flex-wrap gap-2">
           {paymentMethods.map((method) => {
-            const Icon = METHOD_ICONS[method.id] ?? CreditCard;
-            const isPagoMovil = method.id === "pago-movil";
+            const Icon = CLIENT_PAYMENT_ICONS[method.id];
             return (
               <span
                 key={method.id}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                  isPagoMovil
-                    ? "border-aff-cyan/40 bg-aff-blue/10 text-aff-cyan"
-                    : "border-border text-muted-foreground"
-                }`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-border text-muted-foreground"
               >
-                <Icon className="w-3.5 h-3.5" />
+                {Icon ? (
+                  <Icon className={CLIENT_ICON_CLASS_SM[method.id] ?? CLIENT_ICON_CLASS_SM.default} />
+                ) : null}
                 {method.label}
               </span>
             );
@@ -94,7 +87,7 @@ export default async function CatalogPage() {
         <p className="text-xs text-muted-foreground mt-3">
           El esquema es 50% de anticipo y 50% al finalizar. Comparte estos datos con tus
           referidos para que paguen al instante. Tu comisión se te paga aparte, en USDT,
-          USDC, BTC o Binance Pay.
+          USDC, BTC, Binance Pay, PayPal o método local según tu país.
         </p>
       </div>
 

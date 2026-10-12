@@ -45,7 +45,7 @@ export default async function AffiliateDashboardPage({
   } else if (payoutCount === 0) {
     nextStep = {
       title: "Registra tu método de pago",
-      text: "Elige cómo quieres cobrar: cripto, Binance Pay o PayPal, y métodos locales según tu país (Pago Móvil, Nequi, Bancolombia, Daviplata, Zelle).",
+      text: "Elige cómo quieres cobrar: cripto, Binance Pay o PayPal, y métodos locales según tu país (Pago Móvil, Nequi, Bancolombia, Daviplata, Yape, Zelle).",
       cta: "Registrar método",
       href: "/afiliados/panel/comisiones",
       copy: false,

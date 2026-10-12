@@ -78,6 +78,20 @@ export const COUNTRIES = [
   "Puerto Rico", "República Dominicana", "Uruguay", "Venezuela", "Otro",
 ] as const;
 
+/**
+ * Compara el país guardado (texto libre) con uno esperado tolerando
+ * mayúsculas, espacios y acentos: "peru " ≡ "Perú".
+ */
+export function sameCountry(value: string | null | undefined, expected: string): boolean {
+  const normalize = (v: string) =>
+    v
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+  return normalize(value ?? "") === normalize(expected);
+}
+
 export function formatUsd(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -171,11 +185,18 @@ export function validateBinancePayInput(type: string, value: string): boolean {
   return false;
 }
 
-// ─── Métodos de pago locales (Colombia / EE. UU.) ───
+// ─── Métodos de pago locales (Colombia / Perú / EE. UU.) ───
 export const COLOMBIA_METHOD_TYPES = ["NEQUI", "DAVIPLATA", "BANCOLOMBIA"] as const;
 
 export function isColombianPayoutType(type: string): boolean {
   return (COLOMBIA_METHOD_TYPES as readonly string[]).includes(type);
+}
+
+/** Yape: cobro de comisiones en soles, exclusivo para afiliados en Perú */
+export const PERU_METHOD_TYPE = "YAPE";
+
+export function isPeruvianPayoutType(type: string): boolean {
+  return type === PERU_METHOD_TYPE;
 }
 
 export const BANCOLOMBIA_ACCOUNT_TYPES = ["Ahorros", "Corriente"] as const;
@@ -212,6 +233,21 @@ export function normalizeZelleAccount(value: string): string | null {
 export function normalizePayPalEmail(value: string): string | null {
   const trimmed = value.trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed.toLowerCase() : null;
+}
+
+/**
+ * Celular peruano de Yape: 9 dígitos que empiezan por 9.
+ * Acepta +51, espacios y guiones; devuelve solo los 9 dígitos o null.
+ */
+export function normalizeYapePhone(value: string): string | null {
+  const digits = value.replace(/\D/g, "");
+  const local = digits.length === 11 && digits.startsWith("51") ? digits.slice(2) : digits;
+  return /^9\d{8}$/.test(local) ? local : null;
+}
+
+/** Presentación legible del celular de Yape: "987654321" → "987 654 321" */
+export function formatYapePhone(phone: string): string {
+  return phone.replace(/^(\d{3})(\d{3})(\d{3})$/, "$1 $2 $3");
 }
 
 // ─── Formateo único de métodos de pago (panel, admin y emails) ───
@@ -262,6 +298,8 @@ export function payoutMethodLabel(m: PayoutMethodLike): string {
       return `Zelle — ${acc.account}`;
     case "PAYPAL":
       return `PayPal — ${acc.account}`;
+    case "YAPE":
+      return `Yape — ${formatYapePhone(acc.phone ?? "")}`;
     default:
       return `${m.currency} (${NETWORK_LABELS[m.network ?? ""] ?? m.network}) — ${m.address?.slice(0, 12)}…`;
   }
@@ -284,6 +322,8 @@ export function payoutMethodShortName(m: PayoutMethodLike): string {
       return "Zelle (USD)";
     case "PAYPAL":
       return "PayPal (USD)";
+    case "YAPE":
+      return "Yape (soles)";
     default:
       return `${m.currency} ${m.network}`;
   }
@@ -307,6 +347,8 @@ export function payoutMethodDetail(m: PayoutMethodLike): string {
       return `Zelle (USD) — ${acc.account} · ${acc.holder}`;
     case "PAYPAL":
       return `PayPal (USD) — ${acc.account} · ${acc.holder}`;
+    case "YAPE":
+      return `Yape (PEN) — ${formatYapePhone(acc.phone ?? "")} · ${acc.holder}`;
     default:
       return `${m.currency} (${m.network}) — ${m.address}`;
   }

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma/client";
 import { serialize } from "@/lib/affiliate-queries";
 import { getSiteConfig } from "@/lib/site-config";
-import { getUsdCopRate, getUsdVesRate } from "@/lib/payments";
+import { getUsdCopRate, getUsdPenRate, getUsdVesRate } from "@/lib/payments";
 import { ensureFreshRates, readStoredRate } from "@/lib/exchange-rates";
 import { WithdrawalsManager } from "@/components/admin/withdrawals-manager";
 import { Wallet } from "lucide-react";
@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 /** "hoy" / "ayer" / fecha corta para la etiqueta de la tasa */
 function formatRateDateLabel(iso: string | null): string | null {
   if (!iso) return null;
-  const date = new Date(iso);
+  // Algunas fuentes (p. ej. la tasa PEN) entregan solo la fecha sin hora:
+  // se interpreta como hora local para no mostrarla como "ayer".
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T00:00:00` : iso);
   if (Number.isNaN(date.getTime())) return null;
   const today = new Date();
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -39,11 +41,14 @@ export default async function AdminWithdrawalsPage() {
 
   const usdVesRate = getUsdVesRate(config);
   const usdCopRate = getUsdCopRate(config);
+  const usdPenRate = getUsdPenRate(config);
   const vesMeta = readStoredRate(config, "ves");
   const copMeta = readStoredRate(config, "cop");
+  const penMeta = readStoredRate(config, "pen");
   const ratesMeta = {
     ves: { source: vesMeta.source, dateLabel: formatRateDateLabel(vesMeta.date) },
     cop: { source: copMeta.source, dateLabel: formatRateDateLabel(copMeta.date) },
+    pen: { source: penMeta.source, dateLabel: formatRateDateLabel(penMeta.date) },
   };
   const pending = withdrawals.filter((w) => w.status === "REQUESTED").length;
 
@@ -57,15 +62,16 @@ export default async function AdminWithdrawalsPage() {
           Proceso de pago: paga manualmente desde Binance, tu wallet o PayPal, pega la
           referencia del pago y marca como pagado. Los retiros por Pago Móvil se pagan en
           bolívares al afiliado venezolano; los de Nequi, Daviplata o Bancolombia en pesos
-          colombianos; los de Zelle y PayPal en dólares. Las tasas de cambio (Bs y COP) se
-          actualizan automáticamente desde fuentes públicas. El afiliado recibe una
-          notificación en su panel.
+          colombianos; los de Yape en soles; y los de Zelle y PayPal en dólares. Las tasas de
+          cambio (Bs, COP y PEN) se actualizan automáticamente desde fuentes públicas. El
+          afiliado recibe una notificación en su panel.
         </p>
       </div>
 
       <WithdrawalsManager
         usdVesRate={usdVesRate}
         usdCopRate={usdCopRate}
+        usdPenRate={usdPenRate}
         ratesMeta={ratesMeta}
         withdrawals={serialize(
           withdrawals.map((w) => ({

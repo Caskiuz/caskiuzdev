@@ -11,7 +11,7 @@ const tierPerks = [
   "Comisión sobre ventas cobradas",
   "Link único + links por red social",
   "Materiales promocionales incluidos",
-  "Retiros en USDT, USDC, BTC, Binance Pay o PayPal",
+  "Retiros en USDT, USDC, BTC, Binance Pay, PayPal o método local",
 ];
 
 export function Tiers() {

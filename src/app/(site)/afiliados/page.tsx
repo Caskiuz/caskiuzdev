@@ -9,7 +9,7 @@ import { AffiliateFaq } from "@/components/affiliates/landing/faq";
 import { FinalCta } from "@/components/affiliates/landing/cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getSiteConfigByGroup } from "@/lib/site-config";
-import { getClientPaymentMethods } from "@/lib/payments";
+import { getActiveClientPaymentMethods } from "@/lib/payments";
 import { mergeServices, type ServiceItem } from "@/lib/services-defaults";
 
 const BASE_URL = "https://caskiuz.vercel.app";
@@ -77,7 +77,7 @@ const FAQ_JSON_LD = {
       name: "¿Cómo pagan las comisiones?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin, vía Binance Pay o por PayPal en dólares desde cualquier país. Además, según el país: bolívares por Pago Móvil en Venezuela, pesos por Nequi/Bancolombia/Daviplata en Colombia y Zelle en Estados Unidos. El retiro mínimo es de $15 USD.",
+        text: "En USDT o USDC en redes Tron, Ethereum, BNB Smart Chain, Solana, Polygon o Arbitrum; también en Bitcoin, vía Binance Pay o por PayPal en dólares desde cualquier país. Además, según el país: bolívares por Pago Móvil en Venezuela, pesos por Nequi/Bancolombia/Daviplata en Colombia, soles por Yape en Perú y Zelle en Estados Unidos. El retiro mínimo es de $15 USD.",
       },
     },
   ],
@@ -95,7 +95,8 @@ export default async function AffiliatesPage() {
   }
 
   const c = (key: string, fallback: string) => affiliateConfig[key] || fallback;
-  const paymentMethods = getClientPaymentMethods(groups["payments"] ?? {});
+  // Solo id y nombre: los datos de las cuentas no viajan al navegador público.
+  const paymentMethods = getActiveClientPaymentMethods(groups["payments"] ?? {});
 
   return (
     <div className="aff-glow">

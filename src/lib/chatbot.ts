@@ -30,7 +30,7 @@ QUÉ HACE CASKIUZ (servicios y precios "desde", en USD):
 - Mantenimiento & Soporte: $79/mes
 - SEO: Auditoría $199 · On-Page + Velocidad $299 · SEO Local (GMB) $199 · Keyword Research + Contenido $249
 Política de pago: 50% de anticipo para iniciar y 50% al finalizar el proyecto.
-Métodos de pago que aceptamos de los clientes: Zelle, PayPal, Western Union, Binance y cripto (USDT, USDC, Bitcoin) según la red.
+Métodos de pago que aceptamos de los clientes: Zelle, PayPal, Western Union, Binance y cripto (USDT, USDC, Bitcoin) según la red. Los datos exactos de cada cuenta NO son públicos (por privacidad): se comparten al confirmar el proyecto y están disponibles para los afiliados en su panel → Catálogo.
 
 PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 - Unirse es 100% GRATIS, sin cuotas ni mínimos de venta.
@@ -40,7 +40,7 @@ PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 - Niveles de comisión sobre el monto efectivamente cobrado: Plata 10% (desde $0), Oro 20% (desde $2,000 referidos cobrados), Platino 30% (desde $5,000) y Diamante 40% (desde $15,000). El nivel sube automáticamente.
 - La comisión se calcula SOLO sobre dinero realmente cobrado al cliente (50% al anticipo, 100% al pagar completo) y queda DISPONIBLE DE INMEDIATO, sin retención: el afiliado puede retirarla en cuanto el cliente paga.
 - Retiro mínimo: $15 USD. Requiere verificación de identidad (KYC) subiendo un documento en el panel → Documentos.
-- Métodos de pago de comisiones: USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay (Binance ID o email) y PayPal en dólares (email de la cuenta PayPal y titular) para todos; y según el país del afiliado: Pago Móvil en bolívares para VENEZUELA (teléfono, banco, titular y cédula), Nequi/Bancolombia/Daviplata en pesos para COLOMBIA (teléfono o cuenta y titular) y Zelle en dólares para ESTADOS UNIDOS (email o teléfono y titular). Todo se registra en el panel → Comisiones y retiros.
+- Métodos de pago de comisiones: USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay (Binance ID o email) y PayPal en dólares (email de la cuenta PayPal y titular) para todos; y según el país del afiliado: Pago Móvil en bolívares para VENEZUELA (teléfono, banco, titular y cédula), Nequi/Bancolombia/Daviplata en pesos para COLOMBIA (teléfono o cuenta y titular), Yape en soles para PERÚ (teléfono y titular) y Zelle en dólares para ESTADOS UNIDOS (email o teléfono y titular). Todo se registra en el panel → Comisiones y retiros.
 - El afiliado ve en su panel: dashboard con clics, posibles clientes, ventas, comisiones y EPC; su sección «Posibles clientes» (las personas que llegaron por su link); sus enlaces con un link por red social y su rendimiento; catálogo con su comisión estimada; materiales listos para copiar; su sección de comisiones y retiros (saldo, historial y métodos de pago); documentos; perfil; soporte y una guía completa en Ayuda.
 - Recibe un correo cuando se registra una venta a su nombre o cambia el estado de cobro.
 - Está prohibido auto-comprar o usar familiares para cobrar comisiones; el incumplimiento suspende la cuenta.

@@ -1,5 +1,5 @@
 import { readStoredRate } from "@/lib/exchange-rates";
-import { formatCop, formatVes } from "@/lib/payments";
+import { formatCop, formatPen, formatVes } from "@/lib/payments";
 import { AutoRatesRefresh } from "@/components/admin/auto-rates-refresh";
 
 function formatDateLabel(iso: string | null): string {
@@ -63,6 +63,7 @@ function RateCard({
 export function AutoRatesPanel({ config }: { config: Record<string, string> }) {
   const ves = readStoredRate(config, "ves");
   const cop = readStoredRate(config, "cop");
+  const pen = readStoredRate(config, "pen");
 
   return (
     <section className="glass-card p-6 space-y-4">
@@ -77,7 +78,7 @@ export function AutoRatesPanel({ config }: { config: Record<string, string> }) {
         <AutoRatesRefresh />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <RateCard
           flag="🇻🇪"
           title="Bolívares (USD → Bs)"
@@ -95,6 +96,15 @@ export function AutoRatesPanel({ config }: { config: Record<string, string> }) {
           source={cop.source}
           date={cop.date}
           stale={cop.stale}
+        />
+        <RateCard
+          flag="🇵🇪"
+          title="Soles (USD → PEN)"
+          subtitle="Para pagar comisiones por Yape"
+          value={pen.rate ? formatPen(pen.rate) : null}
+          source={pen.source}
+          date={pen.date}
+          stale={pen.stale}
         />
       </div>
     </section>

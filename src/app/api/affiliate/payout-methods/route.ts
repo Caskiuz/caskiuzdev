@@ -10,6 +10,8 @@ import {
   normalizeColombianPhone,
   normalizeZelleAccount,
   normalizePayPalEmail,
+  normalizeYapePhone,
+  sameCountry,
 } from "@/lib/affiliate";
 
 export const dynamic = "force-dynamic";
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     // Pago Móvil: cobro de comisiones EXCLUSIVO para afiliados en Venezuela
     if (type === "PAGO_MOVIL") {
-      if (affiliate.country !== "Venezuela") {
+      if (!sameCountry(affiliate.country, "Venezuela")) {
         return NextResponse.json(
           { error: "Pago Móvil es exclusivo para afiliados en Venezuela. Si estás en Venezuela, actualiza tu país en el perfil." },
           { status: 403 }
@@ -132,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // Métodos locales de Colombia (pesos): Nequi, Daviplata y Bancolombia
     if (type === "NEQUI" || type === "DAVIPLATA" || type === "BANCOLOMBIA") {
-      if (affiliate.country !== "Colombia") {
+      if (!sameCountry(affiliate.country, "Colombia")) {
         return NextResponse.json(
           { error: "Estos métodos son exclusivos para afiliados en Colombia. Si estás en Colombia, actualiza tu país en el perfil." },
           { status: 403 }
@@ -197,7 +199,7 @@ export async function POST(request: NextRequest) {
 
     // Zelle: cobro de comisiones EXCLUSIVO para afiliados en Estados Unidos
     if (type === "ZELLE") {
-      if (affiliate.country !== "Estados Unidos") {
+      if (!sameCountry(affiliate.country, "Estados Unidos")) {
         return NextResponse.json(
           { error: "Zelle es exclusivo para afiliados en Estados Unidos. Si estás en EE. UU., actualiza tu país en el perfil." },
           { status: 403 }
@@ -228,6 +230,45 @@ export async function POST(request: NextRequest) {
           address: null,
           accountData: { account, holder: holder.slice(0, 120) },
           label: label ? String(label).slice(0, 40) : "Zelle (Estados Unidos)",
+          isDefault: count === 0,
+        },
+      });
+      return NextResponse.json({ success: true, method }, { status: 201 });
+    }
+
+    // Yape: cobro de comisiones EN SOLES, exclusivo para afiliados en Perú
+    if (type === "YAPE") {
+      if (!sameCountry(affiliate.country, "Perú")) {
+        return NextResponse.json(
+          { error: "Yape es exclusivo para afiliados en Perú. Si estás en Perú, actualiza tu país en el perfil." },
+          { status: 403 }
+        );
+      }
+      const phone = normalizeYapePhone(String(accountData?.phone || ""));
+      const holder = String(accountData?.holder || "").trim();
+      if (!phone) {
+        return NextResponse.json(
+          { error: "Teléfono Yape inválido. Debe ser un celular peruano de 9 dígitos que empiece por 9." },
+          { status: 400 }
+        );
+      }
+      if (!holder) {
+        return NextResponse.json(
+          { error: "El titular de la cuenta Yape es obligatorio." },
+          { status: 400 }
+        );
+      }
+      const method = await prisma.payoutMethod.create({
+        data: {
+          affiliateId: affiliate.id,
+          type: "YAPE",
+          binanceId: null,
+          binanceEmail: null,
+          currency: "PEN",
+          network: null,
+          address: null,
+          accountData: { phone, holder: holder.slice(0, 120) },
+          label: label ? String(label).slice(0, 40) : "Yape (Perú)",
           isDefault: count === 0,
         },
       });

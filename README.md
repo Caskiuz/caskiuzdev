@@ -21,6 +21,8 @@ Web profesional full-stack para captación de clientes freelance. Diseño modern
 - 📞 **WhatsApp Directo** — Botón flotante con mensaje predefinido
 - 📧 **Formulario de contacto** — Guarda leads en MySQL (Aiven)
 - 📊 **Newsletter** — Sistema de suscripciones
+- 🤝 **Programa de afiliados** — Links únicos, clics, ventas y comisiones con retiros en cripto, PayPal, Binance Pay y métodos locales (Pago Móvil 🇻🇪, Nequi/Bancolombia/Daviplata 🇨🇴, Yape 🇵🇪 y Zelle 🇺🇸)
+- 🔒 **Cuentas de pago privadas** — La web pública solo muestra los métodos con sus logos; los datos de cada cuenta (emails, wallets) viven únicamente en el panel del afiliado (Catálogo) y en el admin
 - 🖥️ **Panel Admin** — Dashboard para gestionar mensajes y suscriptores
 - 🔍 **SEO** — Sitemap, Robots.txt, Open Graph, Schema.org
 - 🗄️ **Base de datos** — MySQL en Aiven con Prisma ORM
@@ -105,14 +107,7 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## 🗄️ Base de Datos
 
-El proyecto usa **MySQL en Aiven** (plan gratuito). El schema de Prisma define 4 modelos:
-
-| Modelo | Tabla | Descripción |
-|---|---|---|
-| Contact | contacts | Mensajes del formulario |
-| Subscriber | subscribers | Suscripciones al newsletter |
-| BlogPost | blog_posts | Artículos del blog |
-| Project | projects | Proyectos del portafolio |
+El proyecto usa **MySQL en Aiven** (plan gratuito). El schema de Prisma define los modelos del portafolio (contactos, newsletter, blog, proyectos, configuración del sitio) y de la red de afiliados (afiliados, clics, posibles clientes, ventas, comisiones, retiros, métodos de cobro, documentos, notificaciones y anuncios).
 
 ### Sincronizar schema:
 
@@ -166,6 +161,7 @@ El proyecto está configurado para deploy automático en cada push a `main`.
 | GET | `/api/github` | Proxy de GitHub API (repos) |
 | GET | `/api/screenshot` | Captura estática de un sitio (Microlink, caché 24 h) |
 | GET | `/api/embed-check` | Comprueba si un sitio permite incrustarse en un iframe |
+| GET/POST | `/api/cron/rates` | Actualiza las tasas USD → Bs, COP y PEN para pagar comisiones (cron de Vercel o botón del admin) |
 
 ---
 

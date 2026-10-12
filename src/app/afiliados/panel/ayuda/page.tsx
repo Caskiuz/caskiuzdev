@@ -265,9 +265,9 @@ export default async function HelpPage() {
         <p className="text-xs text-muted-foreground">
           Métodos de pago: USDT o USDC (6 redes), Bitcoin, Binance Pay y PayPal (en dólares,
           desde cualquier país) para todos; y métodos locales según tu país — Venezuela:
-          bolívares por Pago Móvil; Colombia: pesos por Nequi, Bancolombia o Daviplata; Estados
-          Unidos: Zelle en dólares. La verificación de identidad (KYC) es requisito para el
-          primer retiro.
+          bolívares por Pago Móvil; Colombia: pesos por Nequi, Bancolombia o Daviplata; Perú:
+          soles por Yape; Estados Unidos: Zelle en dólares. La verificación de identidad (KYC)
+          es requisito para el primer retiro.
         </p>
       </SectionCard>
 

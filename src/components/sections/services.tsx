@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Search,
   MapPin,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { MessageCircle, Clock, ExternalLink, type LucideIcon } from "lucide-react";
@@ -24,7 +25,13 @@ import {
   serviceCategories as categories,
   mergeServices,
 } from "@/lib/services-defaults";
-import { getClientPaymentMethods } from "@/lib/payments";
+import {
+  type PublicPaymentMethodInfo,
+} from "@/lib/payments";
+import {
+  CLIENT_PAYMENT_ICONS,
+  CLIENT_ICON_CLASS,
+} from "@/components/ui/payment-icons";
 import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -44,12 +51,13 @@ const itemVariants = {
 
 interface ServicesProps {
   config?: Record<string, string>;
+  /** Métodos de pago activos (solo id y nombre: sin datos de cuentas). */
+  paymentMethods?: PublicPaymentMethodInfo[];
 }
 
-export function Services({ config = {} }: ServicesProps) {
+export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
   const c = (key: string, fallback: string) => config[key] || fallback;
-  const paymentMethods = getClientPaymentMethods(config);
-  const paymentDetails = paymentMethods.filter((m) => m.detail);
+  const activeMethods = paymentMethods;
   const referralCode = useReferralCode();
   // Link de WhatsApp con el código de referido del visitante (si llegó por un afiliado)
   const wa = (message: string) =>
@@ -224,24 +232,50 @@ export function Services({ config = {} }: ServicesProps) {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-16"
         >
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/5 via-aff-blue/5 to-emerald-500/5 border border-emerald-500/10 p-6 text-center">
-            <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl" />
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold">
+          <div className="relative overflow-hidden metal-card rounded-2xl p-6 sm:p-8 text-center">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-aff-cyan/5 rounded-full blur-3xl" />
+            <div className="relative flex flex-col sm:flex-row items-center justify-center gap-2 text-base sm:text-lg font-semibold">
               <span>💳</span>
               <span>Todos los proyectos inician con el</span>
               <span className="metal-text font-bold">50% de anticipo</span>
               <span>y el</span>
               <span className="metal-text font-bold">50% restante al finalizar</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Para servicios recurrentes aplica facturación mensual. Pagos seguros vía{" "}
-              Zelle, PayPal, Western Union, Binance o cripto (USDT/USDC/BTC).
+            <p className="relative text-xs text-muted-foreground mt-2">
+              Para servicios recurrentes aplica facturación mensual.
             </p>
-            {paymentDetails.map((method) => (
-              <p key={method.id} className="text-xs text-emerald-500 mt-1.5 font-medium">
-                💳 {method.label}: {method.detail}
-              </p>
-            ))}
+
+            {activeMethods.length > 0 && (
+              <>
+                <p className="relative mt-6 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                  Pagos seguros vía
+                </p>
+                <div className="relative mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {activeMethods.map((method) => {
+                    const Icon = CLIENT_PAYMENT_ICONS[method.id];
+                    if (!Icon) return null;
+                    return (
+                      <div
+                        key={method.id}
+                        className="flex flex-col items-center justify-center gap-2.5 rounded-2xl border border-border bg-surface-hover/40 px-3 py-4"
+                      >
+                        <span className="flex h-11 items-center justify-center">
+                          <Icon className={CLIENT_ICON_CLASS[method.id] ?? CLIENT_ICON_CLASS.default} />
+                        </span>
+                        <span className="text-xs font-semibold text-muted-foreground text-center leading-tight">
+                          {method.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            <p className="relative mt-5 text-xs text-muted-foreground inline-flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-aff-cyan" />
+              Te comparto los datos de pago al confirmar tu proyecto.
+            </p>
           </div>
         </motion.div>
 

@@ -69,7 +69,7 @@ export default async function PaymentsSettingsPage() {
     <SettingsEditor
       group="payments"
       title="Métodos de pago"
-      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Las tasas de cambio para pagar comisiones (USD → Bs paralelo y USD → COP TRM) se actualizan automáticamente desde fuentes públicas; no hay que configurarlas. Los afiliados registran sus propios datos desde su panel. Los datos que dejes en blanco no se muestran en la web."
+      description="Configura los métodos de pago que aceptas de tus CLIENTES: Zelle, PayPal, Binance, Western Union y wallets cripto (USDT/USDC/BTC). Las tasas de cambio para pagar comisiones (USD → Bs paralelo, USD → COP TRM y USD → PEN) se actualizan automáticamente desde fuentes públicas; no hay que configurarlas. Los afiliados registran sus propios datos desde su panel. Por privacidad, los datos de las cuentas solo se muestran en el panel del afiliado y en este admin, nunca en la web pública."
       fields={fields}
       initialData={config}
       beforeFields={<AutoRatesPanel config={config} />}

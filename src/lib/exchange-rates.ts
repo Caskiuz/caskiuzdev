@@ -6,10 +6,13 @@
  *   en open.er-api.
  * - USD → COP: TRM oficial de Colombia publicada por dolar-colombia.com, con
  *   respaldo en el dataset oficial de datos.gov.co y luego en open.er-api.
+ * - USD → PEN: tipo de cambio de referencia del sol peruano (currency-api de
+ *   fawazahmed, servida por jsDelivr), con respaldo en open.er-api.
  *
- * Los valores se guardan en site_config (payments_usd_ves_rate y
- * payments_usd_cop_rate, con metadatos _source y _date) para que el resto
- * del sistema los lea igual que siempre (getUsdVesRate / getUsdCopRate).
+ * Los valores se guardan en site_config (payments_usd_ves_rate,
+ * payments_usd_cop_rate y payments_usd_pen_rate, con metadatos _source y
+ * _date) para que el resto del sistema los lea igual que siempre
+ * (getUsdVesRate / getUsdCopRate / getUsdPenRate).
  */
 import { getSiteConfig, upsertConfigs } from "@/lib/site-config";
 
@@ -34,6 +37,8 @@ export interface StoredRateMeta {
   stale: boolean;
 }
 
+export type RateKind = "ves" | "cop" | "pen";
+
 export const RATE_CONFIG_KEYS = {
   ves: {
     rate: "payments_usd_ves_rate",
@@ -44,6 +49,11 @@ export const RATE_CONFIG_KEYS = {
     rate: "payments_usd_cop_rate",
     source: "payments_usd_cop_rate_source",
     date: "payments_usd_cop_rate_date",
+  },
+  pen: {
+    rate: "payments_usd_pen_rate",
+    source: "payments_usd_pen_rate_source",
+    date: "payments_usd_pen_rate_date",
   },
 } as const;
 
@@ -62,7 +72,11 @@ async function fetchJson(url: string, init?: RequestInit): Promise<unknown> {
 }
 
 /** Rango de valores plausibles por moneda (para elegir bien el separador decimal) */
-const RATE_RANGES = { ves: { min: 10, max: 1_000_000 }, cop: { min: 500, max: 100_000 } };
+const RATE_RANGES: Record<RateKind, { min: number; max: number }> = {
+  ves: { min: 10, max: 1_000_000 },
+  cop: { min: 500, max: 100_000 },
+  pen: { min: 1, max: 20 },
+};
 
 /**
  * Convierte textos de tasa con separadores ambiguos ("3,306.86", "3306,86",
@@ -215,6 +229,39 @@ export async function fetchLiveCopRate(): Promise<RateInfo | null> {
   return null;
 }
 
+// ─── USD → PEN (sol peruano) ───
+
+async function fetchPenFromCurrencyApi(): Promise<RateInfo> {
+  const data = (await fetchJson(
+    process.env.RATES_PEN_URL ||
+      "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
+  )) as { date?: string; usd?: { pen?: number } };
+  const rate = Number(data?.usd?.pen);
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error("Sin tasa PEN");
+  return { rate, source: "currency-api (referencia)", date: data.date ?? null };
+}
+
+async function fetchPenFromOpenErApi(): Promise<RateInfo> {
+  const data = (await fetchJson("https://open.er-api.com/v6/latest/USD")) as {
+    rates?: { PEN?: number };
+    time_last_update_utc?: string;
+  };
+  const rate = Number(data?.rates?.PEN);
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error("Sin tasa PEN");
+  return { rate, source: "open.er-api (referencia)", date: data.time_last_update_utc ?? null };
+}
+
+export async function fetchLivePenRate(): Promise<RateInfo | null> {
+  for (const attempt of [fetchPenFromCurrencyApi, fetchPenFromOpenErApi]) {
+    try {
+      return await attempt();
+    } catch {
+      // probar el siguiente respaldo
+    }
+  }
+  return null;
+}
+
 // ─── Persistencia y lectura ───
 
 function toResult(info: RateInfo | null): RateRefreshResult {
@@ -223,38 +270,45 @@ function toResult(info: RateInfo | null): RateRefreshResult {
 }
 
 /**
- * Descarga ambas tasas en paralelo y guarda en site_config solo las que
+ * Descarga las tasas en paralelo y guarda en site_config solo las que
  * tuvieron éxito (el valor anterior queda como respaldo si una falla).
  */
-export async function refreshStoredRates(): Promise<{ ves: RateRefreshResult; cop: RateRefreshResult }> {
-  const [ves, cop] = await Promise.all([fetchLiveVesRate(), fetchLiveCopRate()]);
+export async function refreshStoredRates(): Promise<{
+  ves: RateRefreshResult;
+  cop: RateRefreshResult;
+  pen: RateRefreshResult;
+}> {
+  const [ves, cop, pen] = await Promise.all([
+    fetchLiveVesRate(),
+    fetchLiveCopRate(),
+    fetchLivePenRate(),
+  ]);
   const vesResult = toResult(ves);
   const copResult = toResult(cop);
+  const penResult = toResult(pen);
 
   const entries: { key: string; value: string; group: string }[] = [];
-  if (vesResult.ok && vesResult.rate !== null) {
+  const push = (kind: RateKind, result: RateRefreshResult) => {
+    if (!result.ok || result.rate === null) return;
+    const keys = RATE_CONFIG_KEYS[kind];
     entries.push(
-      { key: RATE_CONFIG_KEYS.ves.rate, value: String(vesResult.rate), group: "payments" },
-      { key: RATE_CONFIG_KEYS.ves.source, value: vesResult.source ?? "", group: "payments" },
-      { key: RATE_CONFIG_KEYS.ves.date, value: vesResult.date ?? new Date().toISOString(), group: "payments" }
+      { key: keys.rate, value: String(result.rate), group: "payments" },
+      { key: keys.source, value: result.source ?? "", group: "payments" },
+      { key: keys.date, value: result.date ?? new Date().toISOString(), group: "payments" }
     );
-  }
-  if (copResult.ok && copResult.rate !== null) {
-    entries.push(
-      { key: RATE_CONFIG_KEYS.cop.rate, value: String(copResult.rate), group: "payments" },
-      { key: RATE_CONFIG_KEYS.cop.source, value: copResult.source ?? "", group: "payments" },
-      { key: RATE_CONFIG_KEYS.cop.date, value: copResult.date ?? new Date().toISOString(), group: "payments" }
-    );
-  }
+  };
+  push("ves", vesResult);
+  push("cop", copResult);
+  push("pen", penResult);
   if (entries.length > 0) await upsertConfigs(entries);
 
-  return { ves: vesResult, cop: copResult };
+  return { ves: vesResult, cop: copResult, pen: penResult };
 }
 
 /** Lee la tasa guardada en la configuración con su fuente y fecha. */
 export function readStoredRate(
   config: Record<string, string>,
-  kind: "ves" | "cop"
+  kind: RateKind
 ): StoredRateMeta {
   const keys = RATE_CONFIG_KEYS[kind];
   const rate = parseRate(config[keys.rate], RATE_RANGES[kind]);
@@ -266,16 +320,15 @@ export function readStoredRate(
 }
 
 /**
- * Refresca las tasas si el dato guardado tiene más de 12 horas. Espera como
+ * Refresca las tasas si algún dato guardado tiene más de 12 horas. Espera como
  * máximo ENSURE_WAIT_MS para no colgar la página (el refresco sigue en
  * segundo plano). Nunca lanza errores: el valor guardado queda de respaldo.
  */
 export async function ensureFreshRates(maxWaitMs: number = ENSURE_WAIT_MS): Promise<void> {
   try {
     const config = await getSiteConfig();
-    const ves = readStoredRate(config, "ves");
-    const cop = readStoredRate(config, "cop");
-    if (!ves.stale && !cop.stale) return;
+    const metas = (["ves", "cop", "pen"] as const).map((kind) => readStoredRate(config, kind));
+    if (metas.every((meta) => !meta.stale)) return;
     await Promise.race([
       refreshStoredRates(),
       new Promise((resolve) => setTimeout(resolve, maxWaitMs)),
