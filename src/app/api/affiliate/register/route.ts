@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/password";
 import { generateReferralCode, slugifyName, affiliateRef } from "@/lib/affiliate";
 import { createPurposeToken, setAffiliateCookie } from "@/lib/affiliate-auth";
 import { sendEmail, emailShell } from "@/lib/email";
+import { notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +108,13 @@ export async function POST(request: NextRequest) {
         <p>Entra ya a tu panel: <a href="https://caskiuz.vercel.app/afiliados/panel" style="display:inline-block;margin-top:8px;padding:10px 18px;background:#0ea5e9;color:#ffffff;border-radius:8px;text-decoration:none;">Ir a mi panel</a></p>
         <p style="margin-top:16px;">Confirma tu email aquí: <a href="${verifyUrl}" style="color:#38bdf8;">Verificar email</a></p>
       `),
+    });
+
+    await notifyAdmins({
+      kind: "INFO",
+      title: `Nuevo afiliado registrado: ${affiliate.name}`,
+      body: `${affiliate.country} · ${affiliate.email}`,
+      linkUrl: `/admin/affiliates/${affiliate.id}`,
     });
 
     console.log("🎉 Nuevo afiliado registrado:", affiliate.email);

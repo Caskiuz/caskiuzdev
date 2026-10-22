@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { syncSaleCommission } from "@/lib/commissions";
-import { notifyAffiliateSale, notifyLeadAssigned } from "@/lib/notifications";
+import { notifyAffiliateSale, notifyAdminsSale, notifyLeadAssigned } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
 
     await syncSaleCommission(sale.id);
     await notifyAffiliateSale(sale.id, "created");
+    await notifyAdminsSale(sale.id, "created");
 
     console.log(`🛒 Venta #${sale.id} creada para afiliado #${affiliate.id} (${resolvedSource})`);
     return NextResponse.json({ success: true, sale }, { status: 201 });

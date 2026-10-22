@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
-import { isAuthenticated } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-/** Marca como leídas las notificaciones del admin (ids opcionales; máx. 500). */
+/** Marca como leídas las notificaciones del admin actual (ids opcionales; máx. 500). */
 export async function POST(request: NextRequest) {
-  const ok = await isAuthenticated();
-  if (!ok) {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
       : [];
 
     const where = ids.length
-      ? { recipientType: "ADMIN", id: { in: ids } }
-      : { recipientType: "ADMIN", read: false };
+      ? { recipientType: "ADMIN", recipientId: admin.id, id: { in: ids } }
+      : { recipientType: "ADMIN", recipientId: admin.id, read: false };
 
     const result = await prisma.notification.updateMany({
       where,

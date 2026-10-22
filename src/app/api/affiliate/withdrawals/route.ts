@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 import { MIN_WITHDRAWAL } from "@/lib/affiliate";
+import { notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,13 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(`💸 Retiro solicitado por afiliado #${affiliate.id}: $${parsedAmount}`);
+
+    await notifyAdmins({
+      kind: "WITHDRAWAL",
+      title: `Retiro solicitado: $${parsedAmount.toFixed(2)} USD`,
+      body: `${affiliate.name} solicitó un retiro. Revisa el método de pago antes de pagar.`,
+      linkUrl: "/admin/withdrawals",
+    });
 
     // El panel inserta el retiro recién creado en el historial y necesita el
     // método de pago para etiquetarlo (mismo shape que el GET).

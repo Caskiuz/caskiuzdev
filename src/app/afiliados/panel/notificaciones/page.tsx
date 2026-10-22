@@ -40,6 +40,7 @@ export default async function AffiliateNotificationsPage() {
           }))
         )}
         readEndpoint="/api/affiliate/notifications/read"
+        autoRefreshMs={60000}
       />
     </div>
   );

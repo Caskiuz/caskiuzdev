@@ -138,7 +138,7 @@ async function main() {
   const loginRes = await fetch(`${BASE}/api/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: process.env.ADMIN_PASSWORD }),
+    body: JSON.stringify({ username: process.env.ADMIN_USERNAME || "Caskiuz", password: process.env.ADMIN_PASSWORD }),
   });
   const loginSetCookies = loginRes.headers.getSetCookie ? loginRes.headers.getSetCookie() : [];
   const adminToken = getCookie(loginSetCookies, "admin_token");

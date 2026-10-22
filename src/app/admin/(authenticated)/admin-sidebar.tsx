@@ -16,11 +16,15 @@ import {
   CreditCard,
   Send,
   Bell,
+  Headphones,
   Menu,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LiveUnreadBadge } from "@/components/notifications/live-unread-badge";
 import { LogoutButton } from "./logout-button";
+
+type AdminRole = "GLOBAL" | "AFFILIATES";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -33,6 +37,7 @@ const affiliateItems = [
   { href: "/admin/sales", label: "Ventas", icon: ShoppingCart },
   { href: "/admin/withdrawals", label: "Retiros", icon: Wallet },
   { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
+  { href: "/admin/tickets", label: "Tickets", icon: Headphones },
 ];
 
 const settingsItems = [
@@ -45,9 +50,23 @@ const settingsItems = [
   { href: "/admin/settings/affiliates", label: "Red de Afiliados", icon: Send },
 ];
 
-export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: number }) {
+export function AdminSidebar({
+  notificationsCount = 0,
+  adminName = "",
+  adminRole = "GLOBAL",
+}: {
+  notificationsCount?: number;
+  adminName?: string;
+  adminRole?: AdminRole;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // El rol de afiliados solo administra la red; la web queda para el GLOBAL.
+  const visibleSettings =
+    adminRole === "GLOBAL"
+      ? settingsItems
+      : settingsItems.filter((item) => item.href === "/admin/settings/affiliates");
 
   // Bloquea el scroll del fondo mientras el drawer está abierto
   useEffect(() => {
@@ -71,7 +90,6 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
     );
 
   const renderItem = (item: { href: string; label: string; icon: typeof Settings; exact?: boolean }) => {
-    const showBadge = item.href === "/admin/notificaciones" && notificationsCount > 0;
     return (
       <Link
         key={item.href}
@@ -81,10 +99,13 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
       >
         <item.icon className="w-5 h-5 shrink-0" />
         {item.label}
-        {showBadge && (
-          <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-white text-[10px] font-bold">
-            {notificationsCount > 9 ? "9+" : notificationsCount}
-          </span>
+        {item.href === "/admin/notificaciones" && (
+          <LiveUnreadBadge
+            key={notificationsCount}
+            initialCount={notificationsCount}
+            endpoint="/api/admin/notifications/unread-count"
+            className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-white text-[10px] font-bold"
+          />
         )}
       </Link>
     );
@@ -104,10 +125,10 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
 
         <div className="pt-4 pb-2">
           <span className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Editar Web
+            {adminRole === "GLOBAL" ? "Editar Web" : "Configuración"}
           </span>
         </div>
-        {settingsItems.map(renderItem)}
+        {visibleSettings.map(renderItem)}
       </nav>
 
       <div className="p-4 border-t border-border space-y-2">
@@ -125,6 +146,15 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
     </>
   );
 
+  const sessionInfo = adminName ? (
+    <div className="mt-2 min-w-0">
+      <p className="text-xs font-medium truncate">{adminName}</p>
+      <p className="text-[10px] text-muted-foreground">
+        {adminRole === "GLOBAL" ? "Admin global · web + afiliados" : "Admin de la red de afiliados"}
+      </p>
+    </div>
+  ) : null;
+
   return (
     <>
       {/* Sidebar escritorio */}
@@ -136,6 +166,7 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
           >
             Admin Panel
           </Link>
+          {sessionInfo}
         </div>
         {nav}
       </aside>
@@ -185,6 +216,16 @@ export function AdminSidebar({ notificationsCount = 0 }: { notificationsCount?: 
                   <X className="w-5 h-5" />
                 </button>
               </div>
+              {adminName && (
+                <div className="px-4 py-2 border-b border-border">
+                  <p className="text-xs font-medium truncate">{adminName}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {adminRole === "GLOBAL"
+                      ? "Admin global · web + afiliados"
+                      : "Admin de la red de afiliados"}
+                  </p>
+                </div>
+              )}
               {nav}
             </motion.aside>
           </>

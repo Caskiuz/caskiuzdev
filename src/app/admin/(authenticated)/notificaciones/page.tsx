@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/client";
+import { requireAdmin } from "@/lib/auth";
 import { serialize } from "@/lib/affiliate-queries";
 import { Bell } from "lucide-react";
 import { NotificationsClient } from "@/components/notifications/notifications-client";
@@ -6,8 +7,11 @@ import { NotificationsClient } from "@/components/notifications/notifications-cl
 export const dynamic = "force-dynamic";
 
 export default async function AdminNotificationsPage() {
+  // Cada admin tiene su propia campana: solo ve sus avisos.
+  const admin = await requireAdmin();
+
   const notifications = await prisma.notification.findMany({
-    where: { recipientType: "ADMIN" },
+    where: { recipientType: "ADMIN", recipientId: admin.id },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -19,8 +23,9 @@ export default async function AdminNotificationsPage() {
           <Bell className="w-6 h-6 text-primary" /> Notificaciones
         </h1>
         <p className="text-muted-foreground mt-1">
-          Avisos del sistema: leads nuevos, ventas, documentos y retiros. Las no
-          leídas se marcan solas al abrir esta página.
+          Avisos de tu cuenta: leads nuevos, ventas, documentos, retiros y tickets.
+          Cada admin tiene su propia campana y las no leídas se marcan solas al abrir
+          esta página.
         </p>
       </div>
 
@@ -37,6 +42,7 @@ export default async function AdminNotificationsPage() {
           }))
         )}
         readEndpoint="/api/admin/notifications/read"
+        autoRefreshMs={60000}
       />
     </div>
   );

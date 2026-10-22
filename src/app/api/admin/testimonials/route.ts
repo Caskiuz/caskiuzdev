@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
-import { isAuthenticated } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 async function checkAuth() {
-  const ok = await isAuthenticated();
-  if (!ok) {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  if (admin.role !== "GLOBAL") {
+    return NextResponse.json(
+      { error: "Sin permiso para editar la web." },
+      { status: 403 }
+    );
   }
   return null;
 }

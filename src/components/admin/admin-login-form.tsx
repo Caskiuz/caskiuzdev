@@ -10,6 +10,7 @@ function LoginFormFields() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/admin";
 
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,7 @@ function LoginFormFields() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (res.ok) {
@@ -31,7 +32,7 @@ function LoginFormFields() {
         router.refresh();
       } else {
         const data = await res.json();
-        setError(data.error || "Contraseña incorrecta");
+        setError(data.error || "Usuario o contraseña incorrectos.");
       }
     } catch {
       setError("Error de conexión. Intenta de nuevo.");
@@ -41,10 +42,27 @@ function LoginFormFields() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <label htmlFor="username" className="block text-sm font-medium mb-2">
+          Usuario
+        </label>
+        <input
+          id="username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+          placeholder="Tu usuario"
+          autoComplete="username"
+          required
+          autoFocus
+        />
+      </div>
+
       <div>
         <label htmlFor="password" className="block text-sm font-medium mb-2">
-          Contraseña de administrador
+          Contraseña
         </label>
         <input
           id="password"
@@ -53,8 +71,8 @@ function LoginFormFields() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
           placeholder="••••••••"
+          autoComplete="current-password"
           required
-          autoFocus
         />
       </div>
 
@@ -123,7 +141,7 @@ export function AdminLoginForm({ alreadyAuthenticated }: { alreadyAuthenticated:
       </div>
       <h1 className="text-2xl font-bold">Panel Admin</h1>
       <p className="text-sm text-muted-foreground mt-2">
-        Ingresa la contraseña para acceder
+        Ingresa tu usuario y contraseña para acceder
       </p>
       <div className="mt-8 text-left">
         <Suspense

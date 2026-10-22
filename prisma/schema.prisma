@@ -87,6 +87,30 @@ model SiteConfig {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Cuentas de administración (multi-admin con roles)
+// ─────────────────────────────────────────────────────────────
+
+enum AdminRole {
+  GLOBAL // acceso total: web + red de afiliados
+  AFFILIATES // solo red de afiliados
+}
+
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  passwordHash String
+  name         String    @db.VarChar(120)
+  email        String?   @db.VarChar(200)
+  role         AdminRole @default(AFFILIATES)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+// ─────────────────────────────────────────────────────────────
 // Red de Afiliados
 // ─────────────────────────────────────────────────────────────
 
@@ -328,7 +352,7 @@ model AnnouncementRead {
 model Notification {
   id            Int      @id @default(autoincrement())
   recipientType String // ADMIN | AFFILIATE
-  recipientId   Int?     // id del afiliado cuando recipientType = AFFILIATE; null para ADMIN
+  recipientId   Int?     // id del afiliado (AFFILIATE) o del admin (ADMIN)
   kind          String   @default("INFO") // NEW_LEAD | LEAD_ASSIGNED | SALE | KYC | WITHDRAWAL | TICKET | INFO
   title         String   @db.VarChar(160)
   body          String?  @db.Text

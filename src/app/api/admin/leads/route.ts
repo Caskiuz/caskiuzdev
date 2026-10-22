@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
-import { notifyInApp } from "@/lib/notifications";
+import { notifyInApp, notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +73,13 @@ export async function POST(request: NextRequest) {
       title: `¡Nuevo posible cliente! ${contact.name} te escribió`,
       body: "Registrado por el equipo de Caskiuz (WhatsApp u otro canal).",
       linkUrl: "/afiliados/panel/leads",
+    });
+
+    await notifyAdmins({
+      kind: "NEW_LEAD",
+      title: `Posible cliente registrado: ${contact.name}`,
+      body: `Atribuido a ${affiliate.name} · ${contact.email || "sin email"}`,
+      linkUrl: "/admin/messages",
     });
 
     console.log(`👤 Lead #${contact.id} registrado para afiliado #${affiliate.id}`);

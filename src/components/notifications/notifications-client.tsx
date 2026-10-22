@@ -33,9 +33,12 @@ const KIND_EMOJI: Record<string, string> = {
 export function NotificationsClient({
   items,
   readEndpoint,
+  autoRefreshMs,
 }: {
   items: NotificationItem[];
   readEndpoint: string;
+  /** Si se indica, la página se refresca sola mientras está visible. */
+  autoRefreshMs?: number;
 }) {
   const router = useRouter();
 
@@ -53,6 +56,14 @@ export function NotificationsClient({
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readEndpoint]);
+
+  useEffect(() => {
+    if (!autoRefreshMs) return;
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, autoRefreshMs);
+    return () => clearInterval(id);
+  }, [autoRefreshMs, router]);
 
   if (items.length === 0) {
     return (

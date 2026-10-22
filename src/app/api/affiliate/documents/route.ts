@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
 import { extractDocumentName } from "@/lib/kyc-ai";
-import { notifyInApp } from "@/lib/notifications";
+import { notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 // La lectura IA del nombre corre en segundo plano tras responder (after):
@@ -82,10 +82,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Aviso inmediato al admin: hay un documento nuevo esperando su revisión.
+    // Aviso inmediato a los admins: hay un documento nuevo esperando revisión.
     // (Se envía ANTES de la lectura IA para que nunca se pierda.)
-    await notifyInApp({
-      recipientType: "ADMIN",
+    await notifyAdmins({
       kind: "KYC",
       title: `Documento KYC nuevo: ${affiliate.name}`,
       body: "Quedó en revisión. Ábrelo para ver el nombre leído por la IA (si pudo leerlo).",

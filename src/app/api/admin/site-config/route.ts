@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { verifyToken } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
 import { getAllConfigs, upsertConfigs } from "@/lib/site-config";
 
 function unauthorized() {
@@ -9,18 +8,16 @@ function unauthorized() {
 }
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
-  if (!token || !(await verifyToken(token))) return unauthorized();
+  const admin = await getCurrentAdmin();
+  if (!admin) return unauthorized();
 
   const configs = await getAllConfigs();
   return NextResponse.json({ configs });
 }
 
 export async function PUT(request: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
-  if (!token || !(await verifyToken(token))) return unauthorized();
+  const admin = await getCurrentAdmin();
+  if (!admin) return unauthorized();
 
   const body = await request.json();
 
@@ -38,6 +35,18 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
+  }
+
+  // El rol de afiliados solo puede guardar la configuración de la red;
+  // la web (hero, servicios, contacto, pagos, redes) es del admin global.
+  if (
+    admin.role !== "GLOBAL" &&
+    body.configs.some((entry: { group: unknown }) => entry.group !== "affiliates")
+  ) {
+    return NextResponse.json(
+      { error: "No autorizado para editar esta sección." },
+      { status: 403 }
+    );
   }
 
   await upsertConfigs(body.configs);

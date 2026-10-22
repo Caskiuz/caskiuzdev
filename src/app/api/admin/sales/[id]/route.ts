@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { syncSaleCommission } from "@/lib/commissions";
-import { notifyAffiliateSale } from "@/lib/notifications";
+import { notifyAffiliateSale, notifyAdminsSale } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +77,7 @@ export async function PATCH(
     const updated = await prisma.sale.update({ where: { id: saleId }, data });
     await syncSaleCommission(saleId);
     await notifyAffiliateSale(saleId, "updated");
+    await notifyAdminsSale(saleId, "updated");
 
     console.log(`✏️ Venta #${saleId} actualizada (${Object.keys(data).join(", ")})`);
     return NextResponse.json({ success: true, sale: updated });
@@ -106,6 +107,7 @@ export async function DELETE(
     if (commission && commission.status !== "PAID" && commission.status !== "WITHDRAWING") {
       await prisma.commission.delete({ where: { id: commission.id } });
     }
+    await notifyAdminsSale(saleId, "deleted");
     await prisma.sale.delete({ where: { id: saleId } });
 
     console.log(`🗑️ Venta #${saleId} eliminada`);

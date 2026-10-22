@@ -23,11 +23,17 @@ export type NotificationKind =
   | "TICKET"
   | "INFO";
 
+/** Roles de admin a los que se puede dirigir un aviso. */
+export type AdminAudienceRole = "GLOBAL" | "AFFILIATES";
+
 const NOTIFICATION_RETENTION_DAYS = 90;
 
 /**
  * Crea una notificación interna (campanita del panel). Nunca lanza errores:
  * si la BD falla, el flujo principal sigue funcionando.
+ *
+ * Para ADMIN, recipientId es el id del AdminUser (cada admin tiene su propia
+ * campana y su propio estado de leído).
  */
 export async function notifyInApp(options: {
   recipientType: NotificationRecipient;
@@ -38,7 +44,7 @@ export async function notifyInApp(options: {
   linkUrl?: string | null;
 }): Promise<void> {
   try {
-    const recipientId = options.recipientType === "AFFILIATE" ? options.recipientId ?? null : null;
+    const recipientId = options.recipientId ?? null;
     await prisma.notification.create({
       data: {
         recipientType: options.recipientType,
@@ -61,9 +67,46 @@ export async function notifyInApp(options: {
 }
 
 /**
+ * Avisa a TODOS los admins activos (una fila por cuenta, con su propio
+ * estado de leído). Opcionalmente se puede limitar por rol.
+ */
+export async function notifyAdmins(options: {
+  kind?: NotificationKind;
+  title: string;
+  body?: string | null;
+  linkUrl?: string | null;
+  roles?: AdminAudienceRole[];
+}): Promise<void> {
+  try {
+    const admins = await prisma.adminUser.findMany({
+      where: {
+        active: true,
+        ...(options.roles?.length ? { role: { in: options.roles } } : {}),
+      },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      admins.map((admin) =>
+        notifyInApp({
+          recipientType: "ADMIN",
+          recipientId: admin.id,
+          kind: options.kind,
+          title: options.title,
+          body: options.body,
+          linkUrl: options.linkUrl,
+        })
+      )
+    );
+  } catch (error) {
+    console.error("Error notificando a los admins:", error);
+  }
+}
+
+/**
  * Avisa por el sistema cuando llega un lead nuevo:
- * - Al ADMIN siempre (atribuido o no, con enlace al buzón).
- * - Al AFILIADO cuando el lead quedó atribuido a su nombre.
+ * - Al afiliado cuando quedó atribuido a su nombre.
+ * - A todos los admins (con enlace al buzón).
  */
 export async function notifyNewLead(contactId: number): Promise<void> {
   try {
@@ -91,8 +134,7 @@ export async function notifyNewLead(contactId: number): Promise<void> {
       });
     }
 
-    await notifyInApp({
-      recipientType: "ADMIN",
+    await notifyAdmins({
       kind: "NEW_LEAD",
       title: `Nuevo lead: ${contact.name}`,
       body: contact.affiliate
@@ -105,12 +147,21 @@ export async function notifyNewLead(contactId: number): Promise<void> {
   }
 }
 
-/** Avisa al afiliado cuando el admin le asigna un lead que estaba sin dueño. */
+/**
+ * Avisa al afiliado cuando el admin le asigna un lead que estaba sin dueño,
+ * y a los admins para que ambos sepan quién lo tomó.
+ */
 export async function notifyLeadAssigned(contactId: number): Promise<void> {
   try {
     const contact = await prisma.contact.findUnique({
       where: { id: contactId },
-      select: { id: true, name: true, email: true, affiliateId: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        affiliateId: true,
+        affiliate: { select: { name: true } },
+      },
     });
     if (!contact || !contact.affiliateId) return;
 
@@ -122,15 +173,58 @@ export async function notifyLeadAssigned(contactId: number): Promise<void> {
       body: `El equipo de Caskiuz te atribuyó el contacto de ${contact.email}.`,
       linkUrl: "/afiliados/panel/leads",
     });
+
+    await notifyAdmins({
+      kind: "LEAD_ASSIGNED",
+      title: `Posible cliente asignado: ${contact.name}`,
+      body: `Afiliado: ${contact.affiliate?.name ?? "—"} · ${contact.email}`,
+      linkUrl: "/admin/messages",
+    });
   } catch (error) {
     console.error("Error notificando lead asignado:", error);
   }
 }
 
 /**
+ * Avisa a los admins de cada movimiento de venta (creada, actualizada o
+ * eliminada). Un reembolso se anuncia como «Venta reembolsada».
+ */
+export async function notifyAdminsSale(
+  saleId: number,
+  event: "created" | "updated" | "deleted"
+): Promise<void> {
+  try {
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+      include: { affiliate: { select: { name: true } } },
+    });
+    if (!sale) return;
+
+    const statusLabel = getSaleStatusLabel(sale.status);
+    const title =
+      event === "created"
+        ? `Nueva venta registrada: ${sale.serviceTitle}`
+        : event === "deleted"
+          ? `Venta eliminada: ${sale.serviceTitle}`
+          : sale.status === "REFUNDED"
+            ? `Venta reembolsada: ${sale.serviceTitle}`
+            : `Venta actualizada: ${sale.serviceTitle}`;
+
+    await notifyAdmins({
+      kind: "SALE",
+      title,
+      body: `Afiliado: ${sale.affiliate.name} · Monto: $${sale.amount.toFixed(2)} USD · Estado: ${statusLabel}`,
+      linkUrl: "/admin/sales",
+    });
+  } catch (error) {
+    console.error("Error notificando venta a los admins:", error);
+  }
+}
+
+/**
  * Notifica al afiliado por email cuando se registra una venta a su nombre
  * o cuando cambia el estado de cobro de una venta existente.
- * Degrada silenciosamente si Resend no está configurado (solo log).
+ * Degrada silenciosamente si el proveedor de correo no está configurado.
  */
 export async function notifyAffiliateSale(
   saleId: number,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
 import { getCurrentAffiliate } from "@/lib/affiliate-auth";
+import { notifyAdmins } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,13 @@ export async function POST(
         author: "AFFILIATE",
         message: String(message).trim(),
       },
+    });
+
+    await notifyAdmins({
+      kind: "TICKET",
+      title: `Respuesta del afiliado: ${ticket.subject}`,
+      body: `${affiliate.name} respondió su ticket.`,
+      linkUrl: "/admin/tickets",
     });
 
     return NextResponse.json({ success: true, reply }, { status: 201 });

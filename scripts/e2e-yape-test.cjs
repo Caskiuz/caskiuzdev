@@ -48,6 +48,7 @@ async function fetchJson(url, options = {}) {
 }
 
 let baselineNotifId = 0;
+let baselineAdminNotifId = 0;
 let baselineReady = false;
 
 /** Reintenta operaciones de BD (Aiven a veces corta la conexión un instante). */
@@ -100,6 +101,13 @@ async function cleanup(affiliateIds) {
   } else {
     console.warn("⚠️ Baseline de notificaciones no capturado: NO se borran notificaciones (protección).");
   }
+  // Avisos que la prueba generó en las campanas de los admins (fan-out por admin)
+  if (baselineReady) {
+    const adminNotif = await prisma.notification
+      .deleteMany({ where: { recipientType: "ADMIN", id: { gt: baselineAdminNotifId } } })
+      .catch(() => ({ count: 0 }));
+    notifCount += adminNotif.count;
+  }
   const affDel = await prisma.affiliate
     .deleteMany({ where: { email: { in: [EMAIL, EMAIL_BLOCKED] } } })
     .catch(() => ({ count: 0 }));
@@ -110,6 +118,10 @@ async function main() {
   const maxNotif = await withRetry(() => prisma.notification.aggregate({ _max: { id: true } }));
   baselineNotifId = maxNotif._max.id ?? 0;
   baselineReady = true;
+  const maxAdminNotif = await withRetry(() =>
+    prisma.notification.aggregate({ _max: { id: true }, where: { recipientType: "ADMIN" } })
+  );
+  baselineAdminNotifId = maxAdminNotif._max.id ?? 0;
   await withRetry(() => prisma.affiliate.deleteMany({ where: { email: { in: [EMAIL, EMAIL_BLOCKED] } } }));
 
   // 1) Registro real del afiliado temporal en PERÚ
@@ -257,7 +269,7 @@ async function main() {
   const loginRes = await fetchJson(`${BASE}/api/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: process.env.ADMIN_PASSWORD }),
+    body: JSON.stringify({ username: process.env.ADMIN_USERNAME || "Caskiuz", password: process.env.ADMIN_PASSWORD }),
   });
   const adminToken = getCookie(loginRes.headers.getSetCookie ? loginRes.headers.getSetCookie() : [], "admin_token");
   assert(Boolean(adminToken), "admin login", `status=${loginRes.status}`);

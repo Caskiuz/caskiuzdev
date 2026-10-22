@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierInfo } from "@/lib/affiliate";
+import { LiveUnreadBadge } from "@/components/notifications/live-unread-badge";
 import { BrandLogo } from "@/components/ui/brand-logo";
 
 const navItems = [
@@ -93,10 +94,7 @@ export function PanelSidebar({
         const isActive = pathname === item.href;
         const isAnnouncements = item.href === "/afiliados/panel/anuncios";
         const isNotifications = item.href === "/afiliados/panel/notificaciones";
-        const showBadge =
-          (isAnnouncements && announcementsCount > 0) ||
-          (isNotifications && notificationsCount > 0);
-        const badgeCount = isNotifications ? notificationsCount : announcementsCount;
+        const showAnnouncementBadge = isAnnouncements && announcementsCount > 0;
         return (
           <Link
             key={item.href}
@@ -111,9 +109,17 @@ export function PanelSidebar({
           >
             <item.icon className="w-4.5 h-4.5 shrink-0" />
             {item.label}
-            {showBadge && (
+            {isNotifications && (
+              <LiveUnreadBadge
+                key={notificationsCount}
+                initialCount={notificationsCount}
+                endpoint="/api/affiliate/notifications/unread-count"
+                className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold"
+              />
+            )}
+            {showAnnouncementBadge && (
               <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold">
-                {badgeCount > 9 ? "9+" : badgeCount}
+                {announcementsCount > 9 ? "9+" : announcementsCount}
               </span>
             )}
           </Link>
