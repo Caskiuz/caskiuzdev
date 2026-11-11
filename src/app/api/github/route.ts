@@ -11,6 +11,8 @@ interface GitHubRepo {
 // (ej. rifasv2: su homepage en GitHub apunta a un deployment eliminado).
 const demoUrlOverrides: Record<string, string> = {
   rifasv2: "https://rifasv2-two.vercel.app",
+  // El campo "Website" del repo apunta a un deployment eliminado (impertodo.vercel.app)
+  "nexus-impertodo": "https://nexus-impertodo.vercel.app",
 };
 
 export async function GET() {

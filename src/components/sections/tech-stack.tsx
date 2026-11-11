@@ -2,10 +2,12 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 const techCategories = [
   {
     category: "Frontend & Mobile",
+    icon: "⚛️",
     items: [
       { name: "React", icon: "⚛️" },
       { name: "Next.js", icon: "▲" },
@@ -25,6 +27,7 @@ const techCategories = [
   },
   {
     category: "Backend & APIs",
+    icon: "🟢",
     items: [
       { name: "Node.js", icon: "🟢" },
       { name: "Express.js", icon: "⚡" },
@@ -42,6 +45,7 @@ const techCategories = [
   },
   {
     category: "DevOps & Cloud",
+    icon: "🐳",
     items: [
       { name: "Docker", icon: "🐳" },
       { name: "Git / GitHub", icon: "📦" },
@@ -57,6 +61,7 @@ const techCategories = [
   },
   {
     category: "Pagos, Web3 & Más",
+    icon: "💳",
     items: [
       { name: "Stripe", icon: "💳" },
       { name: "Twilio", icon: "📞" },
@@ -88,7 +93,7 @@ export function TechStack() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             Tech Stack
@@ -100,36 +105,54 @@ export function TechStack() {
             Stack completo para construir productos digitales robustos, escalables
             y con experiencia de usuario excepcional.
           </p>
+          <p className="mt-3 text-xs text-muted-foreground/70">
+            Toca una categoría para ver las tecnologías 👇
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Acordeones por categoría — colapsados por defecto para ahorrar espacio */}
+        <div className="max-w-4xl mx-auto space-y-4">
           {techCategories.map((cat, ci) => (
-            <motion.div
+            <motion.details
               key={cat.category}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: ci * 0.12 }}
-              className="glass-card p-6 sm:p-8"
+              transition={{ duration: 0.4, delay: ci * 0.1 }}
+              className="glass-card group rounded-2xl overflow-hidden"
             >
-              <h3 className="text-lg font-bold mb-6 text-center">
-                {cat.category}
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {cat.items.map((item, ii) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.3, delay: ci * 0.12 + ii * 0.05 }}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl glass-card hover:bg-surface-hover transition-all duration-200 cursor-default"
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="text-sm font-medium truncate">{item.name}</span>
-                  </motion.div>
-                ))}
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-6 transition-colors hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden">
+                <div className="flex items-center gap-4">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-aff-cyan/10 text-xl">
+                    {cat.icon}
+                  </span>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold">{cat.category}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {cat.items.length} tecnologías
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown className="w-5 h-5 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-open:rotate-180" />
+              </summary>
+
+              <div className="px-5 sm:px-6 pb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {cat.items.map((item, ii) => (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                      transition={{ duration: 0.25, delay: ci * 0.1 + ii * 0.03 }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl glass-card hover:bg-surface-hover transition-all duration-200 cursor-default"
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-sm font-medium truncate">{item.name}</span>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </motion.div>
+            </motion.details>
           ))}
         </div>
       </div>

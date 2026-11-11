@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Plus, Trash2, CheckCircle2, AlertCircle, Loader2, GripVertical, X, Star } from "lucide-react";
-import { type ServiceItem, serviceCategories as CATEGORIES } from "@/lib/services-defaults";
+import { Save, Plus, Trash2, CheckCircle2, AlertCircle, Loader2, GripVertical, X, Star, RotateCcw } from "lucide-react";
+import { type ServiceItem, serviceCategories as CATEGORIES, defaultServices } from "@/lib/services-defaults";
 
 function createEmptyService(): ServiceItem {
   return {
@@ -29,6 +29,11 @@ export function ServicesEditor({ initialServices }: Props) {
 
   const addService = () => {
     setServices((prev) => [...prev, createEmptyService()]);
+  };
+
+  /** Reemplaza la lista del editor con el inventario por defecto (hay que guardar para aplicarlo). */
+  const restoreDefaults = () => {
+    setServices(JSON.parse(JSON.stringify(defaultServices)) as ServiceItem[]);
   };
 
   const removeService = (id: string) => {
@@ -82,7 +87,7 @@ export function ServicesEditor({ initialServices }: Props) {
             { key: "services_data", value: JSON.stringify(services), group: "services" },
             { key: "services_label", value: "Servicios", group: "services" },
             { key: "services_title", value: "puedo hacer", group: "services" },
-            { key: "services_subtitle", value: "Soluciones a medida para cada etapa de tu producto digital...", group: "services" },
+            { key: "services_subtitle", value: "Automatizo empresas para que vendan más. Toca una categoría y descubre el alcance de cada servicio.", group: "services" },
           ],
         }),
       });
@@ -218,6 +223,16 @@ export function ServicesEditor({ initialServices }: Props) {
       >
         <Plus className="w-5 h-5" />
         Agregar nuevo servicio
+      </button>
+
+      {/* Restore defaults */}
+      <button
+        onClick={restoreDefaults}
+        className="w-full py-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-aff-cyan transition-colors"
+        title="Reemplaza la lista con el inventario por defecto del código. Debes presionar Guardar para aplicarlo."
+      >
+        <RotateCcw className="w-4 h-4" />
+        Restaurar inventario por defecto (23 servicios con sus precios actualizados)
       </button>
 
       {/* Save bar */}
