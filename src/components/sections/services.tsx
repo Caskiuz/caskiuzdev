@@ -110,9 +110,17 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
     : [];
 
   useEffect(() => {
-    if (openCategory && detailRef.current) {
-      detailRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+    if (!openCategory || !detailRef.current) return;
+    // Auto-scroll al panel expandido: el cambio debe verse al instante al hacer
+    // clic. Se usa scrollTo con posición absoluta porque scrollIntoView resulta
+    // poco fiable dentro del contenedor animado con overflow-hidden.
+    const t = setTimeout(() => {
+      const el = detailRef.current;
+      if (!el) return;
+      const y = el.getBoundingClientRect().top + window.scrollY - 96;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }, 150);
+    return () => clearTimeout(t);
   }, [openCategory]);
 
   return (
@@ -144,7 +152,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
         >
           {categories.map((cat) => {
             const count = services.filter((s) => s.category === cat.key).length;
@@ -157,25 +165,25 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
                 variants={itemVariants}
                 onClick={() => setOpenCategory(isOpen ? null : cat.key)}
                 aria-expanded={isOpen}
-                className={`group relative h-full text-left rounded-2xl p-6 sm:p-7 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-aff-cyan/60 ${
+                className={`group relative h-full flex flex-col text-left rounded-2xl p-5 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-aff-cyan/60 ${
                   isOpen
                     ? "metal-border bg-surface shadow-lg shadow-aff-blue/10"
                     : "metal-card hover:-translate-y-1 hover:shadow-lg hover:shadow-aff-blue/5"
                 }`}
               >
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <span className="text-4xl leading-none">{cat.emoji}</span>
-                  <span className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-semibold rounded-full bg-muted text-muted-foreground">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <span className="text-3xl leading-none">{cat.emoji}</span>
+                  <span className="flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-muted text-muted-foreground">
                     {count} servicio{count !== 1 ? "s" : ""}
                   </span>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold mb-2">{cat.label}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+                <h3 className="text-base sm:text-lg font-bold mb-1.5">{cat.label}</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-4">
                   {cat.tagline}
                 </p>
 
-                <div className="flex items-center gap-2 text-sm font-semibold text-aff-cyan">
+                <div className="mt-auto flex items-center gap-2 text-xs sm:text-sm font-semibold text-aff-cyan">
                   {isOpen ? "Cerrar detalle" : "Ver detalle"}
                   <ChevronDown
                     className={`w-4 h-4 transition-transform duration-300 ${
@@ -204,7 +212,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div ref={detailRef} className="pt-10">
+              <div ref={detailRef} className="pt-8">
                 <div className="mb-8">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
                     <span className="text-3xl">{openCat.emoji}</span>
