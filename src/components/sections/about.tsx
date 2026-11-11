@@ -38,39 +38,48 @@ export function About({ config = {} }: AboutProps) {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  // El título guardado en la DB ya puede traer la palabra destacada; el highlight
+  // solo se añade si no está incluido (evita "código código").
+  const bioTitle = c("about_bio_title", "Más allá del");
+  const bioHighlight = c("about_bio_title_highlight", "código");
+  const bioTitleCompleto = bioTitle.toLowerCase().includes(bioHighlight.toLowerCase())
+    ? bioTitle
+    : `${bioTitle} ${bioHighlight}`;
+
   return (
-    <section ref={ref} id="about" className="relative py-24 sm:py-32">
+    <section ref={ref} id="about" className="relative py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("about_label", "Sobre mí")}
           </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
             Mi <span className="metal-text">{c("about_title", "historia")}</span>
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Left - Bio */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <div className="glass-card p-8">
-              <h3 className="text-2xl font-bold mb-4">
-                {c("about_bio_title", "Más allá del")}{" "}
-                <span className="metal-text">{c("about_bio_title_highlight", "código")}</span>
+            <div className="glass-card p-6">
+              <h3 className="text-xl font-bold mb-3">
+                {bioTitleCompleto.split(bioHighlight)[0]}
+                <span className="metal-text">{bioHighlight}</span>
+                {bioTitleCompleto.split(bioHighlight)[1]}
               </h3>
-              <p className="text-muted-foreground leading-relaxed mb-4">
+              <p className="text-muted-foreground leading-relaxed mb-3 text-sm">
                 {c("about_bio_p1", "Soy un desarrollador full-stack apasionado por crear productos digitales que marcan la diferencia. Mi enfoque combina excelencia técnica con pensamiento estratégico, asegurando que cada línea de código contribuya al éxito del negocio.")}
               </p>
-              <p className="text-muted-foreground leading-relaxed mb-6">
+              <p className="text-muted-foreground leading-relaxed mb-5 text-sm">
                 {c("about_bio_p2", "Me especializo en el ecosistema React/Next.js para frontend y Node.js/MySQL para backend, con experiencia en arquitecturas serverless, microservicios y despliegues en la nube.")}
               </p>
 
@@ -107,7 +116,7 @@ export function About({ config = {} }: AboutProps) {
             initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
+            className="space-y-4"
           >
             {timeline.map((item, i) => (
               <motion.div
@@ -127,13 +136,13 @@ export function About({ config = {} }: AboutProps) {
                   <item.icon className="w-5 h-5 text-aff-cyan" />
                 </div>
 
-                <div className="glass-card p-5">
+                <div className="glass-card p-4">
                   <span className="text-xs font-semibold text-aff-cyan uppercase tracking-wider">
                     {item.year}
                   </span>
-                  <h4 className="text-lg font-bold mt-1">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground">{item.company}</p>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  <h4 className="text-base font-bold mt-1">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">{item.company}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
                     {item.description}
                   </p>
                 </div>

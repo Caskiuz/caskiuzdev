@@ -77,43 +77,43 @@ export function Contact({ config = {} }: ContactProps) {
   };
 
   return (
-    <section ref={ref} id="contact" className="relative py-24 sm:py-32">
+    <section ref={ref} id="contact" className="relative py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("contact_label", "Contacto")}
           </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
             ¿Listo para <span className="metal-text">{c("contact_title", "empezar")}</span>?
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
             {c("contact_subtitle", "Cuéntame sobre tu proyecto y te responderé en menos de 24 horas. La primera consulta es gratis.")}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Contact info cards */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="lg:col-span-1 space-y-4"
+            className="lg:col-span-1 space-y-3"
           >
             {/* WhatsApp card */}
             <Link
               href={`https://wa.me/${phoneNumber}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
+              className="block glass-card p-4 hover:scale-[1.02] transition-transform group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#25D366]/10 flex items-center justify-center">
-                  <MessageCircle className="w-6 h-6 text-[#25D366]" />
+                <div className="w-10 h-10 rounded-xl bg-[#25D366]/10 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-[#25D366]" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">
@@ -130,11 +130,11 @@ export function Contact({ config = {} }: ContactProps) {
             {/* Email card */}
             <Link
               href={`mailto:${email}`}
-              className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
+              className="block glass-card p-4 hover:scale-[1.02] transition-transform group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-aff-cyan" />
+                <div className="w-10 h-10 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-aff-cyan" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">Email</h4>
@@ -145,10 +145,10 @@ export function Contact({ config = {} }: ContactProps) {
             </Link>
 
             {/* Availability */}
-            <div className="glass-card p-5">
+            <div className="glass-card p-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-aff-cyan" />
+                <div className="w-10 h-10 rounded-xl bg-aff-cyan/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-aff-cyan" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Disponibilidad</h4>
@@ -165,11 +165,11 @@ export function Contact({ config = {} }: ContactProps) {
                 href={linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block glass-card p-5 hover:scale-[1.02] transition-transform group"
+                className="block glass-card p-4 hover:scale-[1.02] transition-transform group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-[#0A66C2]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-[#0A66C2]" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold">LinkedIn</h4>
@@ -183,10 +183,10 @@ export function Contact({ config = {} }: ContactProps) {
             )}
 
             {/* Location */}
-            <div className="glass-card p-5">
+            <div className="glass-card p-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-accent" />
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-accent" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Ubicación</h4>
@@ -205,7 +205,7 @@ export function Contact({ config = {} }: ContactProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <div className="glass-card p-6 sm:p-8">
+            <div className="glass-card p-5 sm:p-6">
               {formState === "error" ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -256,8 +256,8 @@ export function Contact({ config = {} }: ContactProps) {
                   </Link>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label
                         htmlFor="name"
@@ -271,7 +271,7 @@ export function Contact({ config = {} }: ContactProps) {
                         name="name"
                         required
                         placeholder="Tu nombre"
-                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
                       />
                     </div>
                     <div>
@@ -287,7 +287,7 @@ export function Contact({ config = {} }: ContactProps) {
                         name="email"
                         required
                         placeholder="tu@email.com"
-                        className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border focus:border-aff-cyan focus:ring-2 focus:ring-aff-cyan/20 outline-none transition-all text-sm"
                       />
                     </div>
                   </div>
@@ -301,14 +301,17 @@ export function Contact({ config = {} }: ContactProps) {
                     <select
                       id="service"
                       name="service"
-                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm cursor-pointer"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm cursor-pointer"
                     >
                       <option value="">Selecciona una opción</option>
-                      <option value="web">Desarrollo Web</option>
-                      <option value="mobile">Desarrollo Mobile</option>
-                      <option value="api">API / Backend</option>
-                      <option value="consulting">Consultoría</option>
-                      <option value="other">Otro</option>
+                      <option value="automatizacion">🤖 Automatización & IA Empresarial</option>
+                      <option value="redes-sociales">📲 Redes Sociales Automatizadas</option>
+                      <option value="vision-ia">📹 Visión IA & Dispositivos Inteligentes</option>
+                      <option value="desarrollo">🏗️ Desarrollo Web & Apps</option>
+                      <option value="producto">🚀 Producto & E-commerce</option>
+                      <option value="seo">🔍 SEO & Posicionamiento</option>
+                      <option value="soporte">🔧 Soporte & Mantenimiento</option>
+                      <option value="otro">Otro</option>
                     </select>
                   </div>
                   <div>
@@ -324,7 +327,7 @@ export function Contact({ config = {} }: ContactProps) {
                       id="refCode"
                       name="refCode"
                       placeholder="¿Te recomendó alguien? Escribe su código"
-                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm uppercase"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm uppercase"
                     />
                     {/* Si el visitante llegó por el link de un afiliado, el código
                         viaja automático aquí aunque no lo escriba a mano */}
@@ -341,9 +344,9 @@ export function Contact({ config = {} }: ContactProps) {
                       id="message"
                       name="message"
                       required
-                      rows={5}
+                      rows={4}
                       placeholder="Describe tu idea, objetivos, presupuesto..."
-                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm resize-none"
                     />
                   </div>
                   <button
