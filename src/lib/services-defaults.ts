@@ -415,6 +415,8 @@ export interface ServiceCategory {
   key: string;
   emoji: string;
   label: string;
+  /** Nombre corto para chips de navegación. */
+  shortLabel: string;
   tagline: string;
   /** Grupo de planes mensuales que se muestra al expandir esta categoría. */
   planGroup?: "redes" | "prospeccion";
@@ -425,6 +427,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "automatizacion",
     emoji: "🤖",
     label: "Automatización & IA Empresarial",
+    shortLabel: "Automatización & IA",
     planGroup: "prospeccion",
     tagline:
       "Motoriza tu empresa para vender más: agentes de IA, motores n8n prospectando nichos y procesos 100% automatizados.",
@@ -433,6 +436,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "redes-sociales",
     emoji: "📲",
     label: "Redes Sociales Automatizadas",
+    shortLabel: "Redes Sociales",
     planGroup: "redes",
     tagline:
       "Contenido que se publica solo: reels, posts e historias generados con IA y publicados en automático, con planes mensuales para empresas o particulares.",
@@ -441,6 +445,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "vision-ia",
     emoji: "📹",
     label: "Visión IA & Dispositivos Inteligentes",
+    shortLabel: "Visión IA",
     tagline:
       "Convertimos tus cámaras y dispositivos electrónicos en inteligencia: seguimiento de video, mercancías, contenedores y más — mediando software e IA.",
   },
@@ -448,6 +453,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "desarrollo",
     emoji: "🏗️",
     label: "Desarrollo Web & Apps",
+    shortLabel: "Desarrollo & Apps",
     tagline:
       "Software a medida que hace funcionar tu negocio: aplicaciones web, móviles y APIs robustas y escalables.",
   },
@@ -455,6 +461,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "producto",
     emoji: "🚀",
     label: "Producto & E-commerce",
+    shortLabel: "Producto & E-commerce",
     tagline:
       "Productos digitales completos: SaaS, tiendas online y paneles de gestión listos para vender.",
   },
@@ -462,6 +469,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "seo",
     emoji: "🔍",
     label: "SEO & Posicionamiento",
+    shortLabel: "SEO",
     tagline:
       "Aparece en Google cuando tus clientes te buscan: auditoría, velocidad, SEO local y contenido que convierte.",
   },
@@ -469,6 +477,7 @@ export const serviceCategories: ServiceCategory[] = [
     key: "consultoria",
     emoji: "🔧",
     label: "Soporte & Mantenimiento",
+    shortLabel: "Soporte",
     tagline:
       "Tu sistema siempre al día: hosting, backups, monitoreo 24/7 y soporte técnico continuo.",
   },

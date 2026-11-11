@@ -33,6 +33,7 @@ import {
   MessageCircle,
   Clock,
   ExternalLink,
+  ArrowUp,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -102,6 +103,16 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
   // Acordeón: una categoría abierta a la vez
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  /** Cierra el detalle y lleva la vista al grid de categorías. */
+  const scrollToCategories = () => {
+    setOpenCategory(null);
+    const el = gridRef.current;
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
 
   const openCat = categories.find((cat) => cat.key === openCategory) ?? null;
   const openServices = openCat
@@ -111,6 +122,12 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
   const openPlans: MonthlyPlan[] = openCat?.planGroup
     ? defaultMonthlyPlans.filter((p) => p.group === openCat.planGroup)
     : [];
+  // Categorías con contenido real (servicios o planes) para el navegador del detalle
+  const categoriesWithContent = categories.filter(
+    (cat) =>
+      services.some((s) => s.category === cat.key) ||
+      (cat.planGroup && defaultMonthlyPlans.some((p) => p.group === cat.planGroup))
+  );
 
   useEffect(() => {
     if (!openCategory || !detailRef.current) return;
@@ -152,6 +169,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 
         {/* Category summary cards — sin precios, solo alcance */}
         <motion.div
+          ref={gridRef}
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -280,6 +298,49 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
                     </motion.div>
                   </>
                 )}
+
+                {/* Cambiar de categoría sin volver a subir */}
+                <div className="mt-12">
+                  <div className="relative overflow-hidden metal-card rounded-2xl p-6 sm:p-8 text-center">
+                    <div className="absolute -top-10 -left-10 w-40 h-40 bg-aff-cyan/5 rounded-full blur-3xl" />
+                    <p className="relative text-xs font-semibold uppercase tracking-wider text-aff-cyan mb-1.5">
+                      Sigue explorando
+                    </p>
+                    <h4 className="relative text-xl font-bold mb-5">
+                      Cambia de categoría <span className="metal-text">sin subir</span>
+                    </h4>
+                    <div className="relative flex flex-wrap justify-center gap-2.5">
+                      {categoriesWithContent.map((cat) =>
+                        cat.key === openCat.key ? (
+                          <span
+                            key={cat.key}
+                            aria-current="true"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-aff-blue to-aff-cyan text-white shadow-lg shadow-aff-blue/25 cursor-default"
+                          >
+                            <span>{cat.emoji}</span>
+                            {cat.shortLabel}
+                          </span>
+                        ) : (
+                          <button
+                            key={cat.key}
+                            onClick={() => setOpenCategory(cat.key)}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold metal-card transition-all duration-200 hover:border-aff-cyan/40 hover:text-aff-cyan hover:-translate-y-0.5 cursor-pointer"
+                          >
+                            <span>{cat.emoji}</span>
+                            {cat.shortLabel}
+                          </button>
+                        )
+                      )}
+                    </div>
+                    <button
+                      onClick={scrollToCategories}
+                      className="relative mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-aff-cyan transition-colors cursor-pointer"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                      Volver a todas las categorías
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
