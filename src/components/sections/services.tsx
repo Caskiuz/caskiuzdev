@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { motion, useInView } from "framer-motion";
 import {
   Globe,
   Smartphone,
@@ -16,7 +17,6 @@ import {
   Search,
   MapPin,
   Lock,
-  ChevronDown,
   Target,
   Workflow,
   MessageSquare,
@@ -33,7 +33,6 @@ import {
   MessageCircle,
   Clock,
   ExternalLink,
-  ArrowUp,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -100,59 +99,49 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
     // use defaults
   }
 
-  // Acordeón: una categoría abierta a la vez
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const detailRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  // Pestañas: la categoría activa se muestra directamente debajo de la barra,
+  // sin acordeones ni scrolls animados. El barra es sticky: nunca hay que subir
+  // para cambiar de categoría.
+  const [activeCategory, setActiveCategory] = useState<string>(categories[0].key);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  /** Cierra el detalle y lleva la vista al grid de categorías. */
-  const scrollToCategories = () => {
-    setOpenCategory(null);
-    const el = gridRef.current;
-    if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - 96;
-    window.scrollTo({ top: y, behavior: "smooth" });
-  };
-
-  const openCat = categories.find((cat) => cat.key === openCategory) ?? null;
-  const openServices = openCat
-    ? services.filter((s) => s.category === openCat.key)
+  const activeCat = categories.find((cat) => cat.key === activeCategory) ?? categories[0];
+  const activeServices = services.filter((s) => s.category === activeCat.key);
+  const activePlans: MonthlyPlan[] = activeCat.planGroup
+    ? defaultMonthlyPlans.filter((p) => p.group === activeCat.planGroup)
     : [];
-  // Planes mensuales de la categoría abierta — se muestran directamente en su detalle
-  const openPlans: MonthlyPlan[] = openCat?.planGroup
-    ? defaultMonthlyPlans.filter((p) => p.group === openCat.planGroup)
-    : [];
-  // Categorías con contenido real (servicios o planes) para el navegador del detalle
   const categoriesWithContent = categories.filter(
     (cat) =>
       services.some((s) => s.category === cat.key) ||
       (cat.planGroup && defaultMonthlyPlans.some((p) => p.group === cat.planGroup))
   );
 
-  useEffect(() => {
-    if (!openCategory || !detailRef.current) return;
-    // Auto-scroll al panel expandido. Se espera (~0.55s) a que terminen las
-    // animaciones de salida/entrada para medir la posición FINAL del panel:
-    // si se mide antes, el panel saliente aún ocupa espacio y el scroll apunta
-    // más abajo (aterriza en el banner de pagos en vez de en la categoría).
-    const t = setTimeout(() => {
-      const el = detailRef.current;
-      if (!el) return;
-      const y = el.getBoundingClientRect().top + window.scrollY - 96;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }, 550);
-    return () => clearTimeout(t);
-  }, [openCategory]);
+  const handleSelect = (key: string) => {
+    if (key === activeCategory) return;
+    // flushSync confirma el intercambio de contenido síncronamente: la medición
+    // y alinación que siguen son exactas y no dependen de rAF (que no corre en
+    // pestañas ocultas) ni de animaciones de altura.
+    flushSync(() => setActiveCategory(key));
+    const el = contentRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if (top < 130 || top > window.innerHeight * 0.6) {
+      // El contenido quedó fuera de vista (categoría más corta → el navegador
+      // recortó el scroll): alinear su inicio bajo la barra sticky.
+      const y = el.getBoundingClientRect().top + window.scrollY - 130;
+      window.scrollTo({ top: y, behavior: "auto" });
+    }
+  };
 
   return (
-    <section ref={ref} id="services" className="relative py-24 sm:py-32">
+    <section ref={ref} id="services" className="relative py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             {c("services_label", "Servicios")}
@@ -160,199 +149,121 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
             Lo que <span className="metal-text">{c("services_title", "puedo hacer")} por ti</span>
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
             {c(
               "services_subtitle",
-              "Automatizo empresas para que vendan más. Toca una categoría y descubre el alcance de cada servicio."
+              "Automatizo empresas para que vendan más. Elige una categoría y mira sus planes y servicios."
             )}
           </p>
         </motion.div>
+      </div>
 
-        {/* Category summary cards — sin precios, solo alcance */}
-        <motion.div
-          ref={gridRef}
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-        >
-          {categories.map((cat) => {
-            const count = services.filter((s) => s.category === cat.key).length;
-            const planCount = cat.planGroup
-              ? defaultMonthlyPlans.filter((p) => p.group === cat.planGroup).length
-              : 0;
-            const isOpen = openCategory === cat.key;
-            if (count === 0 && planCount === 0) return null;
+      {/* Barra de categorías — sticky: siempre visible mientras recorres una categoría */}
+      <div className="sticky top-[68px] z-30 bg-background/85 backdrop-blur-md border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-wrap justify-center gap-2.5">
+            {categoriesWithContent.map((cat) =>
+              cat.key === activeCategory ? (
+                <span
+                  key={cat.key}
+                  aria-current="true"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-aff-blue to-aff-cyan text-white shadow-lg shadow-aff-blue/25"
+                >
+                  <span>{cat.emoji}</span>
+                  {cat.shortLabel}
+                </span>
+              ) : (
+                <button
+                  key={cat.key}
+                  onClick={() => handleSelect(cat.key)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold metal-card transition-all duration-200 hover:border-aff-cyan/40 hover:text-aff-cyan cursor-pointer"
+                >
+                  <span>{cat.emoji}</span>
+                  {cat.shortLabel}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      </div>
 
-            return (
-              <motion.button
-                key={cat.key}
-                variants={itemVariants}
-                onClick={() => setOpenCategory(isOpen ? null : cat.key)}
-                aria-expanded={isOpen}
-                className={`group relative h-full flex flex-col text-left rounded-2xl p-5 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-aff-cyan/60 ${
-                  isOpen
-                    ? "metal-border bg-surface shadow-lg shadow-aff-blue/10"
-                    : "metal-card hover:-translate-y-1 hover:shadow-lg hover:shadow-aff-blue/5"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <span className="text-3xl leading-none">{cat.emoji}</span>
-                  <span className="flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-muted text-muted-foreground">
-                    {count > 0
-                      ? `${count} servicio${count !== 1 ? "s" : ""}`
-                      : `${planCount} plan${planCount !== 1 ? "es" : ""}`}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Contenido de la categoría activa — se intercambia en el sitio, sin scrolls */}
+        <div ref={contentRef} className="pt-8">
+          <motion.div
+            key={activeCat.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold flex items-center gap-3">
+                <span className="text-3xl">{activeCat.emoji}</span>
+                <span>{activeCat.label}</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+              </h3>
+              <p className="mt-2 text-muted-foreground text-sm max-w-2xl">
+                {activeCat.tagline}
+              </p>
+            </div>
+
+            {/* Planes mensuales de la categoría */}
+            {activePlans.length > 0 && (
+              <div className="mb-12">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-5">
+                  <h4 className="text-lg font-bold">
+                    Planes <span className="metal-text">mensuales</span>
+                  </h4>
+                  <span className="text-xs text-muted-foreground">
+                    Facturación mensual — cancela cuando quieras
                   </span>
                 </div>
-
-                <h3 className="text-base sm:text-lg font-bold mb-1.5">{cat.label}</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-4">
-                  {cat.tagline}
-                </p>
-
-                <div className="mt-auto flex items-center gap-2 text-xs sm:text-sm font-semibold text-aff-cyan">
-                  {isOpen ? "Cerrar detalle" : "Ver detalle"}
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-300 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-              </motion.button>
-            );
-          })}
-        </motion.div>
-
-        {/* Hint */}
-        <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          Toca una categoría para ver sus planes mensuales y servicios.
-        </p>
-
-        {/* Acordeón: detalle de la categoría abierta */}
-        <AnimatePresence initial={false}>
-          {openCat && (openServices.length > 0 || openPlans.length > 0) && (
-            <motion.div
-              key={openCat.key}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <div ref={detailRef} className="pt-8">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <span className="text-3xl">{openCat.emoji}</span>
-                    <span>{openCat.label}</span>
-                    <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
-                  </h3>
-                  <p className="mt-2 text-muted-foreground text-sm max-w-2xl">
-                    {openCat.tagline}
-                  </p>
-                </div>
-
-                {/* Planes mensuales de la categoría — al abrir el detalle se ven de una vez */}
-                {openPlans.length > 0 && (
-                  <div className="mb-12">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-5">
-                      <h4 className="text-lg font-bold">
-                        Planes <span className="metal-text">mensuales</span>
-                      </h4>
-                      <span className="text-xs text-muted-foreground">
-                        Facturación mensual — cancela cuando quieras
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                      {openPlans.map((plan) => (
-                        <PlanCard
-                          key={plan.id}
-                          plan={plan}
-                          groupName={openCat.label}
-                          wa={wa}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Servicios personalizados de la categoría */}
-                {openServices.length > 0 && (
-                  <>
-                    {openPlans.length > 0 && (
-                      <h4 className="text-lg font-bold mb-5">
-                        Servicios <span className="metal-text">personalizados</span>
-                      </h4>
-                    )}
-                    <motion.div
-                      variants={containerVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                    >
-                      {openServices.map((service, i) => (
-                        <ServiceCard
-                          key={service.id || `${openCat.key}-${i}`}
-                          service={service}
-                          wa={wa}
-                        />
-                      ))}
-                    </motion.div>
-                  </>
-                )}
-
-                {/* Cambiar de categoría sin volver a subir */}
-                <div className="mt-12">
-                  <div className="relative overflow-hidden metal-card rounded-2xl p-6 sm:p-8 text-center">
-                    <div className="absolute -top-10 -left-10 w-40 h-40 bg-aff-cyan/5 rounded-full blur-3xl" />
-                    <p className="relative text-xs font-semibold uppercase tracking-wider text-aff-cyan mb-1.5">
-                      Sigue explorando
-                    </p>
-                    <h4 className="relative text-xl font-bold mb-5">
-                      Cambia de <span className="metal-text">categoría</span>
-                    </h4>
-                    <div className="relative flex flex-wrap justify-center gap-2.5">
-                      {categoriesWithContent.map((cat) =>
-                        cat.key === openCat.key ? (
-                          <span
-                            key={cat.key}
-                            aria-current="true"
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-aff-blue to-aff-cyan text-white shadow-lg shadow-aff-blue/25 cursor-default"
-                          >
-                            <span>{cat.emoji}</span>
-                            {cat.shortLabel}
-                          </span>
-                        ) : (
-                          <button
-                            key={cat.key}
-                            onClick={() => setOpenCategory(cat.key)}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold metal-card transition-all duration-200 hover:border-aff-cyan/40 hover:text-aff-cyan hover:-translate-y-0.5 cursor-pointer"
-                          >
-                            <span>{cat.emoji}</span>
-                            {cat.shortLabel}
-                          </button>
-                        )
-                      )}
-                    </div>
-                    <button
-                      onClick={scrollToCategories}
-                      className="relative mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-aff-cyan transition-colors cursor-pointer"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                      Volver a todas las categorías
-                    </button>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  {activePlans.map((plan) => (
+                    <PlanCard
+                      key={plan.id}
+                      plan={plan}
+                      groupName={activeCat.label}
+                      wa={wa}
+                    />
+                  ))}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+
+            {/* Servicios personalizados de la categoría */}
+            {activeServices.length > 0 && (
+              <>
+                {activePlans.length > 0 && (
+                  <h4 className="text-lg font-bold mb-5">
+                    Servicios <span className="metal-text">personalizados</span>
+                  </h4>
+                )}
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                >
+                  {activeServices.map((service, i) => (
+                    <ServiceCard
+                      key={service.id || `${activeCat.key}-${i}`}
+                      service={service}
+                      wa={wa}
+                    />
+                  ))}
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        </div>
 
         {/* Payment policy banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-16 mt-16"
+          className="mt-16"
         >
           <div className="relative overflow-hidden metal-card rounded-2xl p-6 sm:p-8 text-center">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-aff-cyan/5 rounded-full blur-3xl" />
