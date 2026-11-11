@@ -33,14 +33,15 @@ export const defaultServices: ServiceItem[] = [
     title: "Workflows n8n & Integraciones",
     description:
       "Automatiza tus procesos internos de punta a punta: cotizaciones, facturación, correos, reportes y sincronización entre tus sistemas.",
-    price: "Desde $99 USD",
+    price: "Setup $199 + $29/mes",
     category: "automatizacion",
     features: [
       "Flujos de trabajo a medida en n8n",
       "Integración entre tus apps (CRM, ERP, email)",
       "Cotizaciones y facturas automáticas",
       "Reportes programados",
-      "Pago 50% inicio / 50% entrega",
+      "Hosting de los flujos y soporte incluidos",
+      "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
     deliveryTime: "1-3 semanas",
@@ -51,14 +52,16 @@ export const defaultServices: ServiceItem[] = [
     title: "Chatbot de Ventas WhatsApp/Instagram",
     description:
       "Agente de IA que atiende, responde, cotiza, agenda y cobra 24/7 en WhatsApp e Instagram. Nunca más pierdas un cliente por demorar en contestar.",
-    price: "Desde $149 USD",
+    price: "Setup $199 + $49/mes",
     category: "automatizacion",
     features: [
       "Respuestas con IA (Gemini / OpenAI)",
       "WhatsApp + Instagram DM",
       "Cotiza y agenda citas solo",
       "Escalamiento a humano cuando hace falta",
-      "Pago 50% inicio / 50% entrega",
+      "500 conversaciones/mes incluidas (extra: $0.05/conv.)",
+      "Twilio, tokens e infraestructura incluidos",
+      "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
     deliveryTime: "1-3 semanas",
@@ -69,13 +72,15 @@ export const defaultServices: ServiceItem[] = [
     title: "Agente de Voz IA",
     description:
       "Llamadas automatizadas con voz natural: confirmaciones de citas, recordatorios de pago, encuestas y seguimiento de clientes sin levantar el teléfono.",
-    price: "Desde $99 USD/mes",
+    price: "Setup $99 + $99/mes",
     category: "automatizacion",
     features: [
       "Llamadas entrantes y salientes (Twilio)",
       "Voz natural en español",
       "Confirmaciones y recordatorios automáticos",
       "Transcripciones y resúmenes de cada llamada",
+      "100 minutos/mes incluidos (minuto extra: $0.12)",
+      "Voces, telefonía e infraestructura incluidas",
     ],
     popular: false,
     deliveryTime: "2-4 semanas",
@@ -86,14 +91,15 @@ export const defaultServices: ServiceItem[] = [
     title: "Scraping & Monitoreo de Competencia",
     description:
       "Vigilamos a tus competidores por ti: precios, stock, promociones y anuncios, con alertas en tiempo real para que siempre vendas con ventaja.",
-    price: "Desde $99 USD",
+    price: "Setup $149 + $49/mes",
     category: "automatizacion",
     features: [
-      "Monitoreo de precios y stock",
+      "Monitoreo continuo diario de precios y stock",
       "Alertas de cambios de la competencia",
       "Seguimiento de anuncios y promociones",
       "Reportes automáticos",
-      "Pago 50% inicio / 50% entrega",
+      "Proxies e infraestructura incluidos",
+      "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
     deliveryTime: "1-2 semanas",
@@ -104,14 +110,15 @@ export const defaultServices: ServiceItem[] = [
     title: "Dashboards con IA & Predicción de Ventas",
     description:
       "Paneles ejecutivos con tus KPIs en tiempo real, reportes automáticos y predicción de ventas con IA para decidir con datos, no con corazonadas.",
-    price: "Desde $299 USD",
+    price: "Setup $299 + $39/mes",
     category: "automatizacion",
     features: [
       "KPIs en tiempo real",
       "Predicción de ventas con IA",
-      "Reportes automáticos programados",
+      "Reportes automáticos ilimitados",
       "Alertas de metas y anomalías",
-      "Pago 50% inicio / 50% entrega",
+      "Hosting y tokens incluidos",
+      "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
     deliveryTime: "2-4 semanas",
@@ -122,14 +129,15 @@ export const defaultServices: ServiceItem[] = [
     title: "Integración IA",
     description:
       "Agrega inteligencia artificial a tu producto: chatbots, generadores de contenido, análisis predictivo con OpenAI/Claude.",
-    price: "Desde $99 USD",
+    price: "Setup $149 + $19/mes",
     category: "automatizacion",
     features: [
       "ChatGPT / Claude API",
       "Chatbots inteligentes",
       "Generación de contenido",
       "Análisis de sentimiento",
-      "Pago 50% inicio / 50% entrega",
+      "Tokens y hosting de la IA incluidos",
+      "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
     deliveryTime: "1-4 semanas",
@@ -252,7 +260,7 @@ export const defaultServices: ServiceItem[] = [
     title: "Landing Pages",
     description:
       "Landing pages de alto rendimiento optimizadas para conversión. Carga ultrarrápida, diseño premium y formularios integrados.",
-    price: "Desde $99 USD",
+    price: "Desde $149 USD",
     category: "desarrollo",
     features: [
       "Next.js + TailwindCSS",
@@ -515,6 +523,7 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "1 red social (a elección)",
       "Calendario de contenido mensual",
       "Reporte mensual de resultados",
+      "Herramientas de diseño e IA incluidas",
     ],
   },
   {
@@ -531,6 +540,7 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "2 redes sociales",
       "Respuestas automáticas con IA en DMs",
       "Reporte quincenal de resultados",
+      "Herramientas de diseño e IA incluidas",
     ],
   },
   {
@@ -546,6 +556,7 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "3-4 redes sociales",
       "Community management asistido con IA",
       "Reportes semanales + reunión mensual",
+      "Herramientas premium de video IA incluidas",
     ],
   },
 
@@ -563,6 +574,7 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "1 canal (WhatsApp o email)",
       "Respuestas automáticas de primer contacto",
       "Reporte mensual de leads",
+      "Infraestructura completa incluida (n8n, tokens, canales)",
     ],
   },
   {
@@ -579,6 +591,7 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "2 canales (WhatsApp, email, LinkedIn o IG)",
       "Seguimiento automático de cada lead",
       "CRM incluido + reporte quincenal",
+      "Infraestructura completa incluida (n8n, tokens, canales)",
     ],
   },
   {
@@ -594,6 +607,8 @@ export const defaultMonthlyPlans: MonthlyPlan[] = [
       "3+ canales: WhatsApp, email, LinkedIn, Instagram",
       "Lead scoring con IA (prioriza los mejores)",
       "Agenda automática de citas + reportes semanales",
+      "Infraestructura completa incluida (n8n, tokens, canales)",
+      "Enriquecimiento de datos incluido",
     ],
   },
 ];
