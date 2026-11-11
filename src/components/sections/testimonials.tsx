@@ -156,22 +156,22 @@ export function Testimonials() {
   };
 
   return (
-    <section ref={ref} id="testimonials" className="relative py-24 sm:py-32 bg-surface/30">
+    <section ref={ref} id="testimonials" className="relative py-16 sm:py-20 bg-surface/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
             Testimonios
           </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+          <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
             Lo que dicen <span className="metal-text">mis clientes</span>
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
             Comentarios reales de personas que confiaron en mi trabajo. ¿Trabajamos juntos? ¡Deja el tuyo!
           </p>
         </motion.div>
@@ -186,42 +186,42 @@ export function Testimonials() {
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
           >
             {testimonials.map((t) => (
               <motion.div
                 key={t.id}
                 variants={itemVariants}
-                className="relative glass-card p-6 sm:p-8 group hover:scale-[1.02] transition-transform duration-300"
+                className="relative glass-card p-5 group hover:scale-[1.02] transition-transform duration-300"
               >
                 {/* Quote icon */}
-                <div className="absolute top-4 right-4 text-aff-cyan/10">
-                  <Quote className="w-10 h-10" />
+                <div className="absolute top-3 right-3 text-aff-cyan/10">
+                  <Quote className="w-8 h-8" />
                 </div>
 
                 {/* Stars */}
-                <div className="flex items-center gap-0.5 mb-4">
+                <div className="flex items-center gap-0.5 mb-3">
                   {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star key={j} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                   ))}
                   {Array.from({ length: 5 - t.rating }).map((_, j) => (
-                    <Star key={`e${j}`} className="w-4 h-4 text-muted-foreground/30" />
+                    <Star key={`e${j}`} className="w-3.5 h-3.5 text-muted-foreground/30" />
                   ))}
                 </div>
 
-                {/* Content */}
-                <p className="text-foreground leading-relaxed mb-6 relative z-10 text-sm">
+                {/* Content — limitado para que todo el grid entre en pantalla */}
+                <p className="text-foreground leading-relaxed mb-4 relative z-10 text-xs sm:text-sm line-clamp-6">
                   &ldquo;{t.content}&rdquo;
                 </p>
 
                 {/* Author */}
-                <div className="flex items-center gap-3 border-t border-border pt-4">
-                  <div className="w-10 h-10 rounded-full bg-aff-cyan/10 flex items-center justify-center text-aff-cyan font-bold text-sm">
+                <div className="flex items-center gap-2.5 border-t border-border pt-3">
+                  <div className="w-8 h-8 rounded-full bg-aff-cyan/10 flex items-center justify-center text-aff-cyan font-bold text-xs">
                     {t.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-semibold text-sm leading-tight">{t.name}</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
                       {t.role || ""}{t.company ? ` · ${t.company}` : ""}
                     </p>
                   </div>
@@ -236,7 +236,7 @@ export function Testimonials() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 max-w-xl mx-auto"
+          className="mt-10 max-w-xl mx-auto"
         >
           {!formOpen && !formSuccess ? (
             <div className="text-center">
