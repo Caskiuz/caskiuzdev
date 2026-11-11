@@ -44,7 +44,7 @@ export const defaultServices: ServiceItem[] = [
       "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
-    deliveryTime: "1-3 semanas",
+    deliveryTime: "3-7 días",
   },
   {
     id: "a3",
@@ -55,7 +55,7 @@ export const defaultServices: ServiceItem[] = [
     price: "Setup $199 + $49/mes",
     category: "automatizacion",
     features: [
-      "Respuestas con IA (Gemini / OpenAI)",
+      "Respuestas con IA (Gemini, Claude / OpenAI)",
       "WhatsApp + Instagram DM",
       "Cotiza y agenda citas solo",
       "Escalamiento a humano cuando hace falta",
@@ -64,7 +64,7 @@ export const defaultServices: ServiceItem[] = [
       "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
-    deliveryTime: "1-3 semanas",
+    deliveryTime: "5-10 días",
   },
   {
     id: "a4",
@@ -83,7 +83,7 @@ export const defaultServices: ServiceItem[] = [
       "Voces, telefonía e infraestructura incluidas",
     ],
     popular: false,
-    deliveryTime: "2-4 semanas",
+    deliveryTime: "1-2 semanas",
   },
   {
     id: "a5",
@@ -102,7 +102,7 @@ export const defaultServices: ServiceItem[] = [
       "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
-    deliveryTime: "1-2 semanas",
+    deliveryTime: "3-5 días",
   },
   {
     id: "a6",
@@ -121,7 +121,7 @@ export const defaultServices: ServiceItem[] = [
       "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
-    deliveryTime: "2-4 semanas",
+    deliveryTime: "1-2 semanas",
   },
   {
     id: "s8",
@@ -132,7 +132,7 @@ export const defaultServices: ServiceItem[] = [
     price: "Setup $149 + $19/mes",
     category: "automatizacion",
     features: [
-      "ChatGPT / Claude API",
+      "ChatGPT, Claude API y Claude Code",
       "Chatbots inteligentes",
       "Generación de contenido",
       "Análisis de sentimiento",
@@ -140,7 +140,7 @@ export const defaultServices: ServiceItem[] = [
       "Setup 50% inicio / 50% entrega · mensualidad por adelantado",
     ],
     popular: false,
-    deliveryTime: "1-4 semanas",
+    deliveryTime: "3-7 días",
   },
 
   // ─── 📹 Visión IA & Dispositivos Inteligentes ───
@@ -160,7 +160,7 @@ export const defaultServices: ServiceItem[] = [
       "Cotización según número de cámaras",
     ],
     popular: true,
-    deliveryTime: "2-6 semanas",
+    deliveryTime: "1-3 semanas",
   },
   {
     id: "v2",
@@ -178,7 +178,7 @@ export const defaultServices: ServiceItem[] = [
       "Cotización según operación",
     ],
     popular: false,
-    deliveryTime: "3-8 semanas",
+    deliveryTime: "2-4 semanas",
   },
   {
     id: "v3",
@@ -196,7 +196,7 @@ export const defaultServices: ServiceItem[] = [
       "Cotización según proyecto",
     ],
     popular: false,
-    deliveryTime: "3-8 semanas",
+    deliveryTime: "2-4 semanas",
   },
 
   // ─── 🏗️ Desarrollo ───
@@ -216,7 +216,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: true,
-    deliveryTime: "2-4 semanas",
+    deliveryTime: "1-2 semanas",
   },
   {
     id: "s2",
@@ -234,7 +234,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "4-8 semanas",
+    deliveryTime: "2-3 semanas",
   },
   {
     id: "s3",
@@ -252,7 +252,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "2-6 semanas",
+    deliveryTime: "1-2 semanas",
   },
   {
     id: "s4",
@@ -270,7 +270,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "1-2 semanas",
+    deliveryTime: "3-5 días",
   },
 
   // ─── 🚀 Producto ───
@@ -290,7 +290,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: true,
-    deliveryTime: "4-8 semanas",
+    deliveryTime: "2-3 semanas",
   },
   {
     id: "s6",
@@ -308,7 +308,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "4-12 semanas",
+    deliveryTime: "2-4 semanas",
   },
   {
     id: "s7",
@@ -326,7 +326,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "3-6 semanas",
+    deliveryTime: "1-2 semanas",
   },
 
   // ─── 🔧 Consultoría ───
@@ -364,7 +364,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: true,
-    deliveryTime: "1-2 semanas",
+    deliveryTime: "3-5 días",
   },
   {
     id: "seo2",
@@ -381,7 +381,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "2-3 semanas",
+    deliveryTime: "1 semana",
   },
   {
     id: "seo3",
@@ -398,7 +398,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "1-2 semanas",
+    deliveryTime: "3-5 días",
   },
   {
     id: "seo4",
@@ -415,7 +415,7 @@ export const defaultServices: ServiceItem[] = [
       "Pago 50% inicio / 50% entrega",
     ],
     popular: false,
-    deliveryTime: "2-3 semanas",
+    deliveryTime: "1 semana",
   },
 ];
 
