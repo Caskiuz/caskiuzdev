@@ -161,29 +161,11 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
       {/* Barra de categorías — sticky: siempre visible mientras recorres una categoría */}
       <div className="sticky top-[68px] z-30 bg-background/85 backdrop-blur-md border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex flex-wrap justify-center gap-2.5">
-            {categoriesWithContent.map((cat) =>
-              cat.key === activeCategory ? (
-                <span
-                  key={cat.key}
-                  aria-current="true"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-aff-blue to-aff-cyan text-white shadow-lg shadow-aff-blue/25"
-                >
-                  <span>{cat.emoji}</span>
-                  {cat.shortLabel}
-                </span>
-              ) : (
-                <button
-                  key={cat.key}
-                  onClick={() => handleSelect(cat.key)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold metal-card transition-all duration-200 hover:border-aff-cyan/40 hover:text-aff-cyan cursor-pointer"
-                >
-                  <span>{cat.emoji}</span>
-                  {cat.shortLabel}
-                </button>
-              )
-            )}
-          </div>
+          <CategoryChips
+            items={categoriesWithContent}
+            active={activeCategory}
+            onSelect={handleSelect}
+          />
         </div>
       </div>
 
@@ -256,6 +238,15 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
               </>
             )}
           </motion.div>
+        </div>
+
+        {/* Cambiar de categoría también al llegar al final del contenido */}
+        <div className="mt-12">
+          <CategoryChips
+            items={categoriesWithContent}
+            active={activeCategory}
+            onSelect={handleSelect}
+          />
         </div>
 
         {/* Payment policy banner */}
@@ -370,6 +361,43 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 /* ─────────────────────────── Sub-componentes ─────────────────────────── */
 
 type WaFn = (message: string) => string;
+
+/** Chips de categorías — reutilizados en la barra sticky superior y al final del contenido. */
+function CategoryChips({
+  items,
+  active,
+  onSelect,
+}: {
+  items: typeof categories;
+  active: string;
+  onSelect: (key: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2.5">
+      {items.map((cat) =>
+        cat.key === active ? (
+          <span
+            key={cat.key}
+            aria-current="true"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-aff-blue to-aff-cyan text-white shadow-lg shadow-aff-blue/25"
+          >
+            <span>{cat.emoji}</span>
+            {cat.shortLabel}
+          </span>
+        ) : (
+          <button
+            key={cat.key}
+            onClick={() => onSelect(cat.key)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold metal-card transition-all duration-200 hover:border-aff-cyan/40 hover:text-aff-cyan cursor-pointer"
+          >
+            <span>{cat.emoji}</span>
+            {cat.shortLabel}
+          </button>
+        )
+      )}
+    </div>
+  );
+}
 
 /** Card de servicio individual — compacta para verse completa en pantalla. */
 function ServiceCard({
