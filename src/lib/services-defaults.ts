@@ -165,7 +165,6 @@ export const defaultServices: ServiceItem[] = [
       "Publicación 100% automática",
       "Calendario de contenido mensual",
       "Para empresas o particulares",
-      "Ver planes abajo 👇",
     ],
     popular: true,
     deliveryTime: "Continuo",
@@ -447,11 +446,21 @@ export const defaultServices: ServiceItem[] = [
   },
 ];
 
-export const serviceCategories = [
+export interface ServiceCategory {
+  key: string;
+  emoji: string;
+  label: string;
+  tagline: string;
+  /** Grupo de planes mensuales que se muestra al expandir esta categoría. */
+  planGroup?: "redes" | "prospeccion";
+}
+
+export const serviceCategories: ServiceCategory[] = [
   {
     key: "automatizacion",
     emoji: "🤖",
     label: "Automatización & IA Empresarial",
+    planGroup: "prospeccion",
     tagline:
       "Motoriza tu empresa para vender más: agentes de IA, motores n8n prospectando nichos y procesos 100% automatizados.",
   },
@@ -459,6 +468,7 @@ export const serviceCategories = [
     key: "redes-sociales",
     emoji: "📲",
     label: "Redes Sociales Automatizadas",
+    planGroup: "redes",
     tagline:
       "Contenido que se publica solo: reels, posts e historias generados con IA y publicados en automático, con planes mensuales para empresas o particulares.",
   },

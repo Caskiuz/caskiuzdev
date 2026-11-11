@@ -40,7 +40,6 @@ import {
   type MonthlyPlan,
   defaultServices,
   serviceCategories as categories,
-  monthlyPlanGroups,
   defaultMonthlyPlans,
   mergeServices,
 } from "@/lib/services-defaults";
@@ -107,6 +106,10 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
   const openCat = categories.find((cat) => cat.key === openCategory) ?? null;
   const openServices = openCat
     ? services.filter((s) => s.category === openCat.key)
+    : [];
+  // Planes mensuales de la categoría abierta — se muestran directamente en su detalle
+  const openPlans: MonthlyPlan[] = openCat?.planGroup
+    ? defaultMonthlyPlans.filter((p) => p.group === openCat.planGroup)
     : [];
 
   useEffect(() => {
@@ -198,7 +201,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 
         {/* Hint */}
         <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          Toca una categoría para expandir sus servicios con inversión y tiempo de entrega.
+          Toca una categoría para ver sus planes mensuales y servicios.
         </p>
 
         {/* Acordeón: detalle de la categoría abierta */}
@@ -213,22 +216,53 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
               className="overflow-hidden"
             >
               <div ref={detailRef} className="pt-8">
-                <div className="mb-8">
+                <div className="mb-6">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
                     <span className="text-3xl">{openCat.emoji}</span>
                     <span>{openCat.label}</span>
                     <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
                   </h3>
-                  <p className="mt-3 text-muted-foreground text-sm max-w-2xl">
+                  <p className="mt-2 text-muted-foreground text-sm max-w-2xl">
                     {openCat.tagline}
                   </p>
                 </div>
+
+                {/* Planes mensuales de la categoría — al abrir el detalle se ven de una vez */}
+                {openPlans.length > 0 && (
+                  <div className="mb-12">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-5">
+                      <h4 className="text-lg font-bold">
+                        Planes <span className="metal-text">mensuales</span>
+                      </h4>
+                      <span className="text-xs text-muted-foreground">
+                        Facturación mensual — cancela cuando quieras
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      {openPlans.map((plan) => (
+                        <PlanCard
+                          key={plan.id}
+                          plan={plan}
+                          groupName={openCat.label}
+                          wa={wa}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Servicios personalizados de la categoría */}
+                {openPlans.length > 0 && (
+                  <h4 className="text-lg font-bold mb-5">
+                    Servicios <span className="metal-text">personalizados</span>
+                  </h4>
+                )}
 
                 <motion.div
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
                 >
                   {openServices.map((service, i) => (
                     <ServiceCard
@@ -242,53 +276,6 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ─── Planes mensuales automatizados ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-24"
-        >
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-aff-cyan uppercase tracking-wider">
-              Planes Mensuales
-            </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              Automatización <span className="metal-text">por suscripción</span>
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Sistemas que trabajan solos todos los meses por tu empresa.
-              Facturación mensual — cancela cuando quieras.
-            </p>
-          </div>
-
-          {monthlyPlanGroups.map((group) => {
-            const plans = defaultMonthlyPlans.filter((p) => p.group === group.key);
-            if (plans.length === 0) return null;
-
-            return (
-              <div key={group.key} className="mb-14 last:mb-0">
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <span className="text-3xl">{group.emoji}</span>
-                    <span>{group.title}</span>
-                    <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
-                  </h3>
-                  <p className="mt-3 text-muted-foreground text-sm max-w-2xl">
-                    {group.subtitle}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {plans.map((plan) => (
-                    <PlanCard key={plan.id} plan={plan} groupName={group.title} wa={wa} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </motion.div>
 
         {/* Payment policy banner */}
         <motion.div
@@ -403,7 +390,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 
 type WaFn = (message: string) => string;
 
-/** Card de servicio individual (precio visible solo dentro del detalle expandido). */
+/** Card de servicio individual — compacta para verse completa en pantalla. */
 function ServiceCard({
   service,
   wa,
@@ -416,70 +403,73 @@ function ServiceCard({
   return (
     <div className="group relative h-full">
       <div
-        className={`relative h-full rounded-2xl p-6 sm:p-8 transition-all duration-300 ${
+        className={`relative h-full flex flex-col rounded-2xl p-5 transition-all duration-300 ${
           service.popular ? "metal-border bg-surface" : "metal-card"
         }`}
       >
         {service.popular && (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan rounded-full shadow-lg shadow-aff-blue/25">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 text-[11px] font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan rounded-full shadow-lg shadow-aff-blue/25">
             Más Popular
           </span>
         )}
 
-        {/* Icon */}
-        <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${
-            service.popular
-              ? "bg-aff-cyan/10 text-aff-cyan"
-              : "bg-muted text-muted-foreground group-hover:text-aff-cyan group-hover:bg-aff-cyan/10"
-          } transition-colors`}
-        >
-          <IconComp className="w-6 h-6" />
+        {/* Icono + título en una fila */}
+        <div className="flex items-center gap-3 mb-3">
+          <div
+            className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              service.popular
+                ? "bg-aff-cyan/10 text-aff-cyan"
+                : "bg-muted text-muted-foreground group-hover:text-aff-cyan group-hover:bg-aff-cyan/10"
+            } transition-colors`}
+          >
+            <IconComp className="w-5 h-5" />
+          </div>
+          <h4 className="text-base sm:text-lg font-bold leading-snug">
+            {service.title}
+          </h4>
         </div>
 
-        <h4 className="text-xl font-bold mb-2">{service.title}</h4>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+        <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3">
           {service.description}
         </p>
 
-        {/* Price — formatted as investment */}
-        <div className="mb-3">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-            💰 Inversión
+        {/* Precio + entrega en una línea */}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+          <span className="text-lg sm:text-xl font-bold metal-text">
+            {service.price}
           </span>
-          <div className="text-2xl font-bold metal-text">{service.price}</div>
           {service.deliveryTime && (
-            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
               <Clock className="w-3 h-3" />
-              <span>Entrega: {service.deliveryTime}</span>
-            </div>
+              Entrega: {service.deliveryTime}
+            </span>
           )}
         </div>
 
         {/* Features */}
-        <ul className="space-y-2.5 mb-6">
+        <ul className="space-y-1.5 mb-4">
           {service.features.map((feature, j) => (
-            <li key={j} className="flex items-center gap-2.5 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-aff-cyan flex-shrink-0" />
+            <li key={j} className="flex items-center gap-2 text-xs sm:text-sm">
+              <CheckCircle2 className="w-3.5 h-3.5 text-aff-cyan flex-shrink-0" />
               <span className="text-muted-foreground">{feature}</span>
             </li>
           ))}
         </ul>
 
         {/* CTAs — WhatsApp primary, form secondary */}
-        <div className="space-y-2">
+        <div className="mt-auto space-y-1.5">
           <a
             href={wa(`Hola Caskiuz! 👋 Me interesa: ${service.title} (${service.price}). ¿Podemos conversar?`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full text-center py-2.5 text-sm font-medium text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-md shadow-[#25D366]/15"
+            className="block w-full text-center py-2 text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-md shadow-[#25D366]/15"
           >
             <MessageCircle className="w-4 h-4 inline mr-1.5" />
             Cotizar por WhatsApp
           </a>
           <Link
             href="#contact"
-            className="block w-full text-center py-2 text-xs font-medium text-muted-foreground border border-border rounded-full transition-all duration-200 hover:border-aff-cyan/30 hover:text-aff-cyan"
+            className="block w-full text-center py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-aff-cyan"
           >
             <ExternalLink className="w-3 h-3 inline mr-1" />
             Formulario de contacto
@@ -490,7 +480,7 @@ function ServiceCard({
   );
 }
 
-/** Card de plan mensual (Básico / Normal / Premium). */
+/** Card de plan mensual (Básico / Normal / Premium) — compacta. */
 function PlanCard({
   plan,
   groupName,
@@ -503,37 +493,32 @@ function PlanCard({
   return (
     <div className="relative h-full">
       <div
-        className={`relative h-full rounded-2xl p-6 sm:p-8 transition-all duration-300 ${
+        className={`relative h-full flex flex-col rounded-2xl p-5 transition-all duration-300 ${
           plan.popular ? "metal-border bg-surface" : "metal-card"
         }`}
       >
         {plan.popular && (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan rounded-full shadow-lg shadow-aff-blue/25">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 text-[11px] font-semibold text-white bg-gradient-to-r from-aff-blue to-aff-cyan rounded-full shadow-lg shadow-aff-blue/25">
             Más Popular
           </span>
         )}
 
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <h4 className="text-lg font-bold">{plan.name}</h4>
-        </div>
-        <p className="text-xs text-muted-foreground mb-5">{plan.tagline}</p>
+        <h4 className="text-base sm:text-lg font-bold mb-1">{plan.name}</h4>
+        <p className="text-[11px] sm:text-xs text-muted-foreground mb-4">
+          {plan.tagline}
+        </p>
 
         {/* Price */}
-        <div className="mb-6">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-            Plan mensual
-          </span>
-          <div className="flex items-end gap-1.5">
-            <span className="text-4xl font-bold metal-text">${plan.price}</span>
-            <span className="text-sm text-muted-foreground mb-1.5">USD/mes</span>
-          </div>
+        <div className="flex items-baseline gap-x-3 gap-y-1 flex-wrap mb-4">
+          <span className="text-3xl font-bold metal-text">${plan.price}</span>
+          <span className="text-xs text-muted-foreground">USD/mes</span>
         </div>
 
         {/* Features */}
-        <ul className="space-y-2.5 mb-7">
+        <ul className="space-y-1.5 mb-4">
           {plan.features.map((feature, j) => (
-            <li key={j} className="flex items-center gap-2.5 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-aff-cyan flex-shrink-0" />
+            <li key={j} className="flex items-center gap-2 text-xs sm:text-sm">
+              <CheckCircle2 className="w-3.5 h-3.5 text-aff-cyan flex-shrink-0" />
               <span className="text-muted-foreground">{feature}</span>
             </li>
           ))}
@@ -544,11 +529,7 @@ function PlanCard({
           href={wa(`Hola Caskiuz! 👋 Me interesa el plan ${plan.name} de ${groupName} ($${plan.price}/mes). ¿Podemos conversar?`)}
           target="_blank"
           rel="noopener noreferrer"
-          className={`block w-full text-center py-2.5 text-sm font-medium text-white rounded-full transition-all duration-200 ${
-            plan.popular
-              ? "bg-[#25D366] hover:bg-[#22c55e] shadow-lg shadow-[#25D366]/25"
-              : "bg-[#25D366] hover:bg-[#22c55e] shadow-md shadow-[#25D366]/15"
-          }`}
+          className="mt-auto block w-full text-center py-2 text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-all duration-200 shadow-md shadow-[#25D366]/15"
         >
           <MessageCircle className="w-4 h-4 inline mr-1.5" />
           Contratar plan {plan.name}
