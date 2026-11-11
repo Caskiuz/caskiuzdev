@@ -131,15 +131,16 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 
   useEffect(() => {
     if (!openCategory || !detailRef.current) return;
-    // Auto-scroll al panel expandido: el cambio debe verse al instante al hacer
-    // clic. Se usa scrollTo con posición absoluta porque scrollIntoView resulta
-    // poco fiable dentro del contenedor animado con overflow-hidden.
+    // Auto-scroll al panel expandido. Se espera (~0.55s) a que terminen las
+    // animaciones de salida/entrada para medir la posición FINAL del panel:
+    // si se mide antes, el panel saliente aún ocupa espacio y el scroll apunta
+    // más abajo (aterriza en el banner de pagos en vez de en la categoría).
     const t = setTimeout(() => {
       const el = detailRef.current;
       if (!el) return;
       const y = el.getBoundingClientRect().top + window.scrollY - 96;
       window.scrollTo({ top: y, behavior: "smooth" });
-    }, 150);
+    }, 550);
     return () => clearTimeout(t);
   }, [openCategory]);
 
@@ -307,7 +308,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
                       Sigue explorando
                     </p>
                     <h4 className="relative text-xl font-bold mb-5">
-                      Cambia de categoría <span className="metal-text">sin subir</span>
+                      Cambia de <span className="metal-text">categoría</span>
                     </h4>
                     <div className="relative flex flex-wrap justify-center gap-2.5">
                       {categoriesWithContent.map((cat) =>
