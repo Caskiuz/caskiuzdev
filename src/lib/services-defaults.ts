@@ -25,24 +25,8 @@ export interface MonthlyPlan {
 
 export const defaultServices: ServiceItem[] = [
   // ─── 🤖 Automatización & IA Empresarial ───
-  {
-    id: "a1",
-    icon: "Target",
-    title: "Prospección Automática con IA",
-    description:
-      "Motores n8n que prospectan en automático los nichos recomendados para tu empresa, por WhatsApp, email y redes. Todo 100% automatizado: tu equipo solo cierra las ventas.",
-    price: "Planes desde $250 USD/mes",
-    category: "automatizacion",
-    features: [
-      "Nichos recomendados por IA para cada empresa",
-      "Motores n8n prospectando 24/7",
-      "Multi-canal: WhatsApp, email, LinkedIn, Instagram",
-      "Seguimiento automático de cada lead",
-      "Tú solo cierras las ventas",
-    ],
-    popular: true,
-    deliveryTime: "Continuo",
-  },
+  // (la prospección con IA vive en los planes mensuales del grupo "prospeccion",
+  //  se muestra al abrir esta categoría — no como card de servicio para no duplicar)
   {
     id: "a2",
     icon: "Workflow",
@@ -149,25 +133,6 @@ export const defaultServices: ServiceItem[] = [
     ],
     popular: false,
     deliveryTime: "1-4 semanas",
-  },
-
-  // ─── 📲 Redes Sociales Automatizadas ───
-  {
-    id: "rs1",
-    icon: "Share2",
-    title: "Gestión Automática de Contenido",
-    description:
-      "Reels, publicaciones e historias generados con IA y publicados en automático para empresas o particulares. Tu marca activa todos los días sin que muevas un dedo.",
-    price: "Planes desde $200 USD/mes",
-    category: "redes-sociales",
-    features: [
-      "Reels, posts e historias generados con IA",
-      "Publicación 100% automática",
-      "Calendario de contenido mensual",
-      "Para empresas o particulares",
-    ],
-    popular: true,
-    deliveryTime: "Continuo",
   },
 
   // ─── 📹 Visión IA & Dispositivos Inteligentes ───

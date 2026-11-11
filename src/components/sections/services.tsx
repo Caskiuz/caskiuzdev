@@ -159,8 +159,11 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
         >
           {categories.map((cat) => {
             const count = services.filter((s) => s.category === cat.key).length;
+            const planCount = cat.planGroup
+              ? defaultMonthlyPlans.filter((p) => p.group === cat.planGroup).length
+              : 0;
             const isOpen = openCategory === cat.key;
-            if (count === 0) return null;
+            if (count === 0 && planCount === 0) return null;
 
             return (
               <motion.button
@@ -177,7 +180,9 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <span className="text-3xl leading-none">{cat.emoji}</span>
                   <span className="flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-muted text-muted-foreground">
-                    {count} servicio{count !== 1 ? "s" : ""}
+                    {count > 0
+                      ? `${count} servicio${count !== 1 ? "s" : ""}`
+                      : `${planCount} plan${planCount !== 1 ? "es" : ""}`}
                   </span>
                 </div>
 
@@ -206,7 +211,7 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
 
         {/* Acordeón: detalle de la categoría abierta */}
         <AnimatePresence initial={false}>
-          {openCat && openServices.length > 0 && (
+          {openCat && (openServices.length > 0 || openPlans.length > 0) && (
             <motion.div
               key={openCat.key}
               initial={{ height: 0, opacity: 0 }}
@@ -252,26 +257,29 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
                 )}
 
                 {/* Servicios personalizados de la categoría */}
-                {openPlans.length > 0 && (
-                  <h4 className="text-lg font-bold mb-5">
-                    Servicios <span className="metal-text">personalizados</span>
-                  </h4>
+                {openServices.length > 0 && (
+                  <>
+                    {openPlans.length > 0 && (
+                      <h4 className="text-lg font-bold mb-5">
+                        Servicios <span className="metal-text">personalizados</span>
+                      </h4>
+                    )}
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                    >
+                      {openServices.map((service, i) => (
+                        <ServiceCard
+                          key={service.id || `${openCat.key}-${i}`}
+                          service={service}
+                          wa={wa}
+                        />
+                      ))}
+                    </motion.div>
+                  </>
                 )}
-
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-                >
-                  {openServices.map((service, i) => (
-                    <ServiceCard
-                      key={service.id || `${openCat.key}-${i}`}
-                      service={service}
-                      wa={wa}
-                    />
-                  ))}
-                </motion.div>
               </div>
             </motion.div>
           )}
