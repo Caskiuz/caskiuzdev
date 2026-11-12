@@ -11,6 +11,7 @@ model Contact {
   id                Int       @id @default(autoincrement())
   name              String
   email             String
+  phone             String?   @db.VarChar(40)
   service           String?
   message           String    @db.Text
   createdAt         DateTime  @default(now()) @map("created_at")
@@ -19,9 +20,17 @@ model Contact {
   affiliate         Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
   clickId           Int?
   attributionSource String?   @db.VarChar(20) // COOKIE | CODE | URL | IP_MATCH | MANUAL
+  // Pipeline impulsado por IA (opcional, nunca bloquea el guardado del lead)
+  source            String?   @db.VarChar(20) // FORM | CHAT | PROSPECT | ADMIN
+  status            String?   @db.VarChar(20) // NEW | CONTACTED | PROPOSAL | WON | LOST
+  score             Int?      // 0-100 según la IA
+  aiSummary         String?   @db.Text
+  aiProposal        String?   @db.Text
+  aiDraftMsg        String?   @db.Text // primer mensaje WhatsApp listo para enviar
   sales             Sale[]
 
   @@index([affiliateId])
+  @@index([status])
   @@map("contacts")
 }
 
@@ -343,6 +352,42 @@ model AnnouncementRead {
   @@unique([announcementId, affiliateId])
   @@index([affiliateId])
   @@map("announcement_reads")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Prospección automática (IA con Google Search grounding, gratis)
+// ─────────────────────────────────────────────────────────────
+
+model Prospect {
+  id           Int      @id @default(autoincrement())
+  businessName String   @db.VarChar(200)
+  niche        String   @db.VarChar(120)
+  region       String   @db.VarChar(120)
+  contactUrl   String?  @db.VarChar(500) // WhatsApp/teléfono público si la IA lo encontró
+  siteUrl      String?  @db.VarChar(500) // su web actual (si tiene)
+  why          String   @db.Text // por qué es buen prospecto
+  angle        String   @db.Text // ángulo de venta sugerido
+  draftMessage String   @db.Text // mensaje WhatsApp listo para enviar
+  score        Int      @default(0) // 0-100
+  status       String   @default("NEW") // NEW | SENT | DISCARDED
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([status, createdAt])
+  @@map("prospects")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cuota diaria de IA compartida (sobrevive reinicios de serverless)
+// ─────────────────────────────────────────────────────────────
+
+model AiUsage {
+  id    Int    @id @default(autoincrement())
+  day   String @db.VarChar(10) // YYYY-MM-DD
+  kind  String @db.VarChar(20) // CHAT | SCORE | REPLY | PROSPECT | IMAGE
+  count Int    @default(0)
+
+  @@unique([day, kind])
+  @@map("ai_usage")
 }
 
 // ─────────────────────────────────────────────────────────────

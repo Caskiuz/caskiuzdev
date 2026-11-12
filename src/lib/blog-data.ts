@@ -249,3 +249,20 @@ export function getBlogPost(slug: string): BlogPost | undefined {
 export function getAllBlogSlugs(): string[] {
   return blogPosts.map((p) => p.slug);
 }
+/**
+ * Portada IA determinística por post: la misma URL siempre devuelve la misma
+ * imagen (seed = hash del slug). Se sirve vía /api/ai-image (Pollinations,
+ * gratis, cacheada 1 día).
+ */
+export function blogCoverUrl(post: BlogPost): string {
+  const prompt =
+    `Portada de artículo de blog sobre tecnología. Tema: ${post.title}. ` +
+    `Ilustración digital moderna y abstracta en tonos azul oscuro, cian neón y azul acero, ` +
+    `estilo tech con circuitos sutiles y formas geométricas, sin texto, sin letras, ` +
+    `composición limpia y profesional, formato panorámico`;
+  const seed = Array.from(post.slug).reduce(
+    (acc, ch) => (acc * 31 + ch.charCodeAt(0)) % 1000000,
+    7
+  );
+  return `/api/ai-image?prompt=${encodeURIComponent(prompt)}&seed=${seed}&w=1200&h=630`;
+}

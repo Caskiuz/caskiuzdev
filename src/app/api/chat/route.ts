@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chatEnabled, chatWithGemini, type ChatMessage } from "@/lib/chatbot";
+import { checkAndIncrementAiQuota } from "@/lib/gemini";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Límite diario global de mensajes de chat (cuota gratuita de Gemini
+ * compartida con KYC, scoring y prospección). Cuando se agota, el widget
+ * ofrece WhatsApp como fallback.
+ */
+const CHAT_DAILY_LIMIT = 60;
 
 /** Indica si el chat está habilitado (el widget se oculta si no lo está) */
 export async function GET() {
@@ -38,6 +46,19 @@ export async function POST(request: NextRequest) {
 
     if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
       return NextResponse.json({ error: "Mensajes inválidos" }, { status: 400 });
+    }
+
+    // Cuota diaria: 429 con flag quota para que el widget muestre el fallback
+    const allowed = await checkAndIncrementAiQuota("CHAT");
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "El asistente alcanzó su límite de consultas por hoy 😅 ¡Escríbeme por WhatsApp y te respondo al instante!",
+          quotaExceeded: true,
+        },
+        { status: 429 }
+      );
     }
 
     const reply = await chatWithGemini(messages);

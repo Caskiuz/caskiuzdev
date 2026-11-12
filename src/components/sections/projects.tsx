@@ -227,6 +227,7 @@ function ProjectPreview({ url, name }: { url: string; name: string }) {
   const [mode, setMode] = useState<PreviewMode>("static");
   const [active, setActive] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [aiFallback, setAiFallback] = useState(false);
   const [liveReady, setLiveReady] = useState(false);
   const [liveFailed, setLiveFailed] = useState(false);
   const [videoBlocked, setVideoBlocked] = useState(false);
@@ -286,7 +287,12 @@ function ProjectPreview({ url, name }: { url: string; name: string }) {
   const playing = active && mode !== "static" && !videoBlocked;
   const live = playing && mode === "live" && liveReady && !liveFailed;
   const video = playing && mode === "video";
-  const source = preview ? preview.poster : screenshotUrl(url);
+  // Cadena de miniatura: grabación → captura Microlink → portada IA generada
+  // (Pollinations, gratis) → degradado con el icono del proyecto.
+  const aiCover = `/api/ai-image?prompt=${encodeURIComponent(
+    `Portada abstracta profesional para un proyecto de software llamado "${name.replace(/-/g, " ")}", tecnología web, tonos azul oscuro y cian neón, estilo tech minimalista, sin texto`
+  )}&seed=${encodeURIComponent(name)}&w=800&h=600`;
+  const source = preview ? preview.poster : aiFallback ? aiCover : screenshotUrl(url);
 
   // El autoplay silenciado puede fallar (Modo de bajo consumo en iOS, por ejemplo).
   useEffect(() => {
@@ -349,7 +355,19 @@ function ProjectPreview({ url, name }: { url: string; name: string }) {
         className="object-cover object-top"
         loading="lazy"
         unoptimized
-        onError={() => setImageFailed(true)}
+        onError={() => {
+          if (preview) {
+            setImageFailed(true); // el poster grabado falló: degradado final
+            return;
+          }
+          // 1er fallo → portada IA generada; 2º fallo → degradado final
+          if (!aiFallback) {
+            setAiFallback(true);
+            setImageFailed(false);
+          } else {
+            setImageFailed(true);
+          }
+        }}
       />
 
       {video && (
@@ -447,7 +465,7 @@ function FeaturedCard({ project }: { project: ProjectData }) {
     <motion.div variants={itemVariants} className="group">
       <div
         onClick={() => openDemo(project.demoUrl)}
-        className="relative h-full rounded-2xl metal-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+        className="relative h-full rounded-2xl metal-card spotlight-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -539,7 +557,7 @@ function SideCard({ project }: { project: ProjectData }) {
     <motion.div variants={itemVariants} className="group">
       <div
         onClick={() => openDemo(project.demoUrl)}
-        className="relative h-full rounded-2xl metal-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+        className="relative h-full rounded-2xl metal-card spotlight-card transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
       >
         {/* Miniatura con vista previa animada del sitio */}
         <div className="relative aspect-video shrink-0 overflow-hidden bg-surface">

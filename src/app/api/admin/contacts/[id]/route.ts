@@ -14,8 +14,8 @@ async function checkAuth() {
 }
 
 /**
- * Asigna (o quita) el afiliado de un lead existente.
- * Body: { affiliateId: number } — null para dejar el lead sin afiliado.
+ * Actualiza un lead: asigna/quita afiliado y/o cambia el estado del pipeline.
+ * Body: { affiliateId?: number|null, status?: "NEW"|"CONTACTED"|"PROPOSAL"|"WON"|"LOST" }
  * Al asignar, avisa al afiliado por el centro de notificaciones interno.
  */
 export async function PATCH(
@@ -29,11 +29,25 @@ export async function PATCH(
     const { id } = await params;
     const contactId = Number(id);
     const body = await request.json().catch(() => ({}));
-    const { affiliateId } = body;
+    const { affiliateId, status } = body;
+
+    const VALID_STATUSES = ["NEW", "CONTACTED", "PROPOSAL", "WON", "LOST"];
+    if (status !== undefined && !VALID_STATUSES.includes(status)) {
+      return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
+    }
 
     const contact = await prisma.contact.findUnique({ where: { id: contactId } });
     if (!contact) {
       return NextResponse.json({ error: "Lead no encontrado" }, { status: 404 });
+    }
+
+    // Solo cambio de estado del pipeline (sin tocar afiliado)
+    if (affiliateId === undefined && status !== undefined) {
+      const updated = await prisma.contact.update({
+        where: { id: contactId },
+        data: { status },
+      });
+      return NextResponse.json({ success: true, contact: updated });
     }
 
     let parsedAffiliateId: number | null = null;
@@ -53,6 +67,7 @@ export async function PATCH(
       data: {
         affiliateId: parsedAffiliateId,
         attributionSource: parsedAffiliateId ? "MANUAL" : null,
+        ...(status !== undefined ? { status } : {}),
       },
     });
 

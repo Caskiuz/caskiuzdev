@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma/client";
 import { sendEmail, emailShell, isEmailConfigured } from "@/lib/email";
+import {
+  sendTelegramMessage,
+  escapeTelegramHtml,
+  telegramConfigured,
+} from "@/lib/telegram";
 import { getSaleStatusLabel } from "@/lib/affiliate-queries";
 
 function escapeHtml(text: string): string {
@@ -106,7 +111,7 @@ export async function notifyAdmins(options: {
 /**
  * Avisa por el sistema cuando llega un lead nuevo:
  * - Al afiliado cuando quedó atribuido a su nombre.
- * - A todos los admins (con enlace al buzón).
+ * - A todos los admins (campanita + email + Telegram push instantáneo).
  */
 export async function notifyNewLead(contactId: number): Promise<void> {
   try {
@@ -116,7 +121,12 @@ export async function notifyNewLead(contactId: number): Promise<void> {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        service: true,
         message: true,
+        source: true,
+        score: true,
+        aiSummary: true,
         affiliateId: true,
         affiliate: { select: { id: true, name: true } },
       },
@@ -142,8 +152,99 @@ export async function notifyNewLead(contactId: number): Promise<void> {
         : `Sin afiliado · ${contact.email}`,
       linkUrl: "/admin/messages",
     });
+
+    await notifyAdminsNewLeadEmail(contact);
+    await notifyAdminsNewLeadTelegram(contact);
   } catch (error) {
     console.error("Error notificando lead nuevo:", error);
+  }
+}
+
+/** Email instantáneo al admin con el lead y la intel de la IA (Brevo, gratis). */
+async function notifyAdminsNewLeadEmail(contact: {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  service?: string | null;
+  message: string;
+  source?: string | null;
+  score?: number | null;
+  aiSummary?: string | null;
+}): Promise<void> {
+  if (!isEmailConfigured()) return;
+  try {
+    const cfg = await prisma.siteConfig.findUnique({ where: { key: "contact_email" } });
+    const adminEmail = process.env.ADMIN_EMAIL || cfg?.value;
+    if (!adminEmail) return;
+
+    const rows: [string, string][] = [
+      ["Nombre", contact.name],
+      ["Email", contact.email],
+      ...(contact.phone ? ([["Teléfono", contact.phone]] as [string, string][]) : []),
+      ["Servicio", contact.service || "—"],
+      ["Canal", contact.source || "FORM"],
+      ...(typeof contact.score === "number"
+        ? ([["Score IA", `${contact.score}/100`]] as [string, string][])
+        : []),
+    ];
+
+    await sendEmail({
+      to: adminEmail,
+      subject: `🎯 Nuevo lead${typeof contact.score === "number" ? ` (${contact.score}/100)` : ""}: ${contact.name}`,
+      html: emailShell(`
+        <h2 style="margin:0 0 12px;">¡Llegó un nuevo lead! 🎯</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          ${rows
+            .map(
+              ([k, v]) =>
+                `<tr><td style="padding:4px 0;color:#8888a0;width:110px;">${k}:</td><td style="padding:4px 0;font-weight:600;">${escapeHtml(v)}</td></tr>`
+            )
+            .join("")}
+        </table>
+        ${
+          contact.aiSummary
+            ? `<p style="margin-top:14px;"><strong>Resumen IA:</strong> ${escapeHtml(contact.aiSummary)}</p>`
+            : ""
+        }
+        <p style="margin-top:14px;white-space:pre-line;">${escapeHtml(contact.message.slice(0, 1000))}</p>
+        <p style="margin:20px 0;"><a href="https://caskiuz.vercel.app/admin/messages" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;">Abrir buzón</a></p>
+      `),
+    });
+  } catch (error) {
+    console.error("Error enviando email de lead:", error);
+  }
+}
+
+/** Push Telegram instantáneo al celular (gratis, ilimitado). */
+async function notifyAdminsNewLeadTelegram(contact: {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  service?: string | null;
+  source?: string | null;
+  score?: number | null;
+  aiSummary?: string | null;
+}): Promise<void> {
+  try {
+    if (!telegramConfigured()) return;
+    const scoreLine =
+      typeof contact.score === "number" ? `\n⭐ Score: <b>${contact.score}/100</b>` : "";
+    const summary = contact.aiSummary ? `\n\n🤖 ${escapeTelegramHtml(contact.aiSummary.slice(0, 300))}` : "";
+    await sendTelegramMessage(
+      `🎯 <b>Nuevo lead${typeof contact.score === "number" ? ` (${contact.score}/100)` : ""}</b>\n\n` +
+        `👤 ${escapeTelegramHtml(contact.name)}\n` +
+        `📧 ${escapeTelegramHtml(contact.email)}` +
+        (contact.phone ? `\n📱 ${escapeTelegramHtml(contact.phone)}` : "") +
+        `\n🏷️ ${escapeTelegramHtml(contact.service || "Sin categoría")}` +
+        (contact.source ? `\n📡 Canal: ${escapeTelegramHtml(contact.source)}` : "") +
+        scoreLine +
+        summary +
+        `\n\n👉 caskiuz.vercel.app/admin/messages`
+    );
+  } catch (error) {
+    console.error("Error enviando Telegram de lead:", error);
   }
 }
 

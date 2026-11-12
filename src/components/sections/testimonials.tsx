@@ -192,7 +192,7 @@ export function Testimonials() {
               <motion.div
                 key={t.id}
                 variants={itemVariants}
-                className="relative glass-card p-5 group hover:scale-[1.02] transition-transform duration-300"
+                className="relative glass-card spotlight-card p-5 group hover:scale-[1.02] transition-transform duration-300"
               >
                 {/* Quote icon */}
                 <div className="absolute top-3 right-3 text-aff-cyan/10">

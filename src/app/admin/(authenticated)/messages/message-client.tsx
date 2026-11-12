@@ -17,6 +17,7 @@ interface Message {
   id: number;
   name: string;
   email: string;
+  phone: string | null;
   service: string | null;
   message: string;
   read: boolean;
@@ -24,6 +25,12 @@ interface Message {
   affiliateId: number | null;
   affiliateName: string | null;
   attributionSource: string | null;
+  source: string | null;
+  status: string | null;
+  score: number | null;
+  aiSummary: string | null;
+  aiProposal: string | null;
+  aiDraftMsg: string | null;
 }
 
 interface AffiliateOption {
@@ -47,10 +54,33 @@ const ATTRIBUTION_LABELS: Record<string, string> = {
   MANUAL: "Asignado por el admin",
 };
 
+const SOURCE_LABELS: Record<string, string> = {
+  FORM: "Formulario",
+  CHAT: "Asistente IA",
+  PROSPECT: "Prospección",
+  ADMIN: "Manual",
+};
+
+const STATUS_OPTIONS = ["NEW", "CONTACTED", "PROPOSAL", "WON", "LOST"] as const;
+const STATUS_LABELS: Record<string, string> = {
+  NEW: "🆕 Nuevo",
+  CONTACTED: "📞 Contactado",
+  PROPOSAL: "📨 Propuesta enviada",
+  WON: "🎉 Cerrado/ganado",
+  LOST: "💀 Perdido",
+};
+
+function scoreColor(score: number): string {
+  if (score >= 70) return "bg-green-500/10 text-green-500 border-green-500/30";
+  if (score >= 40) return "bg-yellow-500/10 text-yellow-600 border-yellow-500/30";
+  return "bg-accent/10 text-accent border-accent/30";
+}
+
 export function MessageClient({ messages, affiliates, markAsRead, markAsUnread }: Props) {
   const [items, setItems] = useState(messages);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [assigning, setAssigning] = useState<Set<number>>(new Set());
+  const [savingStatus, setSavingStatus] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const toggleExpand = (id: number) => {
@@ -112,6 +142,33 @@ export function MessageClient({ messages, affiliates, markAsRead, markAsUnread }
     }
   };
 
+  /** Actualiza el estado del pipeline vía PATCH /api/admin/contacts/[id]. */
+  const handleStatus = async (id: number, status: string) => {
+    setSavingStatus((prev) => new Set(prev).add(id));
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/contacts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error || "No se pudo actualizar el estado.");
+        return;
+      }
+      setItems((prev) => prev.map((m) => (m.id === id ? { ...m, status } : m)));
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setSavingStatus((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
   if (messages.length === 0) {
     return (
       <div className="glass-card p-12 text-center">
@@ -164,9 +221,22 @@ export function MessageClient({ messages, affiliates, markAsRead, markAsUnread }
                   {msg.name}
                 </h3>
                 <span className="text-xs text-muted-foreground">{msg.email}</span>
+                {typeof msg.score === "number" && (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${scoreColor(msg.score)}`}
+                    title="Score de la IA"
+                  >
+                    {msg.score}/100
+                  </span>
+                )}
                 {msg.service && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-surface border border-border">
                     {msg.service}
+                  </span>
+                )}
+                {msg.source && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-aff-cyan/10 text-aff-cyan border border-aff-cyan/20">
+                    {SOURCE_LABELS[msg.source] ?? msg.source}
                   </span>
                 )}
                 {msg.affiliateId ? (
@@ -191,10 +261,70 @@ export function MessageClient({ messages, affiliates, markAsRead, markAsUnread }
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
+                    {msg.phone && (
+                      <span className="px-2 py-0.5 rounded-full bg-surface border border-border">
+                        📱 {msg.phone}
+                      </span>
+                    )}
                     {msg.attributionSource && (
                       <span className="px-2 py-0.5 rounded-full bg-surface border border-border">
                         Atribución: {ATTRIBUTION_LABELS[msg.attributionSource] ?? msg.attributionSource}
                       </span>
+                    )}
+                  </div>
+
+                  {/* Intel de la IA */}
+                  {(msg.aiSummary || msg.aiProposal || msg.aiDraftMsg) && (
+                    <div className="mt-3 rounded-xl border border-aff-cyan/20 bg-aff-cyan/5 p-3.5 space-y-2">
+                      <p className="text-[10px] uppercase tracking-widest text-aff-cyan font-semibold">
+                        🤖 Inteligencia IA
+                      </p>
+                      {msg.aiSummary && (
+                        <p className="text-xs text-muted-foreground">{msg.aiSummary}</p>
+                      )}
+                      {msg.aiProposal && (
+                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                          <span className="font-semibold text-foreground">Propuesta preliminar: </span>
+                          {msg.aiProposal}
+                        </p>
+                      )}
+                      {msg.aiDraftMsg && (
+                        <div className="rounded-lg bg-surface border border-border p-2.5">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-semibold mb-1">
+                            Primer mensaje WhatsApp listo
+                          </p>
+                          <p className="text-xs whitespace-pre-wrap">{msg.aiDraftMsg}</p>
+                          {msg.phone && (
+                            <a
+                              href={`https://wa.me/${msg.phone.replace(/\D/g, "")}?text=${encodeURIComponent(msg.aiDraftMsg)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-colors"
+                            >
+                              Enviar por WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Pipeline del lead */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <select
+                      value={msg.status ?? "NEW"}
+                      onChange={(e) => handleStatus(msg.id, e.target.value)}
+                      disabled={savingStatus.has(msg.id)}
+                      className="text-sm px-3 py-2 rounded-lg bg-surface border border-border focus:outline-none focus:ring-2 focus:ring-aff-cyan/30 disabled:opacity-60 cursor-pointer"
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABELS[s]}
+                        </option>
+                      ))}
+                    </select>
+                    {savingStatus.has(msg.id) && (
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                     )}
                   </div>
 

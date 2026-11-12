@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Environment, Lightformer, Sparkles, Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -230,14 +230,31 @@ function Emblem() {
 }
 
 export default function Hero3D() {
+  // Pausa el render cuando la escena sale del viewport (ahorro de batería/CPU)
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(true);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "80px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <Canvas
-      camera={{ position: [0, 0, 7.5], fov: 42 }}
-      dpr={[1, 1.75]}
-      gl={{ alpha: true, antialias: true }}
-      style={{ background: "transparent" }}
-      aria-hidden
-    >
+    <div ref={wrapRef} className="w-full h-full">
+      <Canvas
+        camera={{ position: [0, 0, 7.5], fov: 42 }}
+        dpr={[1, 1.75]}
+        gl={{ alpha: true, antialias: true }}
+        frameloop={inView ? "always" : "never"}
+        style={{ background: "transparent" }}
+        aria-hidden
+      >
       <Suspense fallback={null}>
         <ambientLight intensity={0.25} />
         <directionalLight position={[6, 6, 6]} intensity={2.2} color="#7dd3fc" />
@@ -266,6 +283,7 @@ export default function Hero3D() {
           </group>
         </Environment>
       </Suspense>
-    </Canvas>
+      </Canvas>
+    </div>
   );
 }

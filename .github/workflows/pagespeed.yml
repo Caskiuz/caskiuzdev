@@ -1,0 +1,25 @@
+name: PageSpeed semanal
+
+# Corre PageSpeed Insights (API gratuita) sobre producción y guarda el score.
+
+on:
+  schedule:
+    - cron: "0 10 * * 1" # lunes 10:00 UTC
+  workflow_dispatch:
+
+jobs:
+  psi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar PageSpeed Insights
+        run: |
+          for PAGE in "" "/blog"; do
+            URL="https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fcaskiuz.vercel.app${PAGE//\//%2F}&strategy=mobile"
+            curl -s "$URL" -o psi.json
+            SCORE=$(node -e "
+              const r = require('./psi.json');
+              const c = r.lighthouseResult?.categories?.performance?.score;
+              console.log(c != null ? Math.round(c * 100) : 'n/d');
+            ")
+            echo "Página '${PAGE:-/}' — Performance móvil: ${SCORE}/100" >> $GITHUB_STEP_SUMMARY
+          done

@@ -129,7 +129,13 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
       // El contenido quedó fuera de vista (categoría más corta → el navegador
       // recortó el scroll): alinear su inicio bajo la barra sticky.
       const y = el.getBoundingClientRect().top + window.scrollY - 130;
-      window.scrollTo({ top: y, behavior: "auto" });
+      const lenis = window.__lenis;
+      if (lenis && !document.body.classList.contains("effects-off")) {
+        // Salto inmediato sincronizado con el estado interno de Lenis
+        lenis.scrollTo(y, { immediate: true, force: true });
+      } else {
+        window.scrollTo({ top: y, behavior: "auto" });
+      }
     }
   };
 
@@ -413,7 +419,7 @@ function ServiceCard({
     <div className="group relative h-full">
       <div
         className={`relative h-full flex flex-col rounded-2xl p-5 transition-all duration-300 ${
-          service.popular ? "metal-border bg-surface" : "metal-card"
+          service.popular ? "metal-border bg-surface" : "metal-card spotlight-card"
         }`}
       >
         {service.popular && (
@@ -503,7 +509,7 @@ function PlanCard({
     <div className="relative h-full">
       <div
         className={`relative h-full flex flex-col rounded-2xl p-5 transition-all duration-300 ${
-          plan.popular ? "metal-border bg-surface" : "metal-card"
+          plan.popular ? "metal-border bg-surface" : "metal-card spotlight-card"
         }`}
       >
         {plan.popular && (

@@ -1,129 +1,88 @@
 /**
- * Asistente de IA de Caskiuz (Google AI Studio · Gemini, plan gratis).
- * Sin GEMINI_API_KEY el chat se desactiva limpiamente (el widget se oculta).
+ * Asistente de IA de Caskiuz (Gemini, plan gratis) — usa el cliente compartido
+ * src/lib/gemini.ts. Sin GEMINI_API_KEY el chat se desactiva limpiamente.
+ *
+ * El bloque de servicios/precios del system prompt se genera automáticamente
+ * desde services-defaults.ts: la IA siempre cita los precios reales de la web.
  */
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-/**
- * Cascada de modelos verificados: 2.5-flash es el más rápido y estable,
- * 3.6-flash entra como respaldo ante saturación del primero.
- */
-const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, "gemini-2.5-flash", "gemini-3.6-flash"]));
-const GEMINI_URL = (model: string, key: string) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+import { callGemini, chatEnabled } from "@/lib/gemini";
+import {
+  defaultServices,
+  defaultMonthlyPlans,
+  serviceCategories,
+} from "@/lib/services-defaults";
 
-export function chatEnabled(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY);
-}
+export { chatEnabled };
 
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-/** Base de conocimiento del negocio y del programa de afiliados */
-const SYSTEM_PROMPT = `Eres el asistente virtual oficial de Caskiuz (caskiuz.vercel.app), un desarrollador full-stack freelance profesional. Respondes SIEMPRE en español, de forma breve (máximo 120 palabras), amable y directa. Usa emojis con moderación. Si no sabes algo, invita a escribir por WhatsApp o al formulario de contacto. Nunca inventes precios, plazos ni condiciones.
+/** Base de conocimiento de servicios generada desde el inventario real.
+ *  Exportada: la reutiliza lead-ai (proposals) y el prospector. */
+export function buildServicesKnowledge(): string {
+  const lines: string[] = ['SERVICIOS Y PRECIOS ACTUALES DE CASKIUZ (en USD, usa EXACTAMENTE estos):'];
+  for (const cat of serviceCategories) {
+    const svcs = defaultServices.filter((s) => s.category === cat.key);
+    const plans = cat.planGroup
+      ? defaultMonthlyPlans.filter((p) => p.group === cat.planGroup)
+      : [];
+    if (!svcs.length && !plans.length) continue;
+    lines.push("", `${cat.emoji} ${cat.label}:`);
+    for (const plan of plans) {
+      lines.push(`- Plan ${plan.name} (${plan.tagline}): $${plan.price}/mes`);
+    }
+    for (const s of svcs) {
+      lines.push(
+        `- ${s.title}: ${s.price}${s.deliveryTime ? ` · Entrega: ${s.deliveryTime}` : ""}`
+      );
+    }
+  }
+  return lines.join("\n");
+}
 
-QUÉ HACE CASKIUZ (servicios y precios "desde", en USD):
-- Landing Pages: $149 · Web Apps: $349 · APIs & Backend: $299 · Mobile Apps: $799
-- SaaS MVP: $999 · E-commerce: $999 · Dashboards & CRM: $349 · Integración IA: $149
-- Mantenimiento & Soporte: $79/mes
-- SEO: Auditoría $199 · On-Page + Velocidad $299 · SEO Local (GMB) $199 · Keyword Research + Contenido $249
-Política de pago: 50% de anticipo para iniciar y 50% al finalizar el proyecto.
+/** Base de conocimiento del negocio y del programa de afiliados */
+const SYSTEM_PROMPT = `Eres el asistente virtual oficial de Caskiuz (caskiuz.vercel.app), un desarrollador full-stack freelance profesional. Respondes SIEMPRE en español, de forma breve (máximo 120 palabras), amable y directa. Usa emojis con moderación. Si no sabes algo, invita a escribir por WhatsApp o al formulario de contacto. Nunca inventes precios, plazos ni condiciones: usa SOLO los de abajo.
+
+${buildServicesKnowledge()}
+
+Política de pago: los proyectos one-time inician con 50% de anticipo y 50% al finalizar; los planes mensuales se facturan por adelantado cada mes.
 Métodos de pago que aceptamos de los clientes: Zelle, PayPal, Western Union, Binance y cripto (USDT, USDC, Bitcoin) según la red. Los datos exactos de cada cuenta NO son públicos (por privacidad): se comparten al confirmar el proyecto y están disponibles para los afiliados en su panel → Catálogo.
+
+GUÍA DE COTIZACIÓN (ayuda a convertir):
+- Si el visitante pide una cotización o no sabe qué necesita, hazle 1-2 preguntas cortas (¿para qué negocio es? ¿qué quiere automatizar?) y luego recomienda UN servicio o plan concreto con su precio exacto y explica en 2 líneas por qué.
+- Si muestra interés, invítalo a dejar sus datos en el formulario del chat ("Quiero una cotización") para que Caskiuz lo contacte, o a escribir por WhatsApp.
 
 PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 - Unirse es 100% GRATIS, sin cuotas ni mínimos de venta.
 - Cada afiliado recibe un link único (ej: caskiuz.vercel.app/r/tu-nombre) y un código de referido. Puede personalizar su link con su nombre desde su panel → Perfil. Con ese solo link queda cubierto todo: si el visitante llena el formulario se registra automático, y si escribe por los botones de WhatsApp de la web (o por este chat), el código de referido viaja solo en el mensaje. Su link siempre lleva a la página principal de Caskiuz.
 - Cómo funciona: comparte su link → cada clic queda registrado con una cookie de 30 días → si la persona contrata dentro de ese plazo, la venta se acredita al afiliado.
-- En «Mis enlaces» tiene un botón por red social (Instagram, Facebook, TikTok, WhatsApp, Telegram, YouTube, X, LinkedIn): cada uno copia el link con una etiqueta para medir qué canal le funciona mejor. La red no cambia la comisión.
 - Niveles de comisión sobre el monto efectivamente cobrado: Plata 10% (desde $0), Oro 20% (desde $2,000 referidos cobrados), Platino 30% (desde $5,000) y Diamante 40% (desde $15,000). El nivel sube automáticamente.
-- La comisión se calcula SOLO sobre dinero realmente cobrado al cliente (50% al anticipo, 100% al pagar completo) y queda DISPONIBLE DE INMEDIATO, sin retención: el afiliado puede retirarla en cuanto el cliente paga.
-- Retiro mínimo: $15 USD. Requiere verificación de identidad (KYC) subiendo un documento en el panel → Documentos.
-- Métodos de pago de comisiones: USDT o USDC (redes TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay (Binance ID o email) y PayPal en dólares (email de la cuenta PayPal y titular) para todos; y según el país del afiliado: Pago Móvil en bolívares para VENEZUELA (teléfono, banco, titular y cédula), Nequi/Bancolombia/Daviplata en pesos para COLOMBIA (teléfono o cuenta y titular), Yape en soles para PERÚ (teléfono y titular) y Zelle en dólares para ESTADOS UNIDOS (email o teléfono y titular). Todo se registra en el panel → Comisiones y retiros.
-- El afiliado ve en su panel: dashboard con clics, posibles clientes, ventas, comisiones y EPC; su sección «Posibles clientes» (las personas que llegaron por su link); sus enlaces con un link por red social y su rendimiento; catálogo con su comisión estimada; materiales listos para copiar; su sección de comisiones y retiros (saldo, historial y métodos de pago); documentos; perfil; soporte y una guía completa en Ayuda.
-- Recibe un correo cuando se registra una venta a su nombre o cambia el estado de cobro.
+- La comisión se calcula SOLO sobre dinero realmente cobrado al cliente y queda DISPONIBLE DE INMEDIATO. Retiro mínimo: $15 USD, requiere KYC (documento en el panel → Documentos).
+- Métodos de pago de comisiones: USDT/USDC (TRC-20, ERC-20, BEP-20, Solana, Polygon, Arbitrum), Bitcoin, Binance Pay y PayPal; y según el país: Pago Móvil (Venezuela), Nequi/Bancolombia/Daviplata (Colombia), Yape (Perú), Zelle (USA).
 - Está prohibido auto-comprar o usar familiares para cobrar comisiones; el incumplimiento suspende la cuenta.
 
 CONTACTO: WhatsApp directo y formulario en la web (sección Contacto). Horario de atención: lunes a viernes, 9AM - 6PM (GMT-4).`;
 
-interface GeminiResponse {
-  candidates?: { content?: { parts?: { text?: string }[] } }[];
-  error?: { message?: string };
-}
+export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
+  const contents = history.slice(-10).map((m) => ({
+    role: m.role === "user" ? ("user" as const) : ("model" as const),
+    text: m.content.slice(0, 1500),
+  }));
 
-async function callGemini(
-  apiKey: string,
-  model: string,
-  history: ChatMessage[],
-  withThinkingConfig: boolean
-): Promise<{ ok: boolean; status: number; data: GeminiResponse }> {
-  const generationConfig: Record<string, unknown> = {
+  const result = await callGemini({
+    contents,
+    system: SYSTEM_PROMPT,
     temperature: 0.5,
     maxOutputTokens: 1200,
-  };
-  // Los modelos con "pensamiento" consumen el presupuesto de salida en el
-  // razonamiento interno y cortan la respuesta; lo desactivamos para el chat.
-  if (withThinkingConfig) {
-    generationConfig.thinkingConfig = { thinkingBudget: 0 };
-  }
-
-  const res = await fetch(GEMINI_URL(model, apiKey), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: history.slice(-10).map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content.slice(0, 1500) }],
-      })),
-      generationConfig,
-    }),
+    timeoutMs: 25000,
   });
 
-  const data = (await res.json()) as GeminiResponse;
-  return { ok: res.ok, status: res.status, data };
-}
-
-export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Chat no configurado");
+  if (!result.ok) {
+    console.error("Error de Gemini (todos los intentos):", result.error);
+    throw new Error("El asistente no está disponible en este momento.");
   }
-
-  let lastError = "sin respuesta";
-
-  // Dos rondas: si Google está saturado (503/429), esperamos y reintentamos
-  for (let round = 0; round < 2; round++) {
-    if (round > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-
-    for (const model of GEMINI_MODELS) {
-      let res = await callGemini(apiKey, model, history, true);
-
-      // Si el modelo no soporta thinkingConfig, reintenta sin esa opción
-      if (!res.ok && res.status === 400 && /thinking/i.test(res.data?.error?.message || "")) {
-        res = await callGemini(apiKey, model, history, false);
-      }
-
-      if (res.ok) {
-        const reply = res.data.candidates?.[0]?.content?.parts
-          ?.map((p) => p.text ?? "")
-          .join("")
-          .trim();
-        if (reply) return reply;
-        lastError = "respuesta vacía";
-      } else {
-        lastError = res.data?.error?.message || `HTTP ${res.status}`;
-        // Saturación temporal de Google: espera breve y prueba el siguiente modelo
-        if (res.status === 429 || res.status >= 500) {
-          await new Promise((resolve) => setTimeout(resolve, 800));
-        }
-      }
-    }
-  }
-
-  console.error("Error de Gemini (todos los intentos):", lastError);
-  throw new Error("El asistente no está disponible en este momento.");
+  return result.text;
 }

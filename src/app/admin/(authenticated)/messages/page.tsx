@@ -24,6 +24,7 @@ export default async function MessagesPage() {
       id: m.id,
       name: m.name,
       email: m.email,
+      phone: m.phone,
       service: m.service,
       message: m.message,
       read: m.read,
@@ -31,6 +32,12 @@ export default async function MessagesPage() {
       affiliateId: m.affiliateId,
       affiliateName: m.affiliate?.name ?? null,
       attributionSource: m.attributionSource,
+      source: m.source,
+      status: m.status,
+      score: m.score,
+      aiSummary: m.aiSummary,
+      aiProposal: m.aiProposal,
+      aiDraftMsg: m.aiDraftMsg,
     }))
   );
 

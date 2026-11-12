@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Globe, Briefcase, MessageSquare, Mail, Heart } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
+import { EffectsToggle } from "@/components/layout/site-fx";
 
 interface FooterProps {
   config?: Record<string, string>;
@@ -111,8 +112,11 @@ export function Footer({ config = {} }: FooterProps) {
           <p className="text-xs text-muted-foreground">
             {c("footer_copyright", `© ${new Date().getFullYear()} Caskiuz. Todos los derechos reservados.`)}
           </p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            {c("footer_built_with", "Hecho con")} <Heart className="w-3 h-3 text-accent fill-accent" />
+          <p className="text-xs text-muted-foreground flex items-center gap-3">
+            <EffectsToggle />
+            <span className="flex items-center gap-1">
+              {c("footer_built_with", "Hecho con")} <Heart className="w-3 h-3 text-accent fill-accent" />
+            </span>
           </p>
         </div>
       </div>

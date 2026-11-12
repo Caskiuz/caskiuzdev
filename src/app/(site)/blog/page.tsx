@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
-import { blogPosts } from "@/lib/blog-data";
+import { blogPosts, blogCoverUrl } from "@/lib/blog-data";
 
 export const metadata: Metadata = {
   title: "Blog | Caskiuz - Full-Stack Developer",
@@ -52,8 +53,20 @@ export default function BlogPage() {
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="group glass-card p-6 hover:scale-[1.02] transition-all duration-300 flex flex-col"
+              className="group glass-card spotlight-card p-6 hover:scale-[1.02] transition-all duration-300 flex flex-col"
             >
+              {/* Portada generada con IA (determinística por post) */}
+              <div className="relative -mx-2 sm:-mx-3 -mt-2 sm:-mt-3 mb-4 overflow-hidden rounded-xl">
+                <Image
+                  src={blogCoverUrl(post)}
+                  alt={`Portada: ${post.title}`}
+                  width={1200}
+                  height={630}
+                  unoptimized
+                  loading="lazy"
+                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />

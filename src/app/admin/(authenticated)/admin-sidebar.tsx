@@ -19,6 +19,8 @@ import {
   Headphones,
   Menu,
   X,
+  Target,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiveUnreadBadge } from "@/components/notifications/live-unread-badge";
@@ -29,6 +31,7 @@ type AdminRole = "GLOBAL" | "AFFILIATES";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/messages", label: "Mensajes", icon: MessageSquare },
+  { href: "/admin/prospectos", label: "Prospectos IA", icon: Target },
   { href: "/admin/notificaciones", label: "Notificaciones", icon: Bell },
 ];
 
@@ -48,14 +51,17 @@ const settingsItems = [
   { href: "/admin/settings/payments", label: "Métodos de pago", icon: CreditCard },
   { href: "/admin/settings/social", label: "Redes Sociales", icon: Settings },
   { href: "/admin/settings/affiliates", label: "Red de Afiliados", icon: Send },
+  { href: "/admin/settings/ai-images", label: "Imágenes IA", icon: ImageIcon },
 ];
 
 export function AdminSidebar({
   notificationsCount = 0,
+  prospectsCount = 0,
   adminName = "",
   adminRole = "GLOBAL",
 }: {
   notificationsCount?: number;
+  prospectsCount?: number;
   adminName?: string;
   adminRole?: AdminRole;
 }) {
@@ -105,6 +111,14 @@ export function AdminSidebar({
             initialCount={notificationsCount}
             endpoint="/api/admin/notifications/unread-count"
             className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-white text-[10px] font-bold"
+          />
+        )}
+        {item.href === "/admin/prospectos" && (
+          <LiveUnreadBadge
+            key={`prospects-${prospectsCount}`}
+            initialCount={prospectsCount}
+            endpoint="/api/admin/prospects?stats=1"
+            className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-aff-cyan text-[#0b0d14] text-[10px] font-bold"
           />
         )}
       </Link>

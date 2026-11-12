@@ -70,7 +70,7 @@ export function About({ config = {} }: AboutProps) {
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <div className="glass-card p-6">
+            <div className="glass-card spotlight-card p-6">
               <h3 className="text-xl font-bold mb-3">
                 {bioTitleCompleto.split(bioHighlight)[0]}
                 <span className="metal-text">{bioHighlight}</span>
@@ -136,7 +136,7 @@ export function About({ config = {} }: AboutProps) {
                   <item.icon className="w-5 h-5 text-aff-cyan" />
                 </div>
 
-                <div className="glass-card p-4">
+                <div className="glass-card spotlight-card p-4">
                   <span className="text-xs font-semibold text-aff-cyan uppercase tracking-wider">
                     {item.year}
                   </span>

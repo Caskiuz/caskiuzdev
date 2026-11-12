@@ -232,7 +232,7 @@ export function ServicesEditor({ initialServices }: Props) {
         title="Reemplaza la lista con el inventario por defecto del código. Debes presionar Guardar para aplicarlo."
       >
         <RotateCcw className="w-4 h-4" />
-        Restaurar inventario por defecto (23 servicios con sus precios actualizados)
+        Restaurar inventario por defecto (21 servicios con sus precios actualizados)
       </button>
 
       {/* Save bar */}

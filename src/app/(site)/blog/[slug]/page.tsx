@@ -1,8 +1,9 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getBlogPost, getAllBlogSlugs } from "@/lib/blog-data";
+import { getBlogPost, getAllBlogSlugs, blogCoverUrl } from "@/lib/blog-data";
 import { JsonLd } from "@/components/seo/json-ld";
 
 const BASE_URL = "https://caskiuz.vercel.app";
@@ -132,6 +133,19 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
             <ArrowLeft className="w-4 h-4" />
             Volver al blog
           </Link>
+
+          {/* Portada generada con IA (determinística por post) */}
+          <div className="mb-8 overflow-hidden rounded-2xl border border-border">
+            <Image
+              src={blogCoverUrl(post)}
+              alt={`Portada: ${post.title}`}
+              width={1200}
+              height={630}
+              unoptimized
+              priority
+              className="w-full h-auto object-cover"
+            />
+          </div>
 
           {/* Header */}
           <header className="mb-10">

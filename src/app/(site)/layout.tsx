@@ -2,6 +2,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AiChatWidget } from "@/components/ui/ai-chat-widget";
 import { ReferralCapture } from "@/components/layout/referral-capture";
+import { SiteFx } from "@/components/layout/site-fx";
 import { getSiteConfig } from "@/lib/site-config";
 import { stripPaymentSecrets } from "@/lib/payments";
 import { SiteSession } from "@/components/layout/site-session";
@@ -23,12 +24,14 @@ export default async function SiteLayout({
   const publicConfig = stripPaymentSecrets(config);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header sessionSlot={<SiteSession />} />
-      <main className="flex-1">{children}</main>
-      <Footer config={publicConfig} />
-      <AiChatWidget whatsapp={config.contact_whatsapp || "584262931869"} />
-      <ReferralCapture />
-    </div>
+    <SiteFx>
+      <div className="flex min-h-screen flex-col">
+        <Header sessionSlot={<SiteSession />} />
+        <main className="flex-1">{children}</main>
+        <Footer config={publicConfig} />
+        <AiChatWidget whatsapp={config.contact_whatsapp || "584262931869"} />
+        <ReferralCapture />
+      </div>
+    </SiteFx>
   );
 }

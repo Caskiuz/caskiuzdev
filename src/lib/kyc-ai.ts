@@ -5,14 +5,10 @@
  * null y todo sigue como siempre (revisión a ojo).
  *
  * Se puede apagar con KYC_AI_READ="off" en las variables de entorno.
+ * Usa el cliente compartido src/lib/gemini.ts (cascada + reintentos).
  */
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-const GEMINI_MODELS = Array.from(
-  new Set([GEMINI_MODEL, "gemini-2.5-flash", "gemini-3.6-flash"])
-);
-const GEMINI_URL = (model: string, key: string) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+import { callGeminiJson } from "@/lib/gemini";
 
 export function kycAiReadEnabled(): boolean {
   const flag = (process.env.KYC_AI_READ || "on").trim().toLowerCase();
@@ -37,78 +33,6 @@ Reglas estrictas:
 - No inventes ni completes datos que no se vean con claridad.
 - No incluyas nada fuera del JSON.`;
 
-function parseModelJson(text: string): Partial<ExtractedDocumentInfo> | null {
-  const cleaned = text
-    .replace(/```json/gi, "")
-    .replace(/```/g, "")
-    .trim();
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) return null;
-  try {
-    return JSON.parse(cleaned.slice(start, end + 1)) as Partial<ExtractedDocumentInfo>;
-  } catch {
-    return null;
-  }
-}
-
-/** Tiempo máximo por intento de lectura (el trabajo corre en segundo plano). */
-const PER_ATTEMPT_TIMEOUT_MS = 8000;
-
-async function callModel(
-  apiKey: string,
-  model: string,
-  mimeType: string,
-  data: string,
-  withThinkingConfig: boolean
-): Promise<{ ok: boolean; status: number; errorMsg: string; text: string }> {
-  const generationConfig: Record<string, unknown> = {
-    temperature: 0,
-    maxOutputTokens: 400,
-    responseMimeType: "application/json",
-  };
-  // Los modelos "pensantes" gastan el presupuesto de salida en razonamiento;
-  // lo desactivamos y reintentamos sin la opción si el modelo no la soporta.
-  if (withThinkingConfig) {
-    generationConfig.thinkingConfig = { thinkingBudget: 0 };
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), PER_ATTEMPT_TIMEOUT_MS);
-  try {
-    const res = await fetch(GEMINI_URL(model, apiKey), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ inlineData: { mimeType, data } }, { text: PROMPT }],
-          },
-        ],
-        generationConfig,
-      }),
-      signal: controller.signal,
-    });
-
-    const json = (await res.json().catch(() => ({}))) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-      error?: { message?: string };
-    };
-
-    const text =
-      json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-    return {
-      ok: res.ok,
-      status: res.status,
-      errorMsg: json.error?.message || `HTTP ${res.status}`,
-      text,
-    };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 /**
  * Envía el documento a Gemini y devuelve el nombre leído.
  * null = no se pudo leer / IA desactivada / error (nunca lanza).
@@ -123,48 +47,35 @@ export async function extractDocumentName(
   );
   if (!match) return null;
 
-  const mimeType = match[1].toLowerCase();
-  const data = match[2];
-  const apiKey = process.env.GEMINI_API_KEY as string;
+  const result = await callGeminiJson<Partial<ExtractedDocumentInfo>>({
+    prompt: PROMPT,
+    attachment: { mimeType: match[1].toLowerCase(), data: match[2] },
+    temperature: 0,
+    maxOutputTokens: 400,
+    json: true,
+    timeoutMs: 8000,
+  });
 
-  for (const model of GEMINI_MODELS) {
-    try {
-      let res = await callModel(apiKey, model, mimeType, data, true);
-      if (!res.ok && res.status === 400 && /thinking/i.test(res.errorMsg)) {
-        res = await callModel(apiKey, model, mimeType, data, false);
-      }
-      if (!res.ok) {
-        console.error(`KYC IA (${model}):`, res.errorMsg);
-        continue;
-      }
-
-      const parsed = parseModelJson(res.text);
-      if (!parsed || typeof parsed.readable !== "boolean") {
-        console.error(`KYC IA (${model}): respuesta sin formato JSON esperado`);
-        continue;
-      }
-
-      const rawName =
-        typeof parsed.name === "string" ? parsed.name.replace(/\s+/g, " ").trim() : null;
-      const nameIsValid = Boolean(rawName && rawName.length >= 3);
-      const readable = parsed.readable === true && nameIsValid;
-
-      return {
-        readable,
-        documentType:
-          typeof parsed.documentType === "string"
-            ? parsed.documentType.slice(0, 30)
-            : null,
-        name: readable && rawName ? rawName.slice(0, 200) : null,
-        idNumber:
-          typeof parsed.idNumber === "string" && parsed.idNumber.trim()
-            ? parsed.idNumber.trim().slice(0, 40)
-            : null,
-      };
-    } catch (error) {
-      console.error(`KYC IA (${model}) error:`, error);
-    }
+  if (!result.ok || !result.data || typeof result.data.readable !== "boolean") {
+    if (!result.ok) console.error("KYC IA:", result.error);
+    else console.error("KYC IA: respuesta sin formato JSON esperado");
+    return null;
   }
 
-  return null;
+  const parsed = result.data;
+  const rawName =
+    typeof parsed.name === "string" ? parsed.name.replace(/\s+/g, " ").trim() : null;
+  const nameIsValid = Boolean(rawName && rawName.length >= 3);
+  const readable = parsed.readable === true && nameIsValid;
+
+  return {
+    readable,
+    documentType:
+      typeof parsed.documentType === "string" ? parsed.documentType.slice(0, 30) : null,
+    name: readable && rawName ? rawName.slice(0, 200) : null,
+    idNumber:
+      typeof parsed.idNumber === "string" && parsed.idNumber.trim()
+        ? parsed.idNumber.trim().slice(0, 40)
+        : null,
+  };
 }

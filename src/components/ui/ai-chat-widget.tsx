@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import { Send, X, Loader2, Bot, MessageCircle } from "lucide-react";
+import { Send, X, Loader2, Bot, MessageCircle, Mic, MicOff, UserPlus } from "lucide-react";
 import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
 
 const RobotCanvas = dynamic(() => import("./chat-robot-3d"), {
@@ -20,18 +20,31 @@ interface ChatMsg {
   content: string;
 }
 
+/** Shape mínimo de SpeechRecognition (Web Speech API, sin tipos oficiales en TS DOM) */
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((e: { results?: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 const QUICK_QUESTIONS = [
   "¿Cuánto cuesta una página web?",
+  "Recomiéndame un servicio para mi negocio",
+  "Quiero una cotización",
   "¿Cómo me uno al programa de afiliados?",
-  "¿Cómo cobro mis comisiones?",
-  "¿Qué métodos de pago aceptan?",
 ];
 
 const STORAGE_KEY = "caskiuz_chat_history";
 
 /**
- * Asistente de IA flotante (Gemini vía /api/chat). Reemplaza al botón
- * flotante de WhatsApp: robot 3D animado + mini aviso + panel de chat.
+ * Asistente de IA flotante v2 (Gemini vía /api/chat): robot 3D + mini aviso +
+ * panel de chat con captura de leads (mini-form → /api/contact con el resumen
+ * de la conversación) e input por voz (Web Speech API, gratis, con degradación).
  * Se oculta solo si el chat no está configurado en el servidor.
  */
 export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string }) {
@@ -54,6 +67,19 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Captura de leads dentro del chat
+  const [leadOpen, setLeadOpen] = useState(false);
+  const [leadName, setLeadName] = useState("");
+  const [leadContact, setLeadContact] = useState("");
+  const [leadDetail, setLeadDetail] = useState("");
+  const [leadSending, setLeadSending] = useState(false);
+  const [leadDone, setLeadDone] = useState(false);
+
+  // Voz (Web Speech API)
+  const [listening, setListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const recognitionRef = useRef<{ start: () => void; stop: () => void } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // ¿Está habilitado el chat en el servidor?
@@ -89,9 +115,47 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
     return () => clearTimeout(t);
   }, [available]);
 
+  // Reconocimiento de voz (Chrome/Edge/Safari; en otros navegadores se oculta)
+  useEffect(() => {
+    const w = window as unknown as {
+      SpeechRecognition?: new () => SpeechRecognitionLike;
+      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+    };
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) return;
+    try {
+      const rec = new SR();
+      rec.lang = navigator.language?.toLowerCase().startsWith("en") ? "en-US" : "es-ES";
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      rec.onresult = (e) => {
+        const text = e.results?.[0]?.[0]?.transcript;
+        if (text) setInput((prev) => (prev ? `${prev} ` : "") + text);
+      };
+      rec.onend = () => setListening(false);
+      rec.onerror = () => setListening(false);
+      recognitionRef.current = rec;
+      setVoiceSupported(true);
+    } catch {
+      setVoiceSupported(false);
+    }
+  }, []);
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, typing, open]);
+  }, [messages, typing, open, leadOpen]);
+
+  function toggleVoice() {
+    const rec = recognitionRef.current;
+    if (!rec) return;
+    if (listening) {
+      rec.stop();
+      setListening(false);
+    } else {
+      rec.start();
+      setListening(true);
+    }
+  }
 
   function dismissBanner() {
     setBanner(false);
@@ -105,6 +169,7 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
   async function send(text: string) {
     const content = text.trim();
     if (!content || typing) return;
+    dismissBanner();
 
     const next: ChatMsg[] = [...messages, { role: "user", content }];
     setMessages(next);
@@ -128,6 +193,54 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
       setError("Error de conexión. Intenta de nuevo.");
     } finally {
       setTyping(false);
+    }
+  }
+
+  /** Mini-form de captura: guarda el lead con el resumen de la conversación. */
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (leadSending) return;
+    if (!leadName.trim() || !leadContact.trim()) return;
+    setLeadSending(true);
+    setError(null);
+
+    const userTurns = messages
+      .filter((m) => m.role === "user")
+      .slice(-3)
+      .map((m) => m.content.slice(0, 140));
+    const summary =
+      (userTurns.length
+        ? `Conversación previa: ${userTurns.join(" | ")}`
+        : "Llegó por el asistente de IA") +
+      (leadDetail.trim() ? ` · Detalle: ${leadDetail.trim().slice(0, 400)}` : "");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: leadName.trim(),
+          email: leadContact.trim().includes("@") ? leadContact.trim() : `${leadContact.trim()}@chat.caskiuz`,
+          phone: leadContact.trim().includes("@") ? null : leadContact.trim(),
+          service: "otro",
+          message: summary,
+          source: "CHAT",
+          refCode: referralCode || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("error");
+      setLeadDone(true);
+      setLeadName("");
+      setLeadContact("");
+      setLeadDetail("");
+      setTimeout(() => {
+        setLeadOpen(false);
+        setLeadDone(false);
+      }, 6000);
+    } catch {
+      setError("No pude guardar tus datos. Escríbeme por WhatsApp 👇");
+    } finally {
+      setLeadSending(false);
     }
   }
 
@@ -166,108 +279,216 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
                 </button>
               </div>
 
-              {/* Mensajes */}
-              <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 && (
-                  <div className="text-center pt-2">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      👋 ¡Hola! Soy el asistente de Caskiuz. Pregúntame lo que quieras sobre
-                      nuestros servicios o el programa de afiliados.
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {QUICK_QUESTIONS.map((q) => (
-                        <button
-                          key={q}
-                          onClick={() => send(q)}
-                          className="px-3 py-1.5 rounded-full text-xs border border-aff-blue/30 bg-aff-blue/5 text-aff-cyan hover:bg-aff-blue/15 transition-colors"
-                        >
-                          {q}
-                        </button>
-                      ))}
+              {/* Mensajes / formulario de lead */}
+              <div
+                ref={listRef}
+                data-lenis-prevent
+                className="flex-1 overflow-y-auto p-4 space-y-3"
+              >
+                {leadOpen ? (
+                  leadDone ? (
+                    <div className="text-center pt-6">
+                      <div className="w-14 h-14 mx-auto rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-3">
+                        <MessageCircle className="w-7 h-7 text-green-500" />
+                      </div>
+                      <p className="text-sm font-semibold">¡Datos recibidos! 🎉</p>
+                      <p className="text-xs text-muted-foreground mt-2 mb-4">
+                        Caskiuz te escribirá en menos de 24 horas. Si prefieres, adelanta por WhatsApp ahora.
+                      </p>
                       <a
                         href={whatsappHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] transition-colors"
                       >
                         <MessageCircle className="w-3.5 h-3.5" /> Hablar por WhatsApp
                       </a>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <form onSubmit={submitLead} className="space-y-2.5 pt-1">
+                      <p className="text-sm font-semibold">📩 Déjame tus datos</p>
+                      <p className="text-xs text-muted-foreground">
+                        Caskiuz te contacta con una propuesta concreta.
+                      </p>
+                      <input
+                        value={leadName}
+                        onChange={(e) => setLeadName(e.target.value)}
+                        placeholder="Tu nombre"
+                        required
+                        maxLength={60}
+                        className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-aff-blue/50"
+                      />
+                      <input
+                        value={leadContact}
+                        onChange={(e) => setLeadContact(e.target.value)}
+                        placeholder="Email o WhatsApp"
+                        required
+                        maxLength={80}
+                        className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-aff-blue/50"
+                      />
+                      <textarea
+                        value={leadDetail}
+                        onChange={(e) => setLeadDetail(e.target.value)}
+                        placeholder="¿Qué necesitas? (opcional)"
+                        rows={2}
+                        maxLength={400}
+                        className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-aff-blue/50"
+                      />
+                      <button
+                        type="submit"
+                        disabled={leadSending || !leadName.trim() || !leadContact.trim()}
+                        className="w-full py-2.5 text-sm font-semibold btn-aff rounded-xl disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {leadSending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" /> Enviando…
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-4 h-4" /> Enviar mis datos
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLeadOpen(false)}
+                        className="w-full text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Volver al chat
+                      </button>
+                    </form>
+                  )
+                ) : (
+                  <>
+                    {messages.length === 0 && (
+                      <div className="text-center pt-2">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          👋 ¡Hola! Soy el asistente de Caskiuz. Pregúntame lo que quieras
+                          sobre servicios, precios o el programa de afiliados.
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-2">
+                          {QUICK_QUESTIONS.map((q) => (
+                            <button
+                              key={q}
+                              onClick={() => send(q)}
+                              className="px-3 py-1.5 rounded-full text-xs border border-aff-blue/30 bg-aff-blue/5 text-aff-cyan hover:bg-aff-blue/15 transition-colors"
+                            >
+                              {q}
+                            </button>
+                          ))}
+                          <a
+                            href={whatsappHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> Hablar por WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
-                {messages.map((m, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
-                        m.role === "user"
-                          ? "bg-gradient-to-br from-aff-blue-deep to-aff-blue text-white rounded-br-md"
-                          : "bg-surface-hover border border-border text-muted-foreground rounded-bl-md"
-                      }`}
-                    >
-                      {m.content}
-                    </div>
-                  </div>
-                ))}
+                    {messages.map((m, i) => (
+                      <div
+                        key={i}
+                        className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
+                            m.role === "user"
+                              ? "bg-gradient-to-br from-aff-blue-deep to-aff-blue text-white rounded-br-md"
+                              : "bg-surface-hover border border-border text-muted-foreground rounded-bl-md"
+                          }`}
+                        >
+                          {m.content}
+                        </div>
+                      </div>
+                    ))}
 
-                {typing && (
-                  <div className="flex justify-start">
-                    <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-surface-hover border border-border flex items-center gap-1.5">
-                      {[0, 1, 2].map((i) => (
-                        <motion.span
-                          key={i}
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                          className="w-1.5 h-1.5 rounded-full bg-aff-cyan"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    {typing && (
+                      <div className="flex justify-start">
+                        <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-surface-hover border border-border flex items-center gap-1.5">
+                          {[0, 1, 2].map((i) => (
+                            <motion.span
+                              key={i}
+                              animate={{ opacity: [0.3, 1, 0.3] }}
+                              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                              className="w-1.5 h-1.5 rounded-full bg-aff-cyan"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {error && (
-                  <p className="text-xs text-accent text-center bg-accent/5 border border-accent/15 rounded-xl p-2.5">
-                    {error}
-                  </p>
+                    {error && (
+                      <p className="text-xs text-accent text-center bg-accent/5 border border-accent/15 rounded-xl p-2.5">
+                        {error}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
               {/* Entrada */}
               <div className="border-t border-border">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-[#25D366] hover:bg-[#25D366]/10 transition-colors"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" /> ¿Prefieres WhatsApp? Escríbenos aquí
-                </a>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    send(input);
-                  }}
-                  className="flex items-center gap-2 p-3 pt-0"
-                >
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu pregunta…"
-                  maxLength={500}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-aff-blue/50"
-                />
-                <button
-                  type="submit"
-                  disabled={typing || !input.trim()}
-                  className="btn-aff p-2.5 rounded-xl disabled:opacity-50 shrink-0"
-                  aria-label="Enviar"
-                >
-                  {typing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                </button>
-                </form>
+                {!leadOpen && (
+                  <button
+                    onClick={() => setLeadOpen(true)}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-aff-cyan hover:bg-aff-cyan/10 transition-colors"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" /> Déjame tus datos y te contacta hoy
+                  </button>
+                )}
+                {!leadOpen && (
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-[#25D366] hover:bg-[#25D366]/10 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" /> ¿Prefieres WhatsApp? Escríbenos aquí
+                  </a>
+                )}
+                {!leadOpen && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      send(input);
+                    }}
+                    className="flex items-center gap-2 p-3 pt-0"
+                  >
+                    {voiceSupported && (
+                      <button
+                        type="button"
+                        onClick={toggleVoice}
+                        className={`p-2.5 rounded-xl border transition-colors shrink-0 ${
+                          listening
+                            ? "bg-accent/10 border-accent/40 text-accent animate-pulse"
+                            : "bg-surface border-border text-muted-foreground hover:text-aff-cyan hover:border-aff-cyan/40"
+                        }`}
+                        aria-label={listening ? "Detener dictado" : "Dictar por voz"}
+                        title={listening ? "Detener dictado" : "Dictar por voz"}
+                      >
+                        {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                      </button>
+                    )}
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder={listening ? "Escuchando… habla ahora" : "Escribe tu pregunta…"}
+                      maxLength={500}
+                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-aff-blue/50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={typing || !input.trim()}
+                      className="btn-aff p-2.5 rounded-xl disabled:opacity-50 shrink-0"
+                      aria-label="Enviar"
+                    >
+                      {typing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           </motion.div>

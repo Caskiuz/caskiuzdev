@@ -99,6 +99,152 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ─── Lenis (scroll suave) ─── reglas mínimas oficiales.
+    Cuando Lenis está activo manda sobre el scroll-behavior nativo. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ─── Cursor personalizado con estela (solo desktop con puntero fino) ─── */
+body.fx-cursor,
+body.fx-cursor a,
+body.fx-cursor button,
+body.fx-cursor input,
+body.fx-cursor textarea,
+body.fx-cursor select,
+body.fx-cursor [role="button"] {
+  cursor: none;
+}
+.fx-trail-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+}
+.fx-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--aff-cyan);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
+  z-index: 9999;
+  pointer-events: none;
+}
+.fx-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(56, 189, 248, 0.65);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.08), transparent 70%);
+  z-index: 9998;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+/* En táctiles / sin efectos, nada de esto existe */
+body.effects-off .fx-trail-canvas,
+body.effects-off .fx-cursor-ring,
+body.effects-off .fx-cursor-dot,
+body.effects-off .fx-mouse-glow {
+  display: none !important;
+}
+
+/* ─── Fondo reactivo al mouse (glow que sigue el cursor) ─── */
+.fx-mouse-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    560px circle at var(--mx, 50%) var(--my, 40%),
+    rgba(59, 130, 246, 0.08),
+    transparent 62%
+  );
+}
+
+/* ─── Spotlight en tarjetas: brillo radial que sigue el mouse.
+    Las coords --mx/--my las fija el mousemove delegado de SiteFx.
+    Sin overflow:hidden para no recortar badges que sobresalen. ─── */
+.spotlight-card {
+  position: relative;
+}
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(56, 189, 248, 0.13),
+    transparent 46%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Marquee de tecnologías (Hero) ─── */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.fx-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+}
+.fx-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 36s linear infinite;
+}
+.fx-marquee:hover .fx-marquee-track {
+  animation-play-state: paused;
+}
+
+/* ─── Modo sin efectos: mata animaciones y transiciones CSS decorativas ─── */
+body.effects-off *,
+body.effects-off *::before,
+body.effects-off *::after {
+  animation-duration: 0.001s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001s !important;
+}
+
+/* ─── Accesibilidad: usuarios con reducción de movimiento ─── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .fx-marquee-track,
+  .metal-shine::after,
+  .metal-text {
+    animation: none !important;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

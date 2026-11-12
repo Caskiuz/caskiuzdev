@@ -118,7 +118,7 @@ export function TechStack() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: ci * 0.1 }}
-              className="glass-card group rounded-2xl overflow-hidden"
+              className="glass-card spotlight-card group rounded-2xl overflow-hidden"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-6 transition-colors hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden">
                 <div className="flex items-center gap-4">
