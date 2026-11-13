@@ -13,9 +13,10 @@ const demoUrlOverrides: Record<string, string> = {
   rifasv2: "https://rifasv2-two.vercel.app",
   // El campo "Website" del repo apunta a un deployment eliminado (impertodo.vercel.app)
   "nexus-impertodo": "https://nexus-impertodo.vercel.app",
-  // Repo nuevo sin campo "Website" en GitHub (y VERCEL_TOKEN sin configurar:
+  // Repos sin campo "Website" en GitHub (y VERCEL_TOKEN sin configurar:
   // la resolución automática de deployments no está activa)
   losarabesfood: "https://losarabesfood.vercel.app",
+  turbosteven: "https://turbosteven.vercel.app",
 };
 
 export async function GET() {
