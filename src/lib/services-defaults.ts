@@ -432,6 +432,14 @@ export interface ServiceCategory {
 
 export const serviceCategories: ServiceCategory[] = [
   {
+    key: "desarrollo",
+    emoji: "🏗️",
+    label: "Desarrollo Web & Apps",
+    shortLabel: "Desarrollo & Apps",
+    tagline:
+      "Software a medida que hace funcionar tu negocio: aplicaciones web, móviles y APIs robustas y escalables.",
+  },
+  {
     key: "automatizacion",
     emoji: "🤖",
     label: "Automatización & IA Empresarial",
@@ -456,14 +464,6 @@ export const serviceCategories: ServiceCategory[] = [
     shortLabel: "Visión IA",
     tagline:
       "Convertimos tus cámaras y dispositivos electrónicos en inteligencia: seguimiento de video, mercancías, contenedores y más — mediando software e IA.",
-  },
-  {
-    key: "desarrollo",
-    emoji: "🏗️",
-    label: "Desarrollo Web & Apps",
-    shortLabel: "Desarrollo & Apps",
-    tagline:
-      "Software a medida que hace funcionar tu negocio: aplicaciones web, móviles y APIs robustas y escalables.",
   },
   {
     key: "producto",
