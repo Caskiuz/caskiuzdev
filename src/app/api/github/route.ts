@@ -17,6 +17,9 @@ const demoUrlOverrides: Record<string, string> = {
   // la resolución automática de deployments no está activa)
   losarabesfood: "https://losarabesfood.vercel.app",
   turbosteven: "https://turbosteven.vercel.app",
+  // renecouder tiene "Website" correcto, pero el usuario pide mostrar la
+  // videoteca (/raw-clips) como página principal de la demo
+  renecouder: "https://renecouder.vercel.app/raw-clips",
 };
 
 export async function GET() {
