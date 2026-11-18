@@ -36,6 +36,9 @@ const GEMINI_LITE_MODELS = Array.from(
 const GEMINI_URL = (model: string, key: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
+/** Índice "pegajoso": arranca la cascada por el último modelo que funcionó. */
+let geminiStartIdx = 0;
+
 export function chatEnabled(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
 }
@@ -108,13 +111,18 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
   // exceder el timeout global (importante para el cron de Vercel, 60s máx).
   const deadline = Date.now() + (options.timeoutMs ?? 25000);
 
-  // Dos rondas: si Google está saturado (429/5xx/503), esperamos y reintentamos
+  // Dos rondas: si Google está saturado (429/5xx/503), esperamos y reintentamos.
+  // Rotación PEGAJOSA (patrón de Caskiuz AI): la cascada arranca por el último
+  // modelo que funcionó — si 2.5-flash está agotado, no se vuelve a empezar
+  // por él en cada llamada; el índice queda clavado en el vivo.
   for (let round = 0; round < 2; round++) {
     if (round > 0) await sleep(1500);
     if (Date.now() > deadline) break;
 
-    for (const model of models) {
+    for (let off = 0; off < models.length; off++) {
       if (Date.now() > deadline) break;
+      const modelIdx = (geminiStartIdx + off) % models.length;
+      const model = models[modelIdx];
       const buildBody = (withThinkingConfig: boolean) => {
         const generationConfig: Record<string, unknown> = {
           temperature: options.temperature ?? 0.5,
@@ -192,6 +200,7 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
                   .filter((u): u is string => Boolean(u))
               )
             ).slice(0, 15);
+            geminiStartIdx = modelIdx; // clava el modelo vivo para la próxima llamada
             return { ok: true, status: res.status, text, sources };
           }
           lastError = "respuesta vacía";

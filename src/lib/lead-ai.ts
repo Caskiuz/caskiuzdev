@@ -5,7 +5,8 @@
  * simplemente no ve la intel.
  */
 
-import { callGemini, callGeminiJson, checkAndIncrementAiQuota } from "@/lib/gemini";
+import { callAI } from "@/lib/ai-router";
+import { extractJson, checkAndIncrementAiQuota } from "@/lib/gemini";
 import { buildServicesKnowledge } from "@/lib/chatbot";
 
 export interface LeadIntel {
@@ -37,7 +38,7 @@ export async function scoreLead(input: {
 }): Promise<LeadIntel | null> {
   if (!(await checkAndIncrementAiQuota("SCORE"))) return null;
 
-  const result = await callGeminiJson<LeadIntel>({
+  const result = await callAI({
     system: SYSTEM,
     prompt: `Lead nuevo${input.source ? ` (canal: ${input.source})` : ""}:
 Nombre: ${input.name}
@@ -48,15 +49,16 @@ Mensaje: ${input.message.slice(0, 2000)}`,
     maxOutputTokens: 700,
     lite: true,
     json: true,
-    timeoutMs: 15000,
+    timeoutMs: 40000,
   });
 
-  if (!result.ok || !result.data) {
-    if (!result.ok) console.error("scoreLead IA:", result.error);
+  if (!result.ok) {
+    console.error("scoreLead IA:", result.error);
     return null;
   }
 
-  const d = result.data;
+  const d = extractJson<LeadIntel>(result.text);
+  if (!d) return null;
   const score = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
   const summary = typeof d.summary === "string" ? d.summary.trim().slice(0, 500) : "";
   const proposal = typeof d.proposal === "string" ? d.proposal.trim().slice(0, 2000) : "";
@@ -77,7 +79,7 @@ export async function draftVisitorReply(input: {
 }): Promise<string | null> {
   if (!(await checkAndIncrementAiQuota("REPLY"))) return null;
 
-  const result = await callGemini({
+  const result = await callAI({
     system: `Eres el asistente de Caskiuz (desarrollador full-stack freelance). Escribe un email muy corto (máximo 110 palabras) respondiendo a un posible cliente que acaba de enviar el formulario de contacto de caskiuz.vercel.app. En español, cálido y profesional. Estructura: saludo con su nombre + confirmación de que su mensaje llegó + 1-2 líneas mostrando que entendiste su necesidad + qué sigue (Caskiuz le escribe en menos de 24h, o puede adelantar por WhatsApp). NO inventes precios ni compromisos. Devuelve SOLO el texto del email, sin asunto ni firmas con datos falsos; termina firmado como "Caskiuz".`,
     prompt: `Nombre del cliente: ${input.name}
 Servicio indicado: ${input.service || "no especificado"}
@@ -85,7 +87,7 @@ Su mensaje: ${input.message.slice(0, 1200)}`,
     temperature: 0.6,
     maxOutputTokens: 400,
     lite: true,
-    timeoutMs: 15000,
+    timeoutMs: 40000,
   });
 
   if (!result.ok) {

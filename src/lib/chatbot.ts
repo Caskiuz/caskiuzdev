@@ -6,14 +6,14 @@
  * desde services-defaults.ts: la IA siempre cita los precios reales de la web.
  */
 
-import { callGemini, chatEnabled } from "@/lib/gemini";
+import { callAI, textEnabled } from "@/lib/ai-router";
 import {
   defaultServices,
   defaultMonthlyPlans,
   serviceCategories,
 } from "@/lib/services-defaults";
 
-export { chatEnabled };
+export { textEnabled as chatEnabled };
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -67,21 +67,21 @@ PROGRAMA DE AFILIADOS (caskiuz.vercel.app/afiliados):
 CONTACTO: WhatsApp directo y formulario en la web (sección Contacto). Horario de atención: lunes a viernes, 9AM - 6PM (GMT-4).`;
 
 export async function chatWithGemini(history: ChatMessage[]): Promise<string> {
-  const contents = history.slice(-10).map((m) => ({
-    role: m.role === "user" ? ("user" as const) : ("model" as const),
-    text: m.content.slice(0, 1500),
-  }));
-
-  const result = await callGemini({
-    contents,
+  // Router multi-proveedor (Gemini → OpenRouter → Groq → Pollinations):
+  // el asistente responde aunque la cuota diaria de Gemini esté agotada.
+  const result = await callAI({
+    contents: history.slice(-10).map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("model" as const),
+      text: m.content.slice(0, 1500),
+    })),
     system: SYSTEM_PROMPT,
     temperature: 0.5,
     maxOutputTokens: 1200,
-    timeoutMs: 25000,
+    timeoutMs: 45000,
   });
 
   if (!result.ok) {
-    console.error("Error de Gemini (todos los intentos):", result.error);
+    console.error("Error del router de IA (todos los proveedores):", result.error);
     throw new Error("El asistente no está disponible en este momento.");
   }
   return result.text;
