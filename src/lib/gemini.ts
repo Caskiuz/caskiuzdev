@@ -15,9 +15,13 @@
 import { prisma } from "@/lib/prisma/client";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-// Cascada principal: 2.5-flash (chat + grounding verificados) y 3.6-flash de
-// respaldo. NOTA: 2.0-flash y 2.5-flash-lite ya NO sirven para claves nuevas.
-const GEMINI_MODELS = Array.from(new Set([GEMINI_MODEL, "gemini-2.5-flash", "gemini-3.6-flash"]));
+// Cascada principal: 2.5-flash (chat + grounding verificados), 3.6-flash de
+// respaldo y flash-lite como último recurso — cuando la cuota diaria de los
+// flash se agota, el chat sigue vivo en lite (calidad menor, mejor que nada).
+// NOTA: 2.0-flash y 2.5-flash-lite ya NO sirven para claves nuevas.
+const GEMINI_MODELS = Array.from(
+  new Set([GEMINI_MODEL, "gemini-2.5-flash", "gemini-3.6-flash", "gemini-flash-lite-latest"])
+);
 // Modelos "utilitarios" (JSON corto): el alias flash-lite-latest apunta al
 // último Flash-Lite accesible; 3.5-flash-lite de respaldo y flash al final.
 const GEMINI_LITE_MODELS = Array.from(
@@ -71,6 +75,8 @@ export interface GeminiResult {
   ok: boolean;
   status: number;
   text: string;
+  /** URLs fuente REALES que Google devolvió en el grounding (solo con grounding: true) */
+  sources?: string[];
   error?: string;
 }
 
@@ -117,7 +123,10 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
         if (options.json) generationConfig.responseMimeType = "application/json";
         // Los modelos con "pensamiento" consumen el presupuesto de salida en
         // el razonamiento interno y cortan la respuesta; lo desactivamos.
-        if (withThinkingConfig) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        // Los lite NO soportan thinkingConfig en absoluto (400 genérico).
+        if (withThinkingConfig && !options.lite) {
+          generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
 
         const body: Record<string, unknown> = { contents, generationConfig };
         if (options.system) body.systemInstruction = { parts: [{ text: options.system }] };
@@ -139,9 +148,15 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
           }).finally(() => clearTimeout(timer));
         };
 
+        let usedThinking = true;
         let res = await doFetch(true);
         let data: {
-          candidates?: { content?: { parts?: { text?: string }[] } }[];
+          candidates?: {
+            content?: { parts?: { text?: string }[] };
+            groundingMetadata?: {
+              groundingChunks?: { web?: { uri?: string } }[];
+            };
+          }[];
           error?: { message?: string };
         };
         try {
@@ -150,8 +165,10 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
           data = {};
         }
 
-        // Si el modelo no soporta thinkingConfig, reintenta sin esa opción
-        if (!res.ok && res.status === 400 && /thinking/i.test(data?.error?.message || "")) {
+        // Si el modelo rechaza thinkingConfig (400 de cualquier tipo), reintenta
+        // sin esa opción — los lite responden "invalid argument" genérico
+        if (!res.ok && res.status === 400 && usedThinking) {
+          usedThinking = false;
           res = await doFetch(false);
           try {
             data = await res.json();
@@ -165,7 +182,18 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
             ?.map((p) => p.text ?? "")
             .join("")
             .trim();
-          if (text) return { ok: true, status: res.status, text };
+          if (text) {
+            // Metadatos del grounding: URLs reales del índice de Google con las
+            // que el modelo fundamentó su respuesta (anti-alucinación).
+            const sources = Array.from(
+              new Set(
+                (data.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [])
+                  .map((c: { web?: { uri?: string } }) => c?.web?.uri)
+                  .filter((u): u is string => Boolean(u))
+              )
+            ).slice(0, 15);
+            return { ok: true, status: res.status, text, sources };
+          }
           lastError = "respuesta vacía";
         } else {
           lastError = data?.error?.message || `HTTP ${res.status}`;

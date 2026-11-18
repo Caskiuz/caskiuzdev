@@ -23,6 +23,8 @@ interface Prospect {
   region: string;
   contactUrl: string | null;
   siteUrl: string | null;
+  sourceUrl: string | null;
+  contactVerified: boolean;
   why: string;
   angle: string;
   draftMessage: string;
@@ -307,6 +309,14 @@ export function ProspectosClient({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{p.businessName}</h3>
+                      {p.contactVerified && (
+                        <span
+                          className="px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-green-500/10 text-green-500 border-green-500/30"
+                          title="Número sondeado en wa.me o URL viva comprobada"
+                        >
+                          ✓ contacto verificado
+                        </span>
+                      )}
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${meta.className}`}
                       >
@@ -393,6 +403,16 @@ export function ProspectosClient({
                       <span className="font-semibold text-foreground">Por qué: </span>
                       {p.why}
                     </p>
+                  )}
+                  {p.sourceUrl && (
+                    <a
+                      href={p.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-aff-cyan"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Fuente donde se encontró el contacto
+                    </a>
                   )}
                   {p.angle && (
                     <p className="text-xs text-muted-foreground">

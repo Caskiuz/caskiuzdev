@@ -1,11 +1,16 @@
 /**
  * Prospección automática 100% gratis: Gemini + Google Search grounding
- * (cuota gratuita del plan de Gemini API).
+ * (cuota gratuita del plan de Gemini API) + VERIFICACIÓN de contactos.
  *
- * Cada ronda busca negocios reales según los nichos configurados en el admin
- * (SiteConfig) y deja prospectos con mensaje WhatsApp listo — el humano solo
- * revisa y da clic. Modo "mixto": rota entre sin-web y sin-automatización
- * según el día del mes.
+ * La IA alucina números de WhatsApp y URLs muertas aunque busque en Google;
+ * por eso NADA llega a la base sin comprobar:
+ *   1. Los números se extraen del HTML de las páginas fuente REALES (las que
+ *      Google devolvió en el grounding) y se sondean en wa.me — que renderiza
+ *      server-side el nombre de la cuenta si el número existe.
+ *   2. El nombre de la cuenta de WhatsApp se cruza contra el nombre del
+ *      negocio (si no coinciden, el número es de otro: se descarta).
+ *   3. Toda URL (site/contacto) se comprueba viva (HTTP < 400).
+ *   4. Un prospecto sin NINGÚN canal de contacto verificado no se guarda.
  *
  * Nichos/config (SiteConfig):
  * - prospect_niches  → "restaurantes, clínicas dentales, gimnasios..."
@@ -16,6 +21,13 @@
 
 import { prisma } from "@/lib/prisma/client";
 import { callGemini, extractJson, checkAndIncrementAiQuota } from "@/lib/gemini";
+import {
+  verifyWhatsAppNumber,
+  fetchAndExtractContacts,
+  isUrlAlive,
+  nameMatches,
+  type ExtractedContacts,
+} from "@/lib/contact-verifier";
 
 interface ProspectCandidate {
   businessName?: string;
@@ -23,6 +35,7 @@ interface ProspectCandidate {
   region?: string;
   contactUrl?: string;
   siteUrl?: string;
+  sourceUrl?: string;
   why?: string;
   angle?: string;
   draftMessage?: string;
@@ -32,6 +45,7 @@ interface ProspectCandidate {
 export interface ProspectingResult {
   inserted: number;
   found: number;
+  discardedNoContact: number;
   mode: string;
   niches: string;
   region: string;
@@ -42,13 +56,14 @@ const SYSTEM = `Eres un prospector comercial experto que trabaja para Caskiuz, u
 
 Tu trabajo: usar Google Search (tienes la herramienta de búsqueda activa) para encontrar negocios REALES y ACTIVOS que encajen con el perfil pedido HOY. Prioriza negocios pequeños/medianos con señales de actividad reciente (redes sociales activas, reseñas, anuncios recientes).
 
-Devuelve SOLO un JSON válido: {"prospects": [{"businessName": "", "niche": "", "region": "", "contactUrl": "", "siteUrl": "", "why": "", "angle": "", "draftMessage": "", "score": 0}]}
+Devuelve SOLO un JSON válido: {"prospects": [{"businessName": "", "niche": "", "region": "", "contactUrl": "", "siteUrl": "", "sourceUrl": "", "why": "", "angle": "", "draftMessage": "", "score": 0}]}
 
-Reglas estrictas:
-- businessName: nombre real del negocio encontrado (nunca inventado ni genérico).
-- contactUrl: link wa.me/… con el teléfono público del negocio si lo encuentras (formato https://wa.me/NUMEROPAISNUMERO); si no hay WhatsApp público, su link de contacto o Instagram; null si nada.
-- siteUrl: su web actual si tiene (para el perfil "sin web" deja null y explícalo en why).
-- why: 1-2 líneas con la EVIDENCIA de por qué es buen prospecto (qué encontraste).
+Reglas estrictas — ANTI-INVENCIÓN (lo verificamos después y lo inventado se descarta):
+- businessName: nombre real del negocio VISTO en los resultados de búsqueda (nunca inventado ni genérico).
+- sourceUrl: la URL EXACTA de una de las fuentes de búsqueda donde viste el negocio (una de las páginas que Google devolvió). Obligatoria.
+- contactUrl: SOLO un link wa.me/… o URL de contacto que hayas VISTO literalmente en una página del negocio o en los resultados. Si no lo viste, null. NUNCA construyas ni adivines números de teléfono.
+- siteUrl: su web actual SOLO si viste el dominio en los resultados; null si no (y en el perfil "sin web" siempre null).
+- why: 1-2 líneas con la EVIDENCIA de por qué es buen prospecto (qué encontraste y en qué fuente).
 - angle: el servicio de Caskiuz que encaja + el gancho de venta en 1-2 líneas.
 - draftMessage: mensaje de WhatsApp EN ESPAÑOL listo para enviar al negocio: máximo 70 palabras, cercano y profesional, menciona algo específico y verdadero de su negocio (nunca inventes detalles), presenta el beneficio concreto y cierra con una pregunta suave. Sin enlaces, sin corchetes, sin firmas.
 - score 0-100: calidad del prospecto (actividad + necesidad clara + contacto posible).
@@ -61,6 +76,126 @@ const MODE_PROFILES: Record<string, string> = {
   "sin-automatizacion":
     "negocios reales y MUY activos en Instagram/WhatsApp que no tienen chatbot, ni respuestas automáticas, ni automatización visible. El gancho: no pierden ventas por responder tarde y automatizan pedidos/citas con IA.",
 };
+
+interface VerifiedProspect {
+  businessName: string;
+  niche: string;
+  region: string;
+  contactUrl: string | null;
+  siteUrl: string | null;
+  sourceUrl: string | null;
+  contactVerified: boolean;
+  why: string;
+  angle: string;
+  draftMessage: string;
+  score: number;
+}
+
+/**
+ * Verifica y enriquece un candidato: extrae números de WhatsApp reales de sus
+ * páginas, los sondea en wa.me y comprueba que las URLs estén vivas.
+ * Devuelve null si no queda NINGÚN canal de contacto verificado.
+ */
+async function verifyCandidate(
+  cand: ProspectCandidate,
+  fallbackSources: string[]
+): Promise<VerifiedProspect | null> {
+  const businessName = (cand.businessName || "").trim().slice(0, 200);
+  if (!businessName) return null;
+
+  // URLs donde buscar contactos: la fuente citada por la IA y su sitio; si no
+  // hay ninguna, páginas de la pool de fuentes reales de Google (grounding).
+  const scrapeUrls: string[] = [];
+  for (const u of [cand.sourceUrl, cand.siteUrl]) {
+    if (u && /^https?:\/\//.test(u) && !scrapeUrls.includes(u)) scrapeUrls.push(u);
+  }
+  for (const u of fallbackSources) {
+    if (scrapeUrls.length >= 2) break;
+    if (!scrapeUrls.includes(u)) scrapeUrls.push(u);
+  }
+
+  // 1) Extraer contactos reales de las páginas fuente (máx 2 por candidato)
+  const scrapeTargets = scrapeUrls.slice(0, 2);
+  const pageResults = await Promise.allSettled(
+    scrapeTargets.map((u) => fetchAndExtractContacts(u))
+  );
+  const extractions: { contacts: ExtractedContacts; sourceUrl: string }[] = [];
+  for (let i = 0; i < pageResults.length; i++) {
+    const r = pageResults[i];
+    if (r.status === "fulfilled" && r.value) {
+      extractions.push({ contacts: r.value, sourceUrl: scrapeTargets[i] });
+    }
+  }
+
+  // 2) Candidatos a número: el que citó la IA + los extraídos del HTML real
+  const numbersToProbe: string[] = [];
+  const waMatch = cand.contactUrl?.match(/wa\.me\/(\d{8,15})/) ||
+    cand.contactUrl?.match(/phone=(\d{8,15})/);
+  if (waMatch) numbersToProbe.push(waMatch[1]);
+  for (const ext of extractions) {
+    for (const n of ext.contacts.whatsappNumbers) {
+      if (!numbersToProbe.includes(n) && numbersToProbe.length < 4) numbersToProbe.push(n);
+    }
+  }
+
+  // 3) Sondear números en wa.me y quedarse con el primero REAL que además
+  //    corresponda al negocio (el og:title de la cuenta debe coincidir).
+  let verifiedWa: string | null = null;
+  let contactSource: string | null = null;
+  if (numbersToProbe.length) {
+    const probes = await Promise.allSettled(numbersToProbe.map((n) => verifyWhatsAppNumber(n)));
+    for (let i = 0; i < probes.length; i++) {
+      const p = probes[i];
+      if (p.status !== "fulfilled" || !p.value.exists) continue;
+      if (!nameMatches(businessName, p.value.profileName)) continue; // número de otro negocio
+      verifiedWa = `https://wa.me/${numbersToProbe[i]}`;
+      contactSource =
+        extractions.find((e) => e.contacts.whatsappNumbers.includes(numbersToProbe[i]))
+          ?.sourceUrl ??
+        cand.sourceUrl ??
+        scrapeUrls[0] ??
+        null;
+      break;
+    }
+  }
+
+  // 4) URLs: comprobar vivas; las muertas NO se guardan (el bug que reportó el usuario).
+  //    Los wa.me no se "verifican" aquí: ya pasaron el sondeo real de arriba.
+  const plainUrls = [cand.contactUrl, cand.siteUrl].filter(
+    (u): u is string => Boolean(u) && /^https?:\/\//.test(u!) && !u!.includes("wa.me/")
+  );
+  const urlChecks = await Promise.allSettled(
+    plainUrls.map((u) => isUrlAlive(u).then((alive) => ({ url: u, alive })))
+  );
+  const aliveOf = (url?: string | null) => {
+    if (!url) return false;
+    const hit = urlChecks.find(
+      (c) => c.status === "fulfilled" && c.value.url === url
+    ) as PromiseFulfilledResult<{ url: string; alive: boolean }> | undefined;
+    return hit?.value.alive ?? false;
+  };
+
+  const aliveContactUrl = !verifiedWa && aliveOf(cand.contactUrl) ? cand.contactUrl!.slice(0, 500) : null;
+  const aliveSiteUrl = aliveOf(cand.siteUrl) ? cand.siteUrl!.slice(0, 500) : null;
+
+  // 5) Regla de oro: sin ningún canal verificado → fuera
+  const contactVerified = Boolean(verifiedWa || aliveContactUrl || aliveSiteUrl);
+  if (!contactVerified) return null;
+
+  return {
+    businessName,
+    niche: (cand.niche || "").slice(0, 120),
+    region: (cand.region || "").slice(0, 120),
+    contactUrl: verifiedWa ?? aliveContactUrl,
+    siteUrl: aliveSiteUrl,
+    sourceUrl: (contactSource || cand.sourceUrl || scrapeUrls[0] || null)?.slice(0, 500) ?? null,
+    contactVerified: Boolean(verifiedWa),
+    why: (cand.why || "").slice(0, 2000),
+    angle: (cand.angle || "").slice(0, 2000),
+    draftMessage: (cand.draftMessage || "").slice(0, 2000),
+    score: Math.max(0, Math.min(100, Math.round(Number(cand.score) || 0))),
+  };
+}
 
 export async function runProspecting(overrides?: {
   niches?: string;
@@ -92,7 +227,15 @@ export async function runProspecting(overrides?: {
 
   const quota = await checkAndIncrementAiQuota("PROSPECT");
   if (!quota) {
-    return { inserted: 0, found: 0, mode, niches, region, error: "Cuota diaria de prospección agotada" };
+    return {
+      inserted: 0,
+      found: 0,
+      discardedNoContact: 0,
+      mode,
+      niches,
+      region,
+      error: "Cuota diaria de prospección agotada",
+    };
   }
 
   // Grounding NO admite responseMimeType JSON: se pide JSON en el prompt y se
@@ -115,6 +258,7 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
     return {
       inserted: 0,
       found: 0,
+      discardedNoContact: 0,
       mode,
       niches,
       region,
@@ -127,6 +271,7 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
     return {
       inserted: 0,
       found: 0,
+      discardedNoContact: 0,
       mode,
       niches,
       region,
@@ -149,31 +294,23 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
       if (existingKeys.has(key)) return false;
       existingKeys.add(key);
       return true;
-    })
-    .slice(0, volume);
+    });
 
-  if (!candidates.length) {
-    return { inserted: 0, found: data.prospects.length, mode, niches, region };
+  // Verificación en paralelo: solo sobreviven prospectos con contacto REAL
+  const verified = await Promise.all(candidates.map((c) => verifyCandidate(c, result.sources ?? [])));
+  const keep = verified.filter((v): v is VerifiedProspect => v !== null);
+
+  // Insertar solo los verificados (máx `volume` por ronda)
+  const toInsert = keep.slice(0, volume);
+
+  if (toInsert.length) {
+    await prisma.prospect.createMany({ data: toInsert.map((p) => ({ ...p, status: "NEW" })) });
   }
 
-  const created = await prisma.prospect.createMany({
-    data: candidates.map((p) => ({
-      businessName: p.businessName!.slice(0, 200),
-      niche: (p.niche || "").slice(0, 120),
-      region: (p.region || region).slice(0, 120),
-      contactUrl: p.contactUrl ? p.contactUrl.slice(0, 500) : null,
-      siteUrl: p.siteUrl ? p.siteUrl.slice(0, 500) : null,
-      why: (p.why || "").slice(0, 2000),
-      angle: (p.angle || "").slice(0, 2000),
-      draftMessage: p.draftMessage!.slice(0, 2000),
-      score: Math.max(0, Math.min(100, Math.round(Number(p.score) || 0))),
-      status: "NEW",
-    })),
-  });
-
   return {
-    inserted: created.count,
+    inserted: toInsert.length,
     found: data.prospects.length,
+    discardedNoContact: data.prospects.length - toInsert.length,
     mode,
     niches,
     region,

@@ -27,6 +27,8 @@ export default async function ProspectosPage() {
       region: p.region,
       contactUrl: p.contactUrl,
       siteUrl: p.siteUrl,
+      sourceUrl: p.sourceUrl,
+      contactVerified: p.contactVerified,
       why: p.why,
       angle: p.angle,
       draftMessage: p.draftMessage,

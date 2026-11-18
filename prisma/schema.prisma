@@ -359,18 +359,20 @@ model AnnouncementRead {
 // ─────────────────────────────────────────────────────────────
 
 model Prospect {
-  id           Int      @id @default(autoincrement())
-  businessName String   @db.VarChar(200)
-  niche        String   @db.VarChar(120)
-  region       String   @db.VarChar(120)
-  contactUrl   String?  @db.VarChar(500) // WhatsApp/teléfono público si la IA lo encontró
-  siteUrl      String?  @db.VarChar(500) // su web actual (si tiene)
-  why          String   @db.Text // por qué es buen prospecto
-  angle        String   @db.Text // ángulo de venta sugerido
-  draftMessage String   @db.Text // mensaje WhatsApp listo para enviar
-  score        Int      @default(0) // 0-100
-  status       String   @default("NEW") // NEW | SENT | DISCARDED
-  createdAt    DateTime @default(now()) @map("created_at")
+  id              Int      @id @default(autoincrement())
+  businessName    String   @db.VarChar(200)
+  niche           String   @db.VarChar(120)
+  region          String   @db.VarChar(120)
+  contactUrl      String?  @db.VarChar(500) // WhatsApp/teléfono público VERIFICADO
+  siteUrl         String?  @db.VarChar(500) // su web actual (verificada viva)
+  sourceUrl       String?  @db.VarChar(500) // página fuente de donde salió el contacto
+  contactVerified Boolean  @default(false) // true = número sondeado en wa.me o URL viva comprobada
+  why             String   @db.Text // por qué es buen prospecto
+  angle           String   @db.Text // ángulo de venta sugerido
+  draftMessage    String   @db.Text // mensaje WhatsApp listo para enviar
+  score           Int      @default(0) // 0-100
+  status          String   @default("NEW") // NEW | SENT | DISCARDED
+  createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([status, createdAt])
   @@map("prospects")
