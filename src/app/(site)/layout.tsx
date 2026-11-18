@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/footer";
 import { AiChatWidget } from "@/components/ui/ai-chat-widget";
 import { ReferralCapture } from "@/components/layout/referral-capture";
 import { SiteFx } from "@/components/layout/site-fx";
+import { AffiliateStrip } from "@/components/layout/affiliate-strip";
 import { getSiteConfig } from "@/lib/site-config";
 import { stripPaymentSecrets } from "@/lib/payments";
 import { SiteSession } from "@/components/layout/site-session";
@@ -28,6 +29,7 @@ export default async function SiteLayout({
       <div className="flex min-h-screen flex-col">
         <Header sessionSlot={<SiteSession />} />
         <main className="flex-1">{children}</main>
+        <AffiliateStrip />
         <Footer config={publicConfig} />
         <AiChatWidget whatsapp={config.contact_whatsapp || "584262931869"} />
         <ReferralCapture />

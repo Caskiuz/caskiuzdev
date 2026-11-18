@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Clock, Share2, Link2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getBlogPost, getAllBlogSlugs, blogCoverUrl, blogPosts } from "@/lib/blog-data";
 import { JsonLd } from "@/components/seo/json-ld";
+import { RecommendedTools } from "@/components/blog/recommended-tools";
 
 const BASE_URL = "https://caskiuz.vercel.app";
 
@@ -358,6 +359,11 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
                 Gana hasta 40% de comisión recomendando estos servicios →
               </Link>
             </p>
+          </div>
+
+          {/* Herramientas recomendadas (afiliados externos, con disclosure) */}
+          <div className="mt-10">
+            <RecommendedTools compact />
           </div>
 
           {/* Posts relacionados */}

@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     "",
     "/blog",
+    "/recursos",
     "/afiliados",
     "/afiliados/faq",
     "/afiliados/terminos",
@@ -16,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${BASE_URL}${route}`,
     lastModified: SITE_DEPLOY_DATE,
     changeFrequency: "weekly" as const,
-    priority: route === "" ? 1 : route === "/afiliados" ? 0.9 : 0.7,
+    priority: route === "" ? 1 : route === "/afiliados" ? 0.9 : route === "/recursos" ? 0.8 : 0.7,
   }));
 
   // Landings de servicio (SEO por keyword)

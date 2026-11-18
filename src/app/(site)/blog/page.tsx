@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
 import { blogPosts, blogCoverUrl } from "@/lib/blog-data";
 import { SubscribeForm } from "@/components/blog/subscribe-form";
+import { RecommendedTools } from "@/components/blog/recommended-tools";
 
 export const metadata: Metadata = {
   title: "Blog | Caskiuz - Full-Stack Developer",
@@ -148,6 +149,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             ))}
           </div>
         )}
+
+        {/* Herramientas recomendadas (afiliados externos, con disclosure) */}
+        <div className="mt-14">
+          <RecommendedTools />
+        </div>
 
         {/* Programa de afiliados — canal de crecimiento */}
         <div className="mt-14 relative overflow-hidden rounded-2xl border border-aff-cyan/20 bg-aff-cyan/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-4">
