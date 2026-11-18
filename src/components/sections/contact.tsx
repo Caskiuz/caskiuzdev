@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
+import { trackEvent } from "@/lib/analytics";
 
 interface ContactProps {
   config?: Record<string, string>;
@@ -103,6 +104,7 @@ export function Contact({ config = {} }: ContactProps) {
       });
 
       if (!res.ok) throw new Error("Error al enviar");
+      trackEvent("contact_submit", { category, budget });
       setFormState("success");
       setTimeout(() => {
         setFormState("idle");

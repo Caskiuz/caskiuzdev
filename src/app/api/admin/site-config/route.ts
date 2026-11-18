@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentAdmin } from "@/lib/auth";
 import { getAllConfigs, upsertConfigs } from "@/lib/site-config";
 
@@ -52,6 +52,7 @@ export async function PUT(request: Request) {
   await upsertConfigs(body.configs);
 
   // Purgar la caché de la página y el layout para reflejar los cambios inmediatamente
+  revalidateTag("site-config", { expire: 0 });
   revalidatePath("/", "layout");
   revalidatePath("/", "page");
 

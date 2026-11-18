@@ -62,7 +62,7 @@ export function HowItWorks() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-aff-blue-deep to-aff-sky flex items-center justify-center mb-4 shadow-lg shadow-aff-blue/25">
                 <step.icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-lg mb-2">{step.title}</h3>
+              <h2 className="text-lg font-bold mb-2">{step.title}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{step.text}</p>
             </motion.div>
           ))}

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, Link2 } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getBlogPost, getAllBlogSlugs, blogCoverUrl } from "@/lib/blog-data";
+import { getBlogPost, getAllBlogSlugs, blogCoverUrl, blogPosts } from "@/lib/blog-data";
 import { JsonLd } from "@/components/seo/json-ld";
 
 const BASE_URL = "https://caskiuz.vercel.app";
@@ -65,6 +65,39 @@ export async function generateMetadata({
   };
 }
 
+/** Render inline de texto con **negritas** y [enlaces](url) — enlaza el contenido con servicios y otros posts. */
+function InlineText({ text }: { text: string }) {
+  // Dividir por enlaces y negritas manteniendo los delimitadores
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        const link = /\[([^\]]+)\]\(([^)]+)\)/.exec(part);
+        if (link) {
+          const href = link[2].startsWith("http") ? link[2] : link[2];
+          return (
+            <Link
+              key={i}
+              href={href}
+              className="text-aff-cyan hover:underline font-medium"
+            >
+              {link[1]}
+            </Link>
+          );
+        }
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return (
+            <strong key={i} className="text-foreground font-semibold">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
 export default async function BlogPost({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = getBlogPost(slug);
@@ -72,6 +105,35 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
+
+  // Posts relacionados: mayor solape de tags, excluyendo el actual
+  const related = blogPosts
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => ({ post: p, overlap: p.tags.filter((t) => post.tags.includes(t)).length }))
+    .filter((r) => r.overlap > 0)
+    .sort((a, b) => b.overlap - a.overlap)
+    .slice(0, 2)
+    .map((r) => r.post);
+
+  const shareUrl = `${BASE_URL}/blog/${post.slug}`;
+  const shareLinks = [
+    {
+      label: "WhatsApp",
+      href: `https://wa.me/?text=${encodeURIComponent(`${post.title} — ${shareUrl}`)}`,
+    },
+    {
+      label: "X",
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      label: "LinkedIn",
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      label: "Telegram",
+      href: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`,
+    },
+  ];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -89,7 +151,7 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
       "@type": "Person",
       name: "Caskiuz",
     },
-    url: `${BASE_URL}/blog/${post.slug}`,
+    url: shareUrl,
     keywords: post.tags.join(", "),
   };
 
@@ -141,7 +203,6 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
               alt={`Portada: ${post.title}`}
               width={1200}
               height={630}
-              unoptimized
               priority
               className="w-full h-auto object-cover"
             />
@@ -170,12 +231,13 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
 
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <span
+                <Link
                   key={tag}
-                  className="px-3 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground"
+                  href={`/blog?tag=${encodeURIComponent(tag)}`}
+                  className="px-3 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground hover:bg-aff-cyan/10 hover:text-aff-cyan transition-colors"
                 >
-                  {tag}
-                </span>
+                  #{tag}
+                </Link>
               ))}
             </div>
           </header>
@@ -185,13 +247,14 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
             <div className="prose-custom whitespace-pre-wrap leading-relaxed">
               {post.content.split("\n").map((line, i) => {
                 if (line.startsWith("# ")) {
+                  // El título del post ya es el h1: el contenido usa h2
                   return (
-                    <h1
+                    <h2
                       key={i}
-                      className="text-3xl font-bold mt-10 mb-4 tracking-tight"
+                      className="text-2xl font-bold mt-8 mb-4 tracking-tight"
                     >
                       {line.slice(2)}
-                    </h1>
+                    </h2>
                   );
                 }
                 if (line.startsWith("## ")) {
@@ -230,14 +293,14 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
                 if (line.startsWith("- ")) {
                   return (
                     <li key={i} className="ml-4 mb-1 text-muted-foreground">
-                      {line.slice(2)}
+                      <InlineText text={line.slice(2)} />
                     </li>
                   );
                 }
                 if (line.startsWith("1. ") || line.match(/^\d+\./)) {
                   return (
                     <li key={i} className="ml-4 mb-1 text-muted-foreground">
-                      {line.replace(/^\d+\.\s*/, "")}
+                      <InlineText text={line.replace(/^\d+\.\s*/, "")} />
                     </li>
                   );
                 }
@@ -266,14 +329,87 @@ export default async function BlogPost({ params }: BlogPostPageProps) {
                 }
                 return (
                   <p key={i} className="mb-4 leading-relaxed text-muted-foreground">
-                    {line}
+                    <InlineText text={line} />
                   </p>
                 );
               })}
             </div>
           </div>
 
-          {/* Share / nav */}
+          {/* CTA de conversión — el blog alimenta el pipeline */}
+          <div className="mt-10 relative overflow-hidden rounded-2xl bg-gradient-to-r from-aff-blue/10 via-aff-blue/5 to-aff-cyan/10 border border-aff-blue/20 p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">
+              ¿Necesitas una web o automatización para tu negocio?
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Webs desde <span className="text-aff-cyan font-semibold">$149 USD</span> ·
+              Chatbots de WhatsApp desde <span className="text-aff-cyan font-semibold">$199</span> ·
+              Propuesta preliminar con IA en minutos.
+            </p>
+            <Link
+              href="/#contact"
+              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold btn-aff rounded-xl"
+            >
+              Cotizar en 3 pasos →
+            </Link>
+            <p className="text-xs text-muted-foreground mt-3">
+              ¿Tienes audiencia?{" "}
+              <Link href="/afiliados" className="text-aff-cyan hover:underline">
+                Gana hasta 40% de comisión recomendando estos servicios →
+              </Link>
+            </p>
+          </div>
+
+          {/* Posts relacionados */}
+          {related.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-aff-cyan" /> Sigue leyendo
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {related.map((r) => (
+                  <Link
+                    key={r.slug}
+                    href={`/blog/${r.slug}`}
+                    className="glass-card p-4 hover:scale-[1.02] transition-transform group"
+                  >
+                    <p className="text-[11px] text-muted-foreground mb-1">
+                      {new Date(r.date).toLocaleDateString("es-ES", {
+                        year: "numeric",
+                        month: "short",
+                      })}{" "}
+                      · {r.readTime}
+                    </p>
+                    <p className="text-sm font-semibold group-hover:text-aff-cyan transition-colors leading-snug">
+                      {r.title}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compartir */}
+          <div className="mt-10">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-2">
+              <Share2 className="w-3.5 h-3.5" /> Comparte este artículo
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {shareLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-border text-muted-foreground hover:text-aff-cyan hover:border-aff-cyan/40 transition-colors"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Nav */}
           <div className="mt-10 text-center">
             <Link
               href="/blog"

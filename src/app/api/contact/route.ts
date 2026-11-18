@@ -5,6 +5,7 @@ import { resolveAffiliateByRef } from "@/lib/referral-tracking";
 import { notifyNewLead } from "@/lib/notifications";
 import { scoreLead, draftVisitorReply } from "@/lib/lead-ai";
 import { sendEmail, emailShell, isEmailConfigured } from "@/lib/email";
+import { sendMetaEvent } from "@/lib/meta-capi";
 
 export const dynamic = "force-dynamic";
 
@@ -190,6 +191,24 @@ export async function POST(request: NextRequest) {
             },
           });
         }
+
+        // Conversión para Meta Ads (CAPI server-side, gratis; no-op sin credenciales)
+        sendMetaEvent({
+          eventName: "Lead",
+          eventId: `lead-${contact.id}`,
+          userData: {
+            clientIp: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+            clientUserAgent: request.headers.get("user-agent") || null,
+            email: contact.email,
+          },
+          customData: {
+            content_name: contact.service || "general",
+            source: leadSource,
+            ...(typeof intel?.score === "number" && intel.score >= 70
+              ? { value: 1 }
+              : {}),
+          },
+        }).catch(() => {});
 
         // Avisos internos: al admin siempre (campanita + email + Telegram),
         // al afiliado si quedó atribuido.

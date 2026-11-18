@@ -58,6 +58,13 @@ const iconMap: Record<string, LucideIcon> = {
   Share2, Video, Package, Cpu,
 };
 
+/** Landings SEO dedicadas por categoría (páginas /servicios/[slug]). */
+const CATEGORY_LANDINGS: Record<string, string> = {
+  desarrollo: "desarrollo-web",
+  automatizacion: "automatizacion-ia",
+  "redes-sociales": "redes-sociales",
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -193,6 +200,14 @@ export function Services({ config = {}, paymentMethods = [] }: ServicesProps) {
               <p className="mt-2 text-muted-foreground text-sm max-w-2xl">
                 {activeCat.tagline}
               </p>
+              {CATEGORY_LANDINGS[activeCat.key] && (
+                <Link
+                  href={`/servicios/${CATEGORY_LANDINGS[activeCat.key]}`}
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs font-medium text-aff-cyan hover:underline"
+                >
+                  Ver página completa del servicio →
+                </Link>
+              )}
             </div>
 
             {/* Planes mensuales de la categoría */}

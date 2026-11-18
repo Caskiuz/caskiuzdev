@@ -279,6 +279,20 @@ export function SiteFx({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Tracking de clics a WhatsApp (GA4 + Meta Pixel si están configurados)
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest?.("a[href*='wa.me']");
+      if (a) {
+        import("@/lib/analytics").then(({ trackEvent }) =>
+          trackEvent("whatsapp_click", { to: (a as HTMLAnchorElement).pathname })
+        );
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+
   return (
     <MotionConfig reducedMotion={fxOff ? "always" : "never"}>
       {/* Barra de progreso de scroll */}

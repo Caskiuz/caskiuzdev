@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma/client";
 import { isAuthenticated } from "@/lib/auth";
 import { syncSaleCommission } from "@/lib/commissions";
 import { notifyAffiliateSale, notifyAdminsSale } from "@/lib/notifications";
+import { sendMetaEvent } from "@/lib/meta-capi";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,33 @@ export async function PATCH(
     await syncSaleCommission(saleId);
     await notifyAffiliateSale(saleId, "updated");
     await notifyAdminsSale(saleId, "updated");
+
+    // Conversión de valor para Meta Ads (CAPI): venta cobrada total o parcialmente
+    if (
+      data.status === "DEPOSIT_PAID" ||
+      data.status === "FULLY_PAID"
+    ) {
+      const contactEmail = updated.contactId
+        ? (
+            await prisma.contact
+              .findUnique({
+                where: { id: updated.contactId },
+                select: { email: true },
+              })
+              .catch(() => null)
+          )?.email ?? null
+        : null;
+      sendMetaEvent({
+        eventName: "Purchase",
+        eventId: `sale-${saleId}-${data.status}`,
+        userData: { email: contactEmail },
+        customData: {
+          value: updated.collectedAmount || updated.amount,
+          currency: updated.currency || "USD",
+          content_name: updated.serviceTitle,
+        },
+      }).catch(() => {});
+    }
 
     console.log(`✏️ Venta #${saleId} actualizada (${Object.keys(data).join(", ")})`);
     return NextResponse.json({ success: true, sale: updated });

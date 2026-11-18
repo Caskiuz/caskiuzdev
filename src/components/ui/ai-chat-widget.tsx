@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { Send, X, Loader2, Bot, MessageCircle, Mic, MicOff, UserPlus } from "lucide-react";
 import { useReferralCode, appendReferralCode } from "@/lib/referral-cookie";
+import { trackEvent } from "@/lib/analytics";
 
 const RobotCanvas = dynamic(() => import("./chat-robot-3d"), {
   ssr: false,
@@ -229,6 +230,7 @@ export function AiChatWidget({ whatsapp = "584262931869" }: { whatsapp?: string 
         }),
       });
       if (!res.ok) throw new Error("error");
+      trackEvent("chat_lead", { source: "CHAT" });
       setLeadDone(true);
       setLeadName("");
       setLeadContact("");

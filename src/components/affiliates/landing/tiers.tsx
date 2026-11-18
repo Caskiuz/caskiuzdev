@@ -57,7 +57,7 @@ export function Tiers() {
                 </span>
               )}
               <div className="text-3xl mb-3">{tier.emoji}</div>
-              <h3 className="font-bold text-lg">{tier.name}</h3>
+              <h2 className="text-lg font-bold">{tier.name}</h2>
               <p className="metal-text text-4xl font-bold my-3">{Math.round(tier.rate * 100)}%</p>
               <p className="text-xs text-muted-foreground mb-4">
                 {tier.minRevenue === 0

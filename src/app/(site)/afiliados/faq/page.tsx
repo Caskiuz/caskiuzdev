@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   description:
     "Resolvemos tus dudas sobre el programa de afiliados de Caskiuz: comisiones de 10% a 40%, pagos en USDT, USDC, BTC, Binance Pay y PayPal, retiros y más.",
   alternates: { canonical: "https://caskiuz.vercel.app/afiliados/faq" },
+  openGraph: {
+    title: "Preguntas Frecuentes — Programa de Afiliados | Caskiuz",
+    description:
+      "Comisiones de 10% a 40%, pagos en USDT, USDC, BTC, Binance Pay y PayPal. Todo sobre el programa de afiliados de Caskiuz.",
+    url: "https://caskiuz.vercel.app/afiliados/faq",
+    images: ["/api/og?title=Programa%20de%20Afiliados&subtitle=Preguntas%20frecuentes%20%C2%B7%20Hasta%2040%25%20de%20comisi%C3%B3n"],
+  },
 };
 
 const FAQ_JSON_LD = {

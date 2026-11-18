@@ -52,7 +52,7 @@ export function Catalog({ services }: { services: ServiceItem[] }) {
                 className="metal-card rounded-2xl p-5 flex flex-col"
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <h3 className="font-bold leading-snug">{service.title}</h3>
+                  <h2 className="text-xl font-bold leading-snug">{service.title}</h2>
                   {service.popular && (
                     <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-aff-blue to-aff-cyan">
                       POPULAR

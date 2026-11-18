@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    // Permite optimizar imágenes locales con query string (portadas IA de
+    // /api/ai-image — el optimizador las comprime y redimensiona).
+    localPatterns: [{ pathname: "/**" }],
   },
   // Headers de seguridad básicos (gratis, no afectan funcionalidad).
   // microphone=(self): el asistente de voz del chat necesita micrófono.

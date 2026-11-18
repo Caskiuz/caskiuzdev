@@ -109,7 +109,8 @@ export default async function AffiliatesPage() {
       <Benefits />
       <AffiliateFaq />
       <FinalCta />
-      <p className="hidden" aria-hidden>
+      {/* Nota SEO visible (antes estaba oculta — cloaking): texto útil al visitante */}
+      <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto -mt-4 mb-8 px-4">
         {c("affiliates_seo_note", "Red de afiliados oficial de Caskiuz: gana comisiones promocionando desarrollo web, apps móviles, e-commerce, dashboards, integración IA y servicios SEO.")}
       </p>
     </div>

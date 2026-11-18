@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Iniciar sesión | Caskiuz Affiliates",
   description:
     "Accede a tu panel de afiliado de Caskiuz: estadísticas, comisiones, enlaces y retiros en USDT, USDC, BTC, Binance Pay y PayPal.",
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: false },
   alternates: { canonical: "https://caskiuz.vercel.app/afiliados/login" },
 };
 

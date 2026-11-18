@@ -55,7 +55,10 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ testimonials });
+    return NextResponse.json(
+      { testimonials },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+    );
   } catch (error) {
     console.error("Error al obtener testimonios:", error);
     return NextResponse.json(

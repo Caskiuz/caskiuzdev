@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma/client";
 
 export type ConfigGroup =
@@ -16,22 +18,33 @@ export interface SiteConfigRecord {
 }
 
 /**
- * Obtiene todas las configuraciones del sitio desde la base de datos.
- * Retorna un mapa vacío si la DB no está disponible.
+ * Lectura cacheada del config (ISR 5 min, tag "site-config").
+ * El home renderizaba force-dynamic con DOS lecturas full-table por request;
+ * con esto pasa a revalidación en segundo plano y se invalida al instante
+ * desde el admin (revalidateTag en /api/admin/site-config).
  */
-export async function getSiteConfig(): Promise<Record<string, string>> {
-  try {
-    const configs = await prisma.siteConfig.findMany();
-    const map: Record<string, string> = {};
-    for (const c of configs) {
-      map[c.key] = c.value;
+const getCachedSiteConfig = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    try {
+      const configs = await prisma.siteConfig.findMany();
+      const map: Record<string, string> = {};
+      for (const c of configs) {
+        map[c.key] = c.value;
+      }
+      return map;
+    } catch {
+      // DB no disponible o tabla no existe — retornar vacío, el frontend usará fallbacks
+      return {};
     }
-    return map;
-  } catch {
-    // DB no disponible o tabla no existe — retornar vacío, el frontend usará fallbacks
-    return {};
-  }
-}
+  },
+  ["site-config-v1"],
+  { revalidate: 300, tags: ["site-config"] }
+);
+
+/** Deduplica las múltiples lecturas dentro del mismo request (layout + page). */
+export const getSiteConfig = cache(async (): Promise<Record<string, string>> => {
+  return getCachedSiteConfig();
+});
 
 /**
  * Obtiene las configuraciones agrupadas por grupo.

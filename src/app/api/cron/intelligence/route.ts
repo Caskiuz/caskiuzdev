@@ -3,8 +3,10 @@ import { isAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma/client";
 import { runProspecting } from "@/lib/prospector";
 import { chatEnabled } from "@/lib/gemini";
-import { sendTelegramMessage, escapeTelegramHtml } from "@/lib/telegram";
+import { sendTelegramMessage, escapeTelegramHtml, telegramConfigured } from "@/lib/telegram";
 import { sendEmail, emailShell, isEmailConfigured } from "@/lib/email";
+import { notifyIndexNow, coreSiteUrls } from "@/lib/indexnow";
+import { sendMonthlyDigest } from "@/lib/newsletter";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // límite del plan Hobby
@@ -70,18 +72,55 @@ async function handle(request: NextRequest) {
     summary.tasas = "unknown";
   }
 
-  // 3) Ping del sitemap a Google
+  // 3) IndexNow (Bing y demás: indexación en horas, gratis) — el ping de
+  //    Google a /ping?sitemap quedó deprecado (404); la indexación en Google
+  //    se gestiona con Search Console.
   try {
-    const pingRes = await fetch(
-      "https://www.google.com/ping?sitemap=https://caskiuz.vercel.app/sitemap.xml",
-      { signal: AbortSignal.timeout(8000) }
-    );
-    summary.sitemapPing = pingRes.ok ? "ok" : `HTTP ${pingRes.status}`;
+    const ok = await notifyIndexNow(coreSiteUrls());
+    summary.indexNow = ok ? "ok" : "sin respuesta";
   } catch {
-    summary.sitemapPing = "error (no bloquea)";
+    summary.indexNow = "error (no bloquea)";
   }
 
-  // 4) Alerta si hubo problemas
+  // 4) Reporte semanal de negocio por Telegram (lunes) — el plan Hobby solo
+  //    permite 2 crons, así que todo vive en esta ruta.
+  if (new Date().getDay() === 1 && telegramConfigured()) {
+    try {
+      const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+      const [leads, prospectsSent, sales, subs] = await Promise.all([
+        prisma.contact.count({ where: { createdAt: { gte: since } } }),
+        prisma.prospect.count({ where: { status: "SENT", createdAt: { gte: since } } }),
+        prisma.sale.count({ where: { createdAt: { gte: since } } }),
+        prisma.subscriber.count({ where: { active: true } }),
+      ]);
+      await sendTelegramMessage(
+        `📊 <b>Reporte semanal de Caskiuz</b>\n\n` +
+          `🎯 Leads nuevos: <b>${leads}</b>\n` +
+          `📤 Prospectos contactados: <b>${prospectsSent}</b>\n` +
+          `💰 Ventas registradas: <b>${sales}</b>\n` +
+          `📬 Suscriptores activos: <b>${subs}</b>\n\n` +
+          (leads === 0
+            ? `💡 Sin leads esta semana: considera publicar un post, compartir tus links de afiliados o subir el volumen de prospección.`
+            : `¡Sigue así! 🚀`)
+      );
+      summary.reporteSemanal = "enviado";
+    } catch {
+      summary.reporteSemanal = "error (no bloquea)";
+    }
+  }
+
+  // 5) Digest mensual a suscriptores (1º de mes) — el newsletter que antes
+  //    estaba muerto: artículos nuevos + oferta + enlace de baja.
+  if (new Date().getDate() === 1) {
+    try {
+      const digest = await sendMonthlyDigest();
+      summary.digest = digest;
+    } catch {
+      summary.digest = "error (no bloquea)";
+    }
+  }
+
+  // 6) Alerta si hubo problemas
   if (problems.length > 0) {
     const alertText =
       `⚠️ <b>Cron de inteligencia — ${problems.length} problema(s)</b>\n\n` +
