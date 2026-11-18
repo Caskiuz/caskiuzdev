@@ -76,18 +76,62 @@ function isQuotaError(status: number, error?: string): boolean {
   return status === 429 || /quota|exceeded your current quota|rate limit/i.test(error || "");
 }
 
-// ─── OpenRouter (14 modelos :free con rotación pegajosa) ───
+// ─── OpenRouter — SOLO modelos gratis, costo cero garantizado ───
+// Tres candados para que nunca haya costo:
+//   1. Anillo dinámico: se descarga el catálogo de OpenRouter y SOLO entran
+//      modelos con id ":free" y pricing.prompt/completion == 0.
+//   2. "provider.allow_fallbacks: false": OpenRouter NO puede rutar a un
+//      proveedor de pago aunque el free esté lleno.
+//   3. "reasoning.exclude": los modelos reasoning devuelven content directo
+//      (si aún devuelven content null, el anillo salta al siguiente modelo).
 
-const OPENROUTER_MODELS = (
+const OPENROUTER_FALLBACK_RING = (
   process.env.OPENROUTER_MODELS ||
-  [
-    "google/gemma-3-27b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "mistralai/mistral-small-3.2-24b-instruct:free",
-    "qwen/qwen-2.5-72b-instruct:free",
-    "deepseek/deepseek-chat-v3-0324:free",
-  ].join(",")
-).split(",").map((m) => m.trim()).filter(Boolean);
+  ["google/gemma-4-31b-it:free", "nvidia/nemotron-3.5-lightning:free", "liquid/lfm-3-1.7b:free"].join(",")
+)
+  .split(",")
+  .map((m) => m.trim())
+  .filter((m) => m.endsWith(":free"));
+
+let openrouterRingCache: { models: string[]; at: number } | null = null;
+const RING_TTL_MS = 6 * 3600 * 1000; // refresca el catálogo cada 6 horas
+
+async function getOpenRouterFreeRing(apiKey: string): Promise<string[]> {
+  if (openrouterRingCache && Date.now() - openrouterRingCache.at < RING_TTL_MS) {
+    return openrouterRingCache.models;
+  }
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/models", {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()) as {
+      data?: {
+        id: string;
+        pricing?: { prompt?: string; completion?: string };
+        context_length?: number;
+      }[];
+    };
+    const free = (data.data ?? [])
+      .filter((m) => {
+        const id = m.id.toLowerCase();
+        const zero = m.pricing && parseFloat(m.pricing.prompt || "1") === 0 && parseFloat(m.pricing.completion || "1") === 0;
+        return id.endsWith(":free") && zero && !/embed|whisper|tts|image|rerank|guard|moderation|video/.test(id);
+      })
+      .sort((a, b) => (b.context_length ?? 0) - (a.context_length ?? 0))
+      .slice(0, 12)
+      .map((m) => m.id);
+    if (free.length) {
+      openrouterRingCache = { models: free, at: Date.now() };
+      return free;
+    }
+    throw new Error("sin modelos gratis en el catálogo");
+  } catch {
+    // Sin catálogo: lista estática (igualmente solo :free) + rotación que salta
+    // los modelos caídos
+    return OPENROUTER_FALLBACK_RING;
+  }
+}
 
 let openrouterStart = 0; // índice "pegajoso": arranca por el último que funcionó
 
@@ -148,25 +192,26 @@ async function callOpenAICompat(
           temperature: options.temperature ?? 0.5,
           max_tokens: options.maxOutputTokens ?? 1200,
           ...(options.json ? { response_format: { type: "json_object" } } : {}),
+          // Costo cero garantizado: sin caída a proveedores de pago
+          ...(provider === "openrouter" ? { provider: { allow_fallbacks: false } } : {}),
+          // Los reasoning devuelven content directo en vez de quemar tokens
+          ...(provider === "openrouter" ? { reasoning: { exclude: true } } : {}),
         }),
         signal: AbortSignal.timeout(timeoutMs),
       });
       const data = (await res.json().catch(() => ({}))) as {
-        choices?: { message?: { content?: string } }[];
+        choices?: { message?: { content?: string | null; reasoning?: string | null } }[];
         error?: { message?: string };
       };
-      if (res.ok && data.choices?.[0]?.message?.content) {
+      const content = data.choices?.[0]?.message?.content?.trim();
+      if (res.ok && content) {
         if (provider === "openrouter") openrouterStart = idx;
         else groqStart = idx;
-        return { ok: true, text: data.choices[0].message.content.trim(), provider };
+        console.info(`🧠 Router IA: ${provider}/${model}`);
+        return { ok: true, text: content, provider };
       }
-      lastError = data.error?.message || `HTTP ${res.status}`;
-      if (isQuotaError(res.status, lastError)) {
-        // Este modelo se agotó: el siguiente del anillo puede seguir vivo.
-        continue;
-      }
-      if (res.status >= 500) continue;
-      // 4xx definitivo del modelo (contexto largo, etc.): prueba el siguiente igual
+      // content null + reasoning = modelo reasoning agotó tokens: no sirve, siguiente
+      lastError = data.error?.message || (content === null ? "content null (reasoning)" : `HTTP ${res.status}`);
       continue;
     } catch (error) {
       lastError = error instanceof Error ? error.message : "error de red";
@@ -269,13 +314,14 @@ export async function callAI(options: AICallOptions): Promise<AIResult> {
 
   // Tier 2: OpenRouter (clave gratuita propia; salta si no está configurada)
   if (openrouterConfigured() && !(await isProviderDead("openrouter")) && Date.now() < deadline) {
+    const ring = await getOpenRouterFreeRing(process.env.OPENROUTER_API_KEY as string);
     const or = await callOpenAICompat(
       "openrouter",
       "https://openrouter.ai/api/v1",
       process.env.OPENROUTER_API_KEY as string,
-      OPENROUTER_MODELS,
+      ring,
       options,
-      20000
+      25000
     );
     if (or.ok) return or;
     if (isQuotaError(0, or.error)) {
