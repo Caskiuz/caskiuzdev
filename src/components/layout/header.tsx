@@ -17,6 +17,7 @@ const navLinks = [
   { href: "/#tech-stack", label: "Stack" },
   { href: "/#about", label: "Sobre mí" },
   { href: "/blog", label: "Blog" },
+  { href: "/recursos", label: "Recursos" },
   { href: "/afiliados", label: "Afiliados" },
   { href: "/#contact", label: "Contacto" },
 ];
@@ -58,13 +59,14 @@ export function Header({ sessionSlot }: { sessionSlot?: React.ReactNode }) {
             </span>
           </Link>
 
-          {/* Desktop nav (desde lg para evitar solapes con el CTA en tablets) */}
-          <div className="hidden lg:flex items-center gap-0.5">
+          {/* Desktop nav (desde lg para evitar solapes con el CTA en tablets).
+              Padding ajustado para que quepan 9 links sin desbordar en lg. */}
+          <div className="hidden xl:flex items-center gap-0">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-2.5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-hover transition-all duration-200 whitespace-nowrap"
+                className="px-2 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-hover transition-all duration-200 whitespace-nowrap"
               >
                 {link.label}
               </Link>
@@ -72,7 +74,7 @@ export function Header({ sessionSlot }: { sessionSlot?: React.ReactNode }) {
           </div>
 
           {/* Desktop actions */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <div className="hidden xl:flex items-center gap-3 shrink-0">
             {sessionSlot}
             {mounted && (
               <button
@@ -96,7 +98,7 @@ export function Header({ sessionSlot }: { sessionSlot?: React.ReactNode }) {
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex lg:hidden items-center gap-2">
+          <div className="flex xl:hidden items-center gap-2">
             {sessionSlot}
             {mounted && (
               <button
@@ -133,7 +135,7 @@ export function Header({ sessionSlot }: { sessionSlot?: React.ReactNode }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t border-border bg-glass backdrop-blur-xl"
+            className="xl:hidden border-t border-border bg-glass backdrop-blur-xl"
           >
             <div className="px-4 py-4 space-y-1">
               {navLinks.map((link, i) => (

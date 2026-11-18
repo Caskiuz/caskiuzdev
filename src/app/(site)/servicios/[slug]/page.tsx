@@ -331,6 +331,20 @@ export default async function ServiciosLanding({
             Empezar ahora →
           </Link>
         </div>
+        {/* Afiliados: línea discreta al pie del landing (no invasiva) */}
+        <div className="mt-8 text-center text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center justify-center gap-1.5">
+          <span>
+            🤝 ¿Tienes audiencia o conoces negocios? Gana hasta{" "}
+            <span className="text-aff-cyan font-semibold">40% de comisión</span> recomendando
+            estos servicios
+          </span>
+          <Link
+            href="/afiliados"
+            className="font-semibold text-aff-cyan hover:underline whitespace-nowrap"
+          >
+            Programa de afiliados →
+          </Link>
+        </div>
       </div>
     </div>
   );
