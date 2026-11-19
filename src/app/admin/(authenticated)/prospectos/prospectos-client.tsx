@@ -338,6 +338,11 @@ export function ProspectosClient({
               p.contactUrl?.startsWith("https://wa.me/")
                 ? `${p.contactUrl}?text=${encodeURIComponent(p.draftMessage)}`
                 : null;
+            // El botón de contacto SOLO si el contacto está verificado (sello ✓).
+            // Los descartados (legado con links muertos) no muestran acción de contacto.
+            const showWa = Boolean(waHref) && p.contactVerified && p.status !== "DISCARDED";
+            const showUrlContact =
+              !waHref && p.contactVerified && Boolean(p.contactUrl) && p.status === "NEW";
             return (
               <motion.div
                 key={p.id}
@@ -380,22 +385,37 @@ export function ProspectosClient({
                     </p>
                   </div>
 
-                  {/* Acciones */}
+                  {/* Acciones — contacto solo si está verificado */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {p.status !== "SENT" && (
+                    {showWa && (
                       <a
-                        href={waHref || p.contactUrl || "#"}
+                        href={waHref!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => {
-                          if (!waHref && !p.contactUrl) e.preventDefault();
-                          else void setStatus(p.id, "SENT");
+                        onClick={() => {
+                          if (p.status === "NEW") void setStatus(p.id, "SENT");
                         }}
                         className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-colors cursor-pointer"
                       >
                         <MessageCircle className="w-3.5 h-3.5" />
-                        {waHref ? "Enviar por WhatsApp" : "Abrir contacto"}
+                        {p.status === "SENT" ? "Reabrir chat" : "Enviar por WhatsApp"}
                       </a>
+                    )}
+                    {showUrlContact && (
+                      <a
+                        href={p.contactUrl!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => void setStatus(p.id, "SENT")}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-colors cursor-pointer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> Abrir contacto
+                      </a>
+                    )}
+                    {p.status === "DISCARDED" && !p.contactVerified && (
+                      <span className="text-[11px] text-muted-foreground italic">
+                        contacto inválido o muerto — descartado automáticamente
+                      </span>
                     )}
                     {p.status !== "DISCARDED" && (
                       <button
