@@ -57,6 +57,7 @@ export function ProspectosClient({
   const [items, setItems] = useState(prospects);
   const [filter, setFilter] = useState<"ALL" | "NEW" | "SENT" | "DISCARDED">("ALL");
   const [running, setRunning] = useState(false);
+  const [reverifying, setReverifying] = useState(false);
   const [runMsg, setRunMsg] = useState<string | null>(null);
   const [cfg, setCfg] = useState<Config>(config);
   const [cfgOpen, setCfgOpen] = useState(false);
@@ -90,6 +91,31 @@ export function ProspectosClient({
     } finally {
       setRunning(false);
       setTimeout(() => setRunMsg(null), 12000);
+    }
+  }
+
+  /** Re-verifica los prospectos pendientes contra la realidad (sondeo wa.me + URLs vivas). */
+  async function reverify() {
+    if (reverifying) return;
+    setReverifying(true);
+    setRunMsg(null);
+    try {
+      const res = await fetch("/api/admin/prospects/reverify", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setRunMsg(
+          `🔍 Re-verificación: ${data.verified} contacto(s) confirmado(s), ${data.discarded} descartado(s) por contacto inválido o muerto.`
+        );
+        router.refresh();
+        startTransition(() => router.refresh());
+      } else {
+        setRunMsg(`⚠️ ${data.error || "La re-verificación falló"}`);
+      }
+    } catch {
+      setRunMsg("⚠️ Error de conexión");
+    } finally {
+      setReverifying(false);
+      setTimeout(() => setRunMsg(null), 15000);
     }
   }
 
@@ -165,6 +191,21 @@ export function ProspectosClient({
             <>
               <Search className="w-4 h-4" /> Buscar prospectos ahora
             </>
+          )}
+        </button>
+
+        <button
+          onClick={reverify}
+          disabled={reverifying || running}
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-surface-hover transition-colors cursor-pointer disabled:opacity-60"
+          title="Sondea los números en WhatsApp y comprueba las URLs de los prospectos pendientes; descarta los muertos"
+        >
+          {reverifying ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Verificando…
+            </>
+          ) : (
+            <>🔍 Re-verificar contactos</>
           )}
         </button>
 
