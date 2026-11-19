@@ -20,7 +20,12 @@
  */
 
 import { prisma } from "@/lib/prisma/client";
-import { callGemini, extractJson, checkAndIncrementAiQuota } from "@/lib/gemini";
+import {
+  callGemini,
+  extractJson,
+  checkAndIncrementAiQuota,
+  getAiUsageToday,
+} from "@/lib/gemini";
 import {
   verifyWhatsAppNumber,
   fetchAndExtractContacts,
@@ -225,8 +230,11 @@ export async function runProspecting(overrides?: {
     MODE_PROFILES[mode] ||
     "negocios reales y activos que podrían mejorar sus ventas con una web o automatización con IA.";
 
-  const quota = await checkAndIncrementAiQuota("PROSPECT");
-  if (!quota) {
+  // Pre-vuelo SIN cobrar cuota: el contador interno solo se incrementa cuando
+  // la ronda termina en éxito (antes, los intentos fallidos de Gemini quemaban
+  // los 3 slots del día sin producir prospectos).
+  const usedToday = await getAiUsageToday("PROSPECT");
+  if (usedToday >= 3) {
     return {
       inserted: 0,
       found: 0,
@@ -234,7 +242,7 @@ export async function runProspecting(overrides?: {
       mode,
       niches,
       region,
-      error: "Cuota diaria de prospección agotada",
+      error: "Cuota diaria de prospección agotada (3 rondas exitosas/día)",
     };
   }
 
@@ -265,6 +273,9 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
       error: result.error || "La IA no respondió",
     };
   }
+
+  // La ronda de búsqueda terminó OK: ahora sí consume el slot diario interno
+  await checkAndIncrementAiQuota("PROSPECT");
 
   const data = extractJson<{ prospects?: ProspectCandidate[] }>(result.text);
   if (!data?.prospects?.length) {
