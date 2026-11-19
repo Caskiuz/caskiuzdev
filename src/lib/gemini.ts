@@ -85,9 +85,27 @@ export interface GeminiResult {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Pool de claves Gemini: cada CUENTA gratuita de Google tiene su propia cuota
+ * diaria. Con GEMINI_API_KEYS="clave1,clave2,clave3" el motor consume una
+ * clave hasta agotarla y salta limpiamente a la siguiente — multiplica la
+ * cuota disponible para prospección y chat sin pagar nada.
+ * (Compatibilidad: GEMINI_API_KEY sigue funcionando como clave única.)
+ */
+const GEMINI_KEYS = Array.from(
+  new Set(
+    [process.env.GEMINI_API_KEY, ...(process.env.GEMINI_API_KEYS || "").split(",")]
+      .map((k) => (k || "").trim())
+      .filter(Boolean)
+  )
+);
+
+export function geminiKeyPoolSize(): number {
+  return GEMINI_KEYS.length;
+}
+
 export async function callGemini(options: GeminiCallOptions): Promise<GeminiResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || (!options.prompt && !options.contents?.length)) {
+  if (!GEMINI_KEYS.length || (!options.prompt && !options.contents?.length)) {
     return { ok: false, status: 503, text: "", error: "Gemini no configurado o prompt vacío" };
   }
 
@@ -110,6 +128,11 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
   // Presupuesto total de tiempo: los reintentos de la cascada no pueden
   // exceder el timeout global (importante para el cron de Vercel, 60s máx).
   const deadline = Date.now() + (options.timeoutMs ?? 25000);
+
+  // Dos rondas × pool de claves: si una cuenta está agotada (429), la siguiente
+  // clave del pool entra inmediatamente con su propia cuota del día.
+  for (const apiKey of GEMINI_KEYS) {
+    if (Date.now() > deadline) break;
 
   // Dos rondas: si Google está saturado (429/5xx/503), esperamos y reintentamos.
   // Rotación PEGAJOSA (patrón de Caskiuz AI): la cascada arranca por el último
@@ -211,6 +234,7 @@ export async function callGemini(options: GeminiCallOptions): Promise<GeminiResu
       } catch (error) {
         lastError = error instanceof Error ? error.message : "error de red";
       }
+    }
     }
   }
 
