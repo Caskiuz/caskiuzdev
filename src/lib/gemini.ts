@@ -279,7 +279,7 @@ export async function callGeminiJson<T>(
 
 // ─── Cuota diaria compartida (tabla AiUsage) ───
 
-export type AiUsageKind = "CHAT" | "SCORE" | "REPLY" | "PROSPECT" | "IMAGE";
+export type AiUsageKind = "CHAT" | "SCORE" | "REPLY" | "PROSPECT" | "IMAGE" | "JOB";
 
 const QUOTA_CAPS: Record<AiUsageKind, number> = {
   CHAT: 60, // mensajes de chat público/día (protege el free tier compartido con KYC)
@@ -287,6 +287,7 @@ const QUOTA_CAPS: Record<AiUsageKind, number> = {
   REPLY: 40, // auto-respuestas por email a visitantes
   PROSPECT: 3, // rondas de búsqueda con grounding (cada una devuelve varios prospectos)
   IMAGE: 40, // imágenes Pollinations servidas por el proxy
+  JOB: 15, // scoring/cartas del hub de empleo (flash-lite)
 };
 
 /** Devuelve las llamadas ya consumidas hoy para un tipo. */

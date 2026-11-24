@@ -17,6 +17,7 @@ const footerLinks = {
   recursos: [
     { href: "/blog", label: "Blog" },
     { href: "/recursos", label: "Recursos gratis" },
+    { href: "/cv", label: "CV / Contrátame" },
     { href: "/afiliados", label: "Programa de Afiliados" },
     { href: "/afiliados/terminos", label: "Términos de Afiliados" },
     { href: "/#contact", label: "Contacto" },

@@ -7,6 +7,7 @@ import { sendTelegramMessage, escapeTelegramHtml, telegramConfigured } from "@/l
 import { sendEmail, emailShell, isEmailConfigured } from "@/lib/email";
 import { notifyIndexNow, coreSiteUrls } from "@/lib/indexnow";
 import { sendMonthlyDigest } from "@/lib/newsletter";
+import { collectAndScoreJobs } from "@/lib/job-intel";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // límite del plan Hobby
@@ -48,7 +49,57 @@ async function handle(request: NextRequest) {
     );
   }
 
-  // 2) Chequeo de salud
+  // 2) Hub de empleo: recolectar vacantes de las fuentes gratis y puntuarlas
+  try {
+    const jobs = await collectAndScoreJobs();
+    summary.jobs = jobs;
+
+    // Digest de vacantes nuevas con alto match (una sola notificación)
+    const strong = await prisma.jobOpportunity.findMany({
+      where: {
+        status: "NEW",
+        score: { gte: 80 },
+        createdAt: { gte: new Date(Date.now() - 36 * 3600 * 1000) },
+      },
+      orderBy: { score: "desc" },
+      take: 5,
+    });
+    if (strong.length && telegramConfigured()) {
+      await sendTelegramMessage(
+        `💼 <b>${strong.length} vacante(s) con alto match</b>\n\n` +
+          strong
+            .map((j) => `• <b>${escapeTelegramHtml(j.title)}</b> — ${escapeTelegramHtml(j.company)} (${j.score}/100)\n  ${j.url}`)
+            .join("\n\n") +
+          `\n\n👉 caskiuz.vercel.app/admin/oportunidades`
+      );
+    }
+
+    // Recordatorios de follow-up: aplicaste hace 7 días y nada cambió
+    const pendingFollowUps = await prisma.jobOpportunity.findMany({
+      where: { status: "APPLIED", followUpAt: { lte: new Date() } },
+      take: 5,
+    });
+    if (pendingFollowUps.length) {
+      if (telegramConfigured()) {
+        await sendTelegramMessage(
+          `⏰ <b>Follow-up pendiente</b>\n\n` +
+            pendingFollowUps
+              .map((j) => `• <b>${escapeTelegramHtml(j.title)}</b> — ${escapeTelegramHtml(j.company)}`)
+              .join("\n") +
+            `\n\nAplicaste hace 7+ días. Escribe al reclutador.`
+        );
+      }
+      await prisma.jobOpportunity.updateMany({
+        where: { id: { in: pendingFollowUps.map((j) => j.id) } },
+        data: { followUpAt: null },
+      });
+    }
+  } catch (error) {
+    summary.jobs = { error: error instanceof Error ? error.message : "error" };
+    problems.push("Hub de empleo: la recolección falló");
+  }
+
+  // 3) Chequeo de salud
   try {
     await prisma.siteConfig.count();
     summary.db = "ok";
@@ -87,11 +138,14 @@ async function handle(request: NextRequest) {
   if (new Date().getDay() === 1 && telegramConfigured()) {
     try {
       const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-      const [leads, prospectsSent, sales, subs] = await Promise.all([
+      const [leads, prospectsSent, sales, subs, newJobs, appliedJobs, interviews] = await Promise.all([
         prisma.contact.count({ where: { createdAt: { gte: since } } }),
         prisma.prospect.count({ where: { status: "SENT", createdAt: { gte: since } } }),
         prisma.sale.count({ where: { createdAt: { gte: since } } }),
         prisma.subscriber.count({ where: { active: true } }),
+        prisma.jobOpportunity.count({ where: { createdAt: { gte: since } } }),
+        prisma.jobOpportunity.count({ where: { appliedAt: { gte: since } } }),
+        prisma.jobOpportunity.count({ where: { status: "INTERVIEW" } }),
       ]);
       await sendTelegramMessage(
         `📊 <b>Reporte semanal de Caskiuz</b>\n\n` +
@@ -99,8 +153,11 @@ async function handle(request: NextRequest) {
           `📤 Prospectos contactados: <b>${prospectsSent}</b>\n` +
           `💰 Ventas registradas: <b>${sales}</b>\n` +
           `📬 Suscriptores activos: <b>${subs}</b>\n\n` +
-          (leads === 0
-            ? `💡 Sin leads esta semana: considera publicar un post, compartir tus links de afiliados o subir el volumen de prospección.`
+          `💼 Vacantes nuevas: <b>${newJobs}</b>\n` +
+          `📝 Aplicaciones enviadas: <b>${appliedJobs}</b>\n` +
+          `🎤 Entrevistas activas: <b>${interviews}</b>\n\n` +
+          (leads === 0 && appliedJobs === 0
+            ? `💡 Semana sin leads ni aplicaciones: publica un post, comparte tus links de afiliados o aplica a las vacantes del panel.`
             : `¡Sigue así! 🚀`)
       );
       summary.reporteSemanal = "enviado";

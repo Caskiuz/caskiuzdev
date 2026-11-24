@@ -393,6 +393,35 @@ model AiUsage {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Hub de empleo: vacantes recolectadas de fuentes gratis + IA
+// ─────────────────────────────────────────────────────────────
+
+model JobOpportunity {
+  id           Int       @id @default(autoincrement())
+  source       String    @db.VarChar(30) // REMOTIVE | REMOTEOK | HIMALAYAS | JOBICY | WWR | TORRE
+  externalId   String    @db.VarChar(200)
+  title        String    @db.VarChar(250)
+  company      String    @db.VarChar(200)
+  url          String    @db.VarChar(600)
+  location     String?   @db.VarChar(150)
+  remote       Boolean   @default(true)
+  salaryText   String?   @db.VarChar(200)
+  salaryMin    Int?
+  description  String?   @db.Text
+  score        Int       @default(0) // 0-100 match con el perfil
+  matchReasons String?   @db.Text
+  draftLetter  String?   @db.Text
+  status       String    @default("NEW") // NEW | APPLIED | INTERVIEW | OFFER | REJECTED | LOST
+  appliedAt    DateTime?
+  followUpAt   DateTime? @map("follow_up_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@unique([source, externalId])
+  @@index([status, score])
+  @@map("job_opportunities")
+}
+
+// ─────────────────────────────────────────────────────────────
 // Centro de notificaciones internas (admin y afiliados, sin email)
 // ─────────────────────────────────────────────────────────────
 

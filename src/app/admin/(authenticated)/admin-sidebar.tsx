@@ -21,6 +21,7 @@ import {
   X,
   Target,
   ImageIcon,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiveUnreadBadge } from "@/components/notifications/live-unread-badge";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/messages", label: "Mensajes", icon: MessageSquare },
   { href: "/admin/prospectos", label: "Prospectos IA", icon: Target },
+  { href: "/admin/oportunidades", label: "Oportunidades", icon: Briefcase },
   { href: "/admin/notificaciones", label: "Notificaciones", icon: Bell },
 ];
 
@@ -57,11 +59,13 @@ const settingsItems = [
 export function AdminSidebar({
   notificationsCount = 0,
   prospectsCount = 0,
+  opportunitiesCount = 0,
   adminName = "",
   adminRole = "GLOBAL",
 }: {
   notificationsCount?: number;
   prospectsCount?: number;
+  opportunitiesCount?: number;
   adminName?: string;
   adminRole?: AdminRole;
 }) {
@@ -119,6 +123,14 @@ export function AdminSidebar({
             initialCount={prospectsCount}
             endpoint="/api/admin/prospects?stats=1"
             className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-aff-cyan text-[#0b0d14] text-[10px] font-bold"
+          />
+        )}
+        {item.href === "/admin/oportunidades" && (
+          <LiveUnreadBadge
+            key={`opportunities-${opportunitiesCount}`}
+            initialCount={opportunitiesCount}
+            endpoint="/api/admin/opportunities?stats=1"
+            className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-green-500 text-[#0b0d14] text-[10px] font-bold"
           />
         )}
       </Link>

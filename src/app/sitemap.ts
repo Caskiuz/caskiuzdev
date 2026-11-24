@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/blog",
     "/recursos",
+    "/cv",
     "/afiliados",
     "/afiliados/faq",
     "/afiliados/terminos",

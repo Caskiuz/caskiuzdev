@@ -9,13 +9,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   // Guard real de las páginas del panel: exige sesión válida y cuenta activa.
   const admin = await requireAdmin();
 
-  const [notificationsCount, prospectsCount] = await Promise.all([
+  const [notificationsCount, prospectsCount, opportunitiesCount] = await Promise.all([
     prisma.notification
       .count({
         where: { recipientType: "ADMIN", recipientId: admin.id, read: false },
       })
       .catch(() => 0),
     prisma.prospect.count({ where: { status: "NEW" } }).catch(() => 0),
+    prisma.jobOpportunity
+      .count({ where: { status: "NEW", score: { gte: 70 } } })
+      .catch(() => 0),
   ]);
 
   return (
@@ -23,6 +26,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <AdminSidebar
         notificationsCount={notificationsCount}
         prospectsCount={prospectsCount}
+        opportunitiesCount={opportunitiesCount}
         adminName={admin.name}
         adminRole={admin.role}
       />
