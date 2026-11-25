@@ -207,6 +207,7 @@ export async function runProspecting(overrides?: {
   region?: string;
   volume?: number;
   mode?: string;
+  timeoutMs?: number;
 }): Promise<ProspectingResult> {
   // Config desde la DB (editable en el admin) con defaults razonables
   const cfgRows = await prisma.siteConfig.findMany({
@@ -259,7 +260,7 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
     temperature: 0.4,
     maxOutputTokens: 3000,
     grounding: true,
-    timeoutMs: 50000,
+    timeoutMs: Math.min(Math.max(overrides?.timeoutMs ?? 50000, 15000), 50000),
   });
 
   if (!result.ok) {
@@ -315,7 +316,18 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
   const toInsert = keep.slice(0, volume);
 
   if (toInsert.length) {
-    await prisma.prospect.createMany({ data: toInsert.map((p) => ({ ...p, status: "NEW" })) });
+    await prisma.prospect.createMany({
+      data: toInsert.map((p) => {
+        const waDigits = p.contactUrl?.match(/wa\.me\/(\d{8,15})/)?.[1] ?? null;
+        return {
+          ...p,
+          source: "AI",
+          channel: waDigits ? "WHATSAPP" : "WEB",
+          phone: waDigits,
+          externalId: null,
+        };
+      }),
+    });
   }
 
   return {

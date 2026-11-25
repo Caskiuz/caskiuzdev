@@ -55,6 +55,29 @@ export default function RecursosPage() {
 
         <div className="space-y-8">
           <PriceCalculator />
+
+          {/* Auditoría web gratis (lead magnet) */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-aff-cyan/10 via-transparent to-aff-blue/10 border border-aff-cyan/20 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-aff-cyan mb-1.5">
+                  Nuevo · gratis y sin registro
+                </p>
+                <h2 className="text-xl font-bold">Audita tu web en 10 segundos</h2>
+                <p className="text-sm text-muted-foreground mt-1.5 max-w-xl">
+                  Velocidad, SEO, móvil, botón de WhatsApp y analítica: descubre
+                  qué le está costando clientes a tu página y cómo arreglarlo.
+                </p>
+              </div>
+              <Link
+                href="/auditoria"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold btn-aff rounded-xl shrink-0"
+              >
+                Auditar mi web →
+              </Link>
+            </div>
+          </div>
+
           <GatedChecklist />
           <RecommendedTools />
 

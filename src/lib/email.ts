@@ -21,6 +21,12 @@ interface SendOptions {
   to: string;
   subject: string;
   html: string;
+  /** Cabeceras extra (p. ej. List-Unsubscribe del outreach) */
+  headers?: Record<string, string>;
+  /** Fuerza un proveedor concreto (el outreach usa Brevo si existe) */
+  provider?: EmailProvider;
+  /** Remitente alternativo (p. ej. campaña de prospección) */
+  from?: string;
 }
 
 type EmailProvider = "brevo" | "smtp" | "resend";
@@ -61,7 +67,7 @@ function parseFrom(from: string): { name: string; email: string } {
   return { name: "Caskiuz Afiliados", email: from.trim() };
 }
 
-async function sendViaBrevo({ to, subject, html }: SendOptions): Promise<boolean> {
+async function sendViaBrevo({ to, subject, html, headers, from }: SendOptions): Promise<boolean> {
   try {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -71,10 +77,11 @@ async function sendViaBrevo({ to, subject, html }: SendOptions): Promise<boolean
         accept: "application/json",
       },
       body: JSON.stringify({
-        sender: parseFrom(FROM),
+        sender: parseFrom(from || FROM),
         to: [{ email: to }],
         subject,
         htmlContent: html,
+        ...(headers ? { headers } : {}),
       }),
     });
     if (!response.ok) {
@@ -89,7 +96,7 @@ async function sendViaBrevo({ to, subject, html }: SendOptions): Promise<boolean
   }
 }
 
-async function sendViaSmtp({ to, subject, html }: SendOptions): Promise<boolean> {
+async function sendViaSmtp({ to, subject, html, headers, from }: SendOptions): Promise<boolean> {
   try {
     const port = Number(process.env.SMTP_PORT || 465);
     const transporter = nodemailer.createTransport({
@@ -101,7 +108,7 @@ async function sendViaSmtp({ to, subject, html }: SendOptions): Promise<boolean>
         pass: process.env.SMTP_PASS as string,
       },
     });
-    await transporter.sendMail({ from: FROM, to, subject, html });
+    await transporter.sendMail({ from: from || FROM, to, subject, html, headers });
     return true;
   } catch (error) {
     console.error("Error enviando email (SMTP):", error);
@@ -109,10 +116,16 @@ async function sendViaSmtp({ to, subject, html }: SendOptions): Promise<boolean>
   }
 }
 
-async function sendViaResend({ to, subject, html }: SendOptions): Promise<boolean> {
+async function sendViaResend({ to, subject, html, headers, from }: SendOptions): Promise<boolean> {
   const resend = new Resend(process.env.RESEND_API_KEY as string);
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await resend.emails.send({
+      from: from || FROM,
+      to,
+      subject,
+      html,
+      ...(headers ? { headers } : {}),
+    });
     if (error) {
       console.error("Error enviando email (Resend):", error);
       return false;
@@ -124,13 +137,13 @@ async function sendViaResend({ to, subject, html }: SendOptions): Promise<boolea
   }
 }
 
-export async function sendEmail({ to, subject, html }: SendOptions): Promise<boolean> {
-  const provider = activeProvider();
-  if (provider === "brevo") return sendViaBrevo({ to, subject, html });
-  if (provider === "smtp") return sendViaSmtp({ to, subject, html });
-  if (provider === "resend") return sendViaResend({ to, subject, html });
+export async function sendEmail(options: SendOptions): Promise<boolean> {
+  const provider = options.provider ?? activeProvider();
+  if (provider === "brevo") return sendViaBrevo(options);
+  if (provider === "smtp") return sendViaSmtp(options);
+  if (provider === "resend") return sendViaResend(options);
   console.log(
-    `✉️ [EMAIL NO ENVIADO - proveedor sin configurar] ${subject} → ${to} (configura SMTP_USER/SMTP_PASS, BREVO_API_KEY o RESEND_API_KEY)`
+    `✉️ [EMAIL NO ENVIADO - proveedor sin configurar] ${options.subject} → ${options.to} (configura SMTP_USER/SMTP_PASS, BREVO_API_KEY o RESEND_API_KEY)`
   );
   return false;
 }

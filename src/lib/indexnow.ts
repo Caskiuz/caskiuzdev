@@ -65,6 +65,7 @@ export function coreSiteUrls(): string[] {
     `${BASE_URL}/`,
     `${BASE_URL}/blog`,
     `${BASE_URL}/recursos`,
+    `${BASE_URL}/auditoria`,
     `${BASE_URL}/cv`,
     `${BASE_URL}/afiliados`,
     ...slugs.map((s) => `${BASE_URL}/blog/${s}`),

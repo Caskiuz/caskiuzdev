@@ -8,7 +8,16 @@
  */
 
 export interface JobSourceItem {
-  source: "REMOTIVE" | "REMOTEOK" | "HIMALAYAS" | "JOBICY" | "WWR" | "TORRE";
+  source:
+    | "REMOTIVE"
+    | "REMOTEOK"
+    | "HIMALAYAS"
+    | "JOBICY"
+    | "WWR"
+    | "TORRE"
+    | "ARBEITNOW"
+    | "WORKINGNOMADS"
+    | "HN";
   externalId: string;
   title: string;
   company: string;
@@ -271,6 +280,172 @@ export async function fetchTorreJobs(): Promise<JobSourceItem[]> {
   }
 }
 
+// ─── Arbeitnow (gratis, sin key; sobre todo Europa remota) ───
+interface ArbeitnowJob {
+  slug?: string;
+  company_name?: string;
+  title?: string;
+  description?: string;
+  remote?: boolean;
+  url?: string;
+  location?: string;
+  tags?: string[];
+  job_types?: string[];
+}
+
+export async function fetchArbeitnow(): Promise<JobSourceItem[]> {
+  const data = await fetchJson<{ data?: ArbeitnowJob[] }>(
+    "https://www.arbeitnow.com/api/job-board-api"
+  );
+  return (data?.data ?? [])
+    .filter((j) => j.title && j.url)
+    .map((j) => ({
+      source: "ARBEITNOW" as const,
+      externalId: String(j.slug ?? j.url),
+      title: j.title!.slice(0, 250),
+      company: (j.company_name || "—").slice(0, 200),
+      url: j.url!,
+      location: j.location || (j.remote ? "Remoto" : "Europa"),
+      remote: Boolean(j.remote) || /remote|remoto/i.test(`${j.location || ""} ${j.title || ""}`),
+      description: j.description ? stripHtml(j.description) : (j.tags || []).join(", "),
+    }));
+}
+
+// ─── Working Nomads (API pública, sin key) ───
+interface WorkingNomadsJob {
+  url?: string;
+  title?: string;
+  description?: string;
+  company_name?: string;
+  company?: string;
+  category_name?: string;
+  location?: string;
+  tags?: string[];
+}
+
+export async function fetchWorkingNomads(): Promise<JobSourceItem[]> {
+  const data = await fetchJson<WorkingNomadsJob[]>(
+    "https://www.workingnomads.com/api/exposed_jobs/"
+  );
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((j) => j.title && j.url)
+    .map((j) => ({
+      source: "WORKINGNOMADS" as const,
+      externalId: String(j.url),
+      title: j.title!.slice(0, 250),
+      company: (j.company_name || j.company || "—").slice(0, 200),
+      url: j.url!,
+      location: j.location || "Remoto",
+      remote: true,
+      description: j.description ? stripHtml(j.description) : (j.tags || []).join(", "),
+    }));
+}
+
+// ─── Hacker News (Algolia, gratis y sin key) ───
+interface HNHit {
+  objectID?: string;
+  comment_text?: string;
+  title?: string;
+  story_id?: number;
+  parent_id?: number;
+  created_at_i?: number;
+}
+
+function hnFirstLine(html: string): string {
+  const withBreaks = html
+    .replace(/<\/(p|div|li)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#\d+;/g, " ");
+  const first =
+    withBreaks
+      .split("\n")
+      .map((l) => l.replace(/\s+/g, " ").trim())
+      .find((l) => l.length > 6) || "";
+  return first.slice(0, 200);
+}
+
+/**
+ * Hilo mensual "Ask HN: Who is hiring?" — cientos de empresas publican
+ * vacantes con remoto. Es de los mejores lugares para enviar el CV.
+ */
+export async function fetchHNWhoIsHiring(): Promise<JobSourceItem[]> {
+  const storySearch = await fetchJson<{ hits?: HNHit[] }>(
+    `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(
+      "Ask HN: Who is hiring?"
+    )}&tags=story&hitsPerPage=10`
+  );
+  const cutoff = Math.floor(Date.now() / 1000) - 50 * 24 * 3600;
+  const story = (storySearch?.hits ?? []).find(
+    (h) =>
+      /who is hiring/i.test(h.title || "") &&
+      (h.created_at_i ?? 0) > cutoff &&
+      h.objectID
+  );
+  if (!story?.objectID) return [];
+
+  const comments = await fetchJson<{ hits?: HNHit[] }>(
+    `https://hn.algolia.com/api/v1/search?tags=${encodeURIComponent(
+      `comment,story_${story.objectID}`
+    )}&hitsPerPage=100`
+  );
+  return (comments?.hits ?? [])
+    .filter(
+      (h) =>
+        h.objectID &&
+        h.comment_text &&
+        String(h.parent_id) === String(story.objectID) &&
+        !/^\s*(seeking work|seeking freelancer)/i.test(hnFirstLine(h.comment_text))
+    )
+    .map((h) => {
+      const line = hnFirstLine(h.comment_text!);
+      const company = (line.split("|")[0] || "—").trim().slice(0, 200);
+      return {
+        source: "HN" as const,
+        externalId: String(h.objectID),
+        title: line.slice(0, 250),
+        company,
+        url: `https://news.ycombinator.com/item?id=${h.objectID}`,
+        location: /remote|remoto|anywhere/i.test(h.comment_text!) ? "Remoto" : "Ver publicación",
+        remote: /remote|remoto|anywhere/i.test(h.comment_text!),
+        description: stripHtml(h.comment_text!, 3000),
+      };
+    });
+}
+
+/**
+ * Hilo "SEEKING FREELANCER" (freelance gigs, se publica cada mes):
+ * proyectos puntuales donde se responde por email o por el hilo.
+ */
+export async function fetchHNFreelance(): Promise<JobSourceItem[]> {
+  const cutoff = Math.floor(Date.now() / 1000) - 21 * 24 * 3600;
+  const data = await fetchJson<{ hits?: HNHit[] }>(
+    `https://hn.algolia.com/api/v1/search_by_date?tags=comment&query=${encodeURIComponent(
+      "SEEKING FREELANCER"
+    )}&hitsPerPage=50&numericFilters=${encodeURIComponent(`created_at_i>${cutoff}`)}`
+  );
+  return (data?.hits ?? [])
+    .filter((h) => h.objectID && h.comment_text && /seeking\s+freelancer/i.test(h.comment_text))
+    .map((h) => {
+      const line = hnFirstLine(h.comment_text!);
+      return {
+        source: "HN" as const,
+        externalId: `freelance-${h.objectID}`,
+        title: line.slice(0, 250),
+        company: "HN · Freelance",
+        url: `https://news.ycombinator.com/item?id=${h.objectID}`,
+        location: /remote|remoto|anywhere/i.test(h.comment_text!) ? "Remoto" : "Ver publicación",
+        remote: /remote|remoto|anywhere/i.test(h.comment_text!),
+        description: stripHtml(h.comment_text!, 3000),
+      };
+    });
+}
+
 /** Recolecta todas las fuentes en paralelo (fallos aislados). */
 export async function fetchAllJobSources(): Promise<JobSourceItem[]> {
   const results = await Promise.allSettled([
@@ -280,6 +455,10 @@ export async function fetchAllJobSources(): Promise<JobSourceItem[]> {
     fetchJobicy(),
     fetchWWR(),
     fetchTorreJobs(),
+    fetchArbeitnow(),
+    fetchWorkingNomads(),
+    fetchHNFreelance(),
+    fetchHNWhoIsHiring(),
   ]);
   const all: JobSourceItem[] = [];
   for (const r of results) {

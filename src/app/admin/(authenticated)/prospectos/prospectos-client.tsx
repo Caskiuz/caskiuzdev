@@ -14,6 +14,11 @@ import {
   ChevronDown,
   Save,
   CheckCircle2,
+  Send,
+  Mail,
+  Globe,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface Prospect {
@@ -25,6 +30,13 @@ interface Prospect {
   siteUrl: string | null;
   sourceUrl: string | null;
   contactVerified: boolean;
+  phone: string | null;
+  email: string | null;
+  telegram: string | null;
+  channel: string | null; // WHATSAPP | TELEGRAM | EMAIL | WEB
+  source: string | null; // OSM | AI
+  outreachCount: number;
+  lastOutreachAt: string | null;
   why: string;
   angle: string;
   draftMessage: string;
@@ -46,6 +58,13 @@ const STATUS_META: Record<string, { label: string; className: string }> = {
   DISCARDED: { label: "Descartado", className: "bg-muted text-muted-foreground border-border" },
 };
 
+const CHANNEL_META: Record<string, { label: string; className: string }> = {
+  WHATSAPP: { label: "WhatsApp", className: "bg-[#25D366]/10 text-[#25D366] border-[#25D366]/30" },
+  TELEGRAM: { label: "Telegram", className: "bg-sky-500/10 text-sky-400 border-sky-500/30" },
+  EMAIL: { label: "Email", className: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
+  WEB: { label: "Web", className: "bg-muted text-muted-foreground border-border" },
+};
+
 export function ProspectosClient({
   prospects,
   config,
@@ -56,7 +75,10 @@ export function ProspectosClient({
   const router = useRouter();
   const [items, setItems] = useState(prospects);
   const [filter, setFilter] = useState<"ALL" | "NEW" | "SENT" | "DISCARDED">("ALL");
+  const [channelFilter, setChannelFilter] = useState<"ALL" | "WHATSAPP" | "TELEGRAM" | "EMAIL" | "WEB">("ALL");
   const [running, setRunning] = useState(false);
+  const [engineRunning, setEngineRunning] = useState(false);
+  const [emailing, setEmailing] = useState(false);
   const [reverifying, setReverifying] = useState(false);
   const [runMsg, setRunMsg] = useState<string | null>(null);
   const [cfg, setCfg] = useState<Config>(config);
@@ -64,11 +86,17 @@ export function ProspectosClient({
   const [savingCfg, setSavingCfg] = useState(false);
   const [cfgSaved, setCfgSaved] = useState(false);
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const [, startTransition] = useTransition();
 
   const filtered = useMemo(
-    () => (filter === "ALL" ? items : items.filter((p) => p.status === filter)),
-    [items, filter]
+    () =>
+      items.filter(
+        (p) =>
+          (filter === "ALL" || p.status === filter) &&
+          (channelFilter === "ALL" || p.channel === channelFilter)
+      ),
+    [items, filter, channelFilter]
   );
   const newCount = items.filter((p) => p.status === "NEW").length;
 
@@ -94,7 +122,77 @@ export function ProspectosClient({
     }
   }
 
-  /** Re-verifica los prospectos pendientes contra la realidad (sondeo wa.me + URLs vivas). */
+  /** Descubrimiento masivo en OpenStreetMap: cientos de negocios, sin cuota IA. */
+  async function runEngine() {
+    if (engineRunning) return;
+    setEngineRunning(true);
+    setRunMsg(null);
+    try {
+      const res = await fetch("/api/admin/prospects/engine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ maxVerify: 60, budgetMs: 48000 }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRunMsg(
+          `🌍 OSM: ${data.found} negocios encontrados · ${data.verified} verificados · ${data.inserted} guardados ` +
+            `(${data.channels?.WHATSAPP || 0} WhatsApp, ${data.channels?.TELEGRAM || 0} Telegram, ${data.channels?.EMAIL || 0} email, ${data.channels?.WEB || 0} web) ` +
+            `· ${data.duplicated} duplicados · ${data.aiUpgraded || 0} mensajes IA · ${Math.round((data.elapsedMs || 0) / 1000)}s`
+        );
+        router.refresh();
+        startTransition(() => router.refresh());
+      } else {
+        setRunMsg(`⚠️ ${data.error || "El motor OSM falló"}`);
+      }
+    } catch {
+      setRunMsg("⚠️ Error de conexión");
+    } finally {
+      setEngineRunning(false);
+      setTimeout(() => setRunMsg(null), 20000);
+    }
+  }
+
+  /** Envía la cola de emails de prospección (Brevo/SMTP configurado). */
+  async function sendEmails() {
+    if (emailing) return;
+    setEmailing(true);
+    setRunMsg(null);
+    try {
+      const res = await fetch("/api/admin/prospects/outreach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ limit: 20 }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRunMsg(
+          data.error
+            ? `⚠️ ${data.error}`
+            : `📧 ${data.sent} email(s) enviado(s) · ${data.failed} fallido(s) · quedan ${data.remainingToday} hoy (${data.provider})`
+        );
+        router.refresh();
+        startTransition(() => router.refresh());
+      } else {
+        setRunMsg(`⚠️ ${data.error || "El envío falló"}`);
+      }
+    } catch {
+      setRunMsg("⚠️ Error de conexión");
+    } finally {
+      setEmailing(false);
+      setTimeout(() => setRunMsg(null), 20000);
+    }
+  }
+
+  async function copyMessage(id: number, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // clipboard bloqueado por el navegador
+    }
+  }
   async function reverify() {
     if (reverifying) return;
     setReverifying(true);
@@ -195,6 +293,36 @@ export function ProspectosClient({
         </button>
 
         <button
+          onClick={runEngine}
+          disabled={engineRunning || running}
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl border border-aff-cyan/40 bg-aff-cyan/10 text-aff-cyan hover:bg-aff-cyan/15 transition-colors disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
+          title="Descubre negocios reales con teléfono/email/web en OpenStreetMap (gratis, sin cuota de IA)"
+        >
+          {engineRunning ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Rastreando OpenStreetMap (hasta 60s)…
+            </>
+          ) : (
+            <>🌍 Descubrir en OpenStreetMap</>
+          )}
+        </button>
+
+        <button
+          onClick={sendEmails}
+          disabled={emailing}
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-surface-hover transition-colors disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
+          title="Envía emails personalizados a los prospectos con email verificado (requiere BREVO_API_KEY)"
+        >
+          {emailing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Enviando emails…
+            </>
+          ) : (
+            <>📧 Enviar emails</>
+          )}
+        </button>
+
+        <button
           onClick={reverify}
           disabled={reverifying || running}
           className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-surface-hover transition-colors cursor-pointer disabled:opacity-60"
@@ -217,7 +345,7 @@ export function ProspectosClient({
           <ChevronDown className={`w-4 h-4 transition-transform ${cfgOpen ? "rotate-180" : ""}`} />
         </button>
 
-        <div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex flex-wrap items-center gap-1.5 ml-auto">
           {(["ALL", "NEW", "SENT", "DISCARDED"] as const).map((f) => (
             <button
               key={f}
@@ -237,6 +365,25 @@ export function ProspectosClient({
                     : `Descartados (${items.filter((p) => p.status === "DISCARDED").length})`}
             </button>
           ))}
+          <span className="w-px h-5 bg-border mx-1 hidden sm:block" />
+          {(["ALL", "WHATSAPP", "TELEGRAM", "EMAIL", "WEB"] as const).map((c) => {
+            const labels = { ALL: "Todos", WHATSAPP: "WhatsApp", TELEGRAM: "Telegram", EMAIL: "Email", WEB: "Web" };
+            const count =
+              c === "ALL" ? items.length : items.filter((p) => p.channel === c).length;
+            return (
+              <button
+                key={c}
+                onClick={() => setChannelFilter(c)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
+                  channelFilter === c
+                    ? "border-green-500/50 bg-green-500/10 text-green-500"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {labels[c]} ({count})
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -338,11 +485,28 @@ export function ProspectosClient({
               p.contactUrl?.startsWith("https://wa.me/")
                 ? `${p.contactUrl}?text=${encodeURIComponent(p.draftMessage)}`
                 : null;
+            const tgHref = p.telegram
+              ? `https://t.me/${p.telegram.replace(/^@/, "")}`
+              : p.contactUrl?.includes("t.me/")
+                ? p.contactUrl
+                : null;
+            const mailHref = p.email
+              ? `mailto:${p.email}?subject=${encodeURIComponent(`Idea para ${p.businessName}`)}&body=${encodeURIComponent(p.draftMessage.slice(0, 1200))}`
+              : null;
+            const webHref =
+              p.channel === "WEB" &&
+              p.contactUrl &&
+              !p.contactUrl.startsWith("mailto:") &&
+              !p.contactUrl.includes("t.me")
+                ? p.contactUrl
+                : p.siteUrl;
             // El botón de contacto SOLO si el contacto está verificado (sello ✓).
             // Los descartados (legado con links muertos) no muestran acción de contacto.
-            const showWa = Boolean(waHref) && p.contactVerified && p.status !== "DISCARDED";
-            const showUrlContact =
-              !waHref && p.contactVerified && Boolean(p.contactUrl) && p.status === "NEW";
+            const canContact = p.contactVerified && p.status !== "DISCARDED";
+            const showWa = Boolean(waHref) && canContact;
+            const showTg = Boolean(tgHref) && canContact;
+            const showMail = Boolean(mailHref) && canContact && p.status === "NEW";
+            const showWeb = Boolean(webHref) && canContact && !showWa && !showTg && !showMail;
             return (
               <motion.div
                 key={p.id}
@@ -358,9 +522,21 @@ export function ProspectosClient({
                       {p.contactVerified && (
                         <span
                           className="px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-green-500/10 text-green-500 border-green-500/30"
-                          title="Número sondeado en wa.me o URL viva comprobada"
+                          title="Canal sondeado en wa.me/t.me/MX o URL viva comprobada"
                         >
                           ✓ contacto verificado
+                        </span>
+                      )}
+                      {p.channel && CHANNEL_META[p.channel] && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${CHANNEL_META[p.channel].className}`}
+                        >
+                          {CHANNEL_META[p.channel].label}
+                        </span>
+                      )}
+                      {p.source && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border border-border text-muted-foreground">
+                          {p.source}
                         </span>
                       )}
                       <span
@@ -401,16 +577,50 @@ export function ProspectosClient({
                         {p.status === "SENT" ? "Reabrir chat" : "Enviar por WhatsApp"}
                       </a>
                     )}
-                    {showUrlContact && (
+                    {showTg && (
                       <a
-                        href={p.contactUrl!}
+                        href={tgHref!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={() => void setStatus(p.id, "SENT")}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#22c55e] rounded-full transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (p.status === "NEW") void setStatus(p.id, "SENT");
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-sky-500 hover:bg-sky-400 rounded-full transition-colors cursor-pointer"
                       >
-                        <MessageCircle className="w-3.5 h-3.5" /> Abrir contacto
+                        <Send className="w-3.5 h-3.5" /> Enviar por Telegram
                       </a>
+                    )}
+                    {showMail && (
+                      <a
+                        href={mailHref!}
+                        onClick={() => void setStatus(p.id, "SENT")}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-purple-500 hover:bg-purple-400 rounded-full transition-colors cursor-pointer"
+                      >
+                        <Mail className="w-3.5 h-3.5" /> Enviar email
+                      </a>
+                    )}
+                    {showWeb && (
+                      <a
+                        href={webHref!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          if (p.status === "NEW") void setStatus(p.id, "SENT");
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-full border border-border hover:bg-surface-hover transition-colors cursor-pointer"
+                      >
+                        <Globe className="w-3.5 h-3.5" /> Abrir su web
+                      </a>
+                    )}
+                    {(showWa || showTg) && (
+                      <button
+                        onClick={() => copyMessage(p.id, p.draftMessage)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-aff-cyan border border-border rounded-full transition-colors cursor-pointer"
+                        title="Copiar el mensaje para pegarlo donde quieras"
+                      >
+                        {copiedId === p.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedId === p.id ? "Copiado" : "Copiar mensaje"}
+                      </button>
                     )}
                     {p.status === "DISCARDED" && !p.contactVerified && (
                       <span className="text-[11px] text-muted-foreground italic">
@@ -449,6 +659,17 @@ export function ProspectosClient({
 
                 {/* Intel */}
                 <div className="mt-4 space-y-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    {p.phone && <span className="px-2 py-0.5 rounded-md bg-surface border border-border">📱 {p.phone}</span>}
+                    {p.email && <span className="px-2 py-0.5 rounded-md bg-surface border border-border">✉️ {p.email}</span>}
+                    {p.telegram && <span className="px-2 py-0.5 rounded-md bg-surface border border-border">✈️ @{p.telegram.replace(/^@/, "")}</span>}
+                    {p.outreachCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/30">
+                        email automático enviado
+                        {p.lastOutreachAt ? ` · ${new Date(p.lastOutreachAt).toLocaleDateString("es")}` : ""}
+                      </span>
+                    )}
+                  </div>
                   {p.siteUrl && (
                     <a
                       href={p.siteUrl}
@@ -483,7 +704,7 @@ export function ProspectosClient({
                   )}
                   <div className="rounded-xl border border-border bg-surface-hover/60 p-3.5">
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-semibold mb-1.5">
-                      Mensaje listo para WhatsApp
+                      Mensaje listo para {p.channel === "TELEGRAM" ? "Telegram" : p.channel === "EMAIL" ? "email" : "WhatsApp"}
                     </p>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{p.draftMessage}</p>
                     {!waHref && p.contactUrl && (

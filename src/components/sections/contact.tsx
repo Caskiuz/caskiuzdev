@@ -140,6 +140,12 @@ export function Contact({ config = {} }: ContactProps) {
           <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
             {c("contact_subtitle", "3 pasos rápidos y recibo tu propuesta preliminar. La primera consulta es gratis.")}
           </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            ¿Ya tienes web?{" "}
+            <Link href="/auditoria" className="text-aff-cyan hover:underline font-medium">
+              Audítala gratis en 10 segundos →
+            </Link>
+          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -2,13 +2,14 @@ import { MetadataRoute } from "next";
 import { getAllBlogSlugs, getBlogPost } from "@/lib/blog-data";
 
 const BASE_URL = "https://caskiuz.vercel.app";
-const SITE_DEPLOY_DATE = new Date("2026-11-18"); // última actualización estructural
+const SITE_DEPLOY_DATE = new Date("2026-11-25"); // última actualización estructural
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     "",
     "/blog",
     "/recursos",
+    "/auditoria",
     "/cv",
     "/afiliados",
     "/afiliados/faq",
@@ -18,7 +19,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${BASE_URL}${route}`,
     lastModified: SITE_DEPLOY_DATE,
     changeFrequency: "weekly" as const,
-    priority: route === "" ? 1 : route === "/afiliados" ? 0.9 : route === "/recursos" ? 0.8 : 0.7,
+    priority:
+      route === ""
+        ? 1
+        : route === "/afiliados"
+          ? 0.9
+          : route === "/auditoria"
+            ? 0.9
+            : route === "/recursos"
+              ? 0.8
+              : 0.7,
   }));
 
   // Landings de servicio (SEO por keyword)

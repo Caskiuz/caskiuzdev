@@ -22,6 +22,7 @@ import {
   Target,
   ImageIcon,
   Briefcase,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiveUnreadBadge } from "@/components/notifications/live-unread-badge";
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/admin/messages", label: "Mensajes", icon: MessageSquare },
   { href: "/admin/prospectos", label: "Prospectos IA", icon: Target },
   { href: "/admin/oportunidades", label: "Oportunidades", icon: Briefcase },
+  { href: "/admin/canales", label: "Canales de postulación", icon: Globe },
   { href: "/admin/notificaciones", label: "Notificaciones", icon: Bell },
 ];
 

@@ -29,6 +29,13 @@ export default async function ProspectosPage() {
       siteUrl: p.siteUrl,
       sourceUrl: p.sourceUrl,
       contactVerified: p.contactVerified,
+      phone: p.phone,
+      email: p.email,
+      telegram: p.telegram,
+      channel: p.channel,
+      source: p.source,
+      outreachCount: p.outreachCount,
+      lastOutreachAt: p.lastOutreachAt?.toISOString() ?? null,
       why: p.why,
       angle: p.angle,
       draftMessage: p.draftMessage,
@@ -45,9 +52,12 @@ export default async function ProspectosPage() {
           Prospectos <span className="gradient-text">IA</span>
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Cada día el cron busca negocios con Gemini + Google Search (gratis) y
-          deja aquí prospectos con el mensaje de WhatsApp listo. Tú solo revisas
-          y das clic. También puedes ejecutar una búsqueda manual.
+          Dos motores: <strong>OpenStreetMap</strong> descubre negocios reales con
+          teléfono, email, Telegram o web cada 30 minutos (sin gastar cuota de IA), y{" "}
+          <strong>Gemini + Google Search</strong> busca nichos específicos. Todo
+          contacto pasa por sondeo real (wa.me / t.me / MX / URL viva) antes de
+          aparecer aquí. Los emails verificados se envían en automático con
+          «Enviar emails»; WhatsApp y Telegram se abren con un clic.
         </p>
       </div>
 

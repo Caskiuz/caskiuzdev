@@ -36,12 +36,17 @@ export default async function OportunidadesPage() {
           Oportunidades <span className="gradient-text">de empleo</span>
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Vacantes remote recolectadas cada día de 5 fuentes gratis (Remotive,
-          RemoteOK, Himalayas, Jobicy, WeWorkRemotely) y puntuadas por IA contra
-          tu perfil de <strong>{candidateProfile.headline.split("·")[0].trim()}</strong>.
+          Vacantes remote recolectadas cada 30 minutos de 10 fuentes gratis
+          (Remotive, RemoteOK, Himalayas, Jobicy, WeWorkRemotely, Arbeitnow,
+          Working Nomads, Hacker News freelance y Who is Hiring) y puntuadas por
+          IA en lote contra tu perfil de{" "}
+          <strong>{candidateProfile.headline.split("·")[0].trim()}</strong>.
           Aplica, genera la carta y sigue el pipeline.{" "}
           <a href="/cv" target="_blank" className="text-aff-cyan hover:underline">
             Ver tu CV público →
+          </a>{" "}
+          <a href="/admin/canales" className="text-aff-cyan hover:underline">
+            Más canales para enviar tu CV →
           </a>
         </p>
       </div>

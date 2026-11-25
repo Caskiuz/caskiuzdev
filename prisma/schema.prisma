@@ -363,18 +363,32 @@ model Prospect {
   businessName    String   @db.VarChar(200)
   niche           String   @db.VarChar(120)
   region          String   @db.VarChar(120)
-  contactUrl      String?  @db.VarChar(500) // WhatsApp/teléfono público VERIFICADO
+  contactUrl      String?  @db.VarChar(500) // WhatsApp/Telegram/email público VERIFICADO
   siteUrl         String?  @db.VarChar(500) // su web actual (verificada viva)
   sourceUrl       String?  @db.VarChar(500) // página fuente de donde salió el contacto
-  contactVerified Boolean  @default(false) // true = número sondeado en wa.me o URL viva comprobada
+  contactVerified Boolean  @default(false) // true = canal sondeado (wa.me/t.me/MX) o URL viva
+  // Canales normalizados (motor multi-fuente: OSM, IA, web del negocio)
+  phone           String?  @db.VarChar(40) // teléfono tal cual figuraba en la fuente
+  email           String?  @db.VarChar(200)
+  telegram        String?  @db.VarChar(200) // @handle o https://t.me/…
+  channel         String?  @db.VarChar(20) // WHATSAPP | TELEGRAM | EMAIL | WEB
+  source          String?  @db.VarChar(30) // OSM | AI | WEB
+  externalId      String?  @db.VarChar(200) // id en la fuente (osm:node/123) para dedupe
+  // Outreach por email (automático, con baja)
+  outreachCount   Int      @default(0)
+  lastOutreachAt  DateTime? @map("last_outreach_at")
+  emailOptOut     Boolean  @default(false) @map("email_opt_out")
   why             String   @db.Text // por qué es buen prospecto
   angle           String   @db.Text // ángulo de venta sugerido
-  draftMessage    String   @db.Text // mensaje WhatsApp listo para enviar
+  draftMessage    String   @db.Text // mensaje listo para enviar (WhatsApp/email)
   score           Int      @default(0) // 0-100
   status          String   @default("NEW") // NEW | SENT | DISCARDED
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([status, createdAt])
+  @@index([source, externalId])
+  @@index([channel])
+  @@index([email])
   @@map("prospects")
 }
 

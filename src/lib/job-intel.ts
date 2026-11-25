@@ -15,6 +15,8 @@ export interface JobCollectStats {
   fresh: number;
   scored: number;
   inserted: number;
+  /** Cuántas vacantes aportó cada fuente (diagnóstico del hub). */
+  bySource?: Record<string, number>;
   error?: string;
 }
 
@@ -31,49 +33,75 @@ function isRelevant(job: JobSourceItem): boolean {
   return ROLE_RE.test(haystack);
 }
 
-const SCORE_SYSTEM = `Eres un evaluador experto de vacantes para el candidato descrito. Evalúa el MATCH entre la vacante y el perfil.
+const SCORE_SYSTEM = `Eres un evaluador experto de vacantes para el candidato descrito. Evalúa el MATCH entre cada vacante y el perfil.
 
-Devuelve SOLO JSON válido: {"score": 0, "reasons": "", "salaryUsd": null}
+Devuelve SOLO JSON válido: {"items":[{"i":0,"score":0,"reasons":"","salaryUsd":null}]}
 
 Reglas:
 - score 0-100: 85+ = encaja perfecto (stack, seniority, remoto, salario); 55-84 = encaja con matices; <55 = no conviene.
 - Penaliza: presencial/no-remoto para LatAm, salario claramente bajo (<$1500/mes equivalente), stack muy ajeno, roles no técnicos, idiomas requeridos que el candidato no domina.
 - Premia: stack JS/TS/React/Next/Node o Python/Django/FastAPI, automatización/IA, full-stack, remoto LatAm-friendly, salario ≥ $1500/mes.
 - reasons: 1-2 frases justificando el score (para el panel del candidato).
-- salaryUsd: salario mensual estimado en USD si se puede inferir; null si no.
+- Evalúa TODAS las vacantes numeradas y devuelve un item por cada una, con su índice "i".
 
 ${profilePromptBlock()}`;
 
-async function scoreJobWithAI(job: JobSourceItem): Promise<{ score: number; reasons: string } | null> {
-  if (!(await checkAndIncrementAiQuota("JOB"))) return null;
-  const result = await callAI({
-    system: SCORE_SYSTEM,
-    prompt: `VACANTE:
-Título: ${job.title}
-Empresa: ${job.company}
-Ubicación: ${job.location || "Remoto"}
-Salario: ${job.salaryText || "no indicado"}
-Descripción: ${(job.description || "").slice(0, 1800)}`,
-    temperature: 0.2,
-    maxOutputTokens: 400,
-    lite: true,
-    json: true,
-    timeoutMs: 30000,
-  });
-  if (!result.ok) return null;
-  const data = extractJson<{ score?: number; reasons?: string; salaryUsd?: number | null }>(result.text);
-  if (!data) return null;
-  const score = Math.max(0, Math.min(100, Math.round(Number(data.score) || 0)));
-  const reasons = typeof data.reasons === "string" ? data.reasons.trim().slice(0, 600) : "";
-  return { score, reasons };
+interface JobScore {
+  score: number;
+  reasons: string;
 }
 
 /**
- * Recolecta → pre-filtra → puntúa (máx `maxScore` por corrida) → guarda
- * solo las que superan el umbral. Devuelve estadísticas para el digest.
+ * Puntúa hasta 8 vacantes en UNA sola llamada de IA (misma cuota que una
+ * individual) para multiplicar el volumen del hub sin gastar más free tier.
+ * Devuelve null si la cuota está agotada o la IA no responde.
+ */
+async function scoreJobsBatchWithAI(jobs: JobSourceItem[]): Promise<(JobScore | null)[] | null> {
+  if (!jobs.length) return [];
+  if (!(await checkAndIncrementAiQuota("JOB"))) return null;
+
+  const listing = jobs
+    .map(
+      (job, i) =>
+        `${i}. TÍTULO: ${job.title}\nEMPRESA: ${job.company}\nUBICACIÓN: ${job.location || "Remoto"}\nSALARIO: ${job.salaryText || "no indicado"}\nDESCRIPCIÓN: ${(job.description || "").slice(0, 900)}`
+    )
+    .join("\n\n");
+
+  const result = await callAI({
+    system: SCORE_SYSTEM,
+    prompt: `VACANTES:\n\n${listing}\n\nResponde con el JSON pedido, un item por vacante.`,
+    temperature: 0.2,
+    maxOutputTokens: 1400,
+    lite: true,
+    json: true,
+    timeoutMs: 40000,
+  });
+  if (!result.ok) return null;
+
+  const data = extractJson<{
+    items?: { i?: number; score?: number; reasons?: string }[];
+  }>(result.text);
+  if (!data?.items?.length) return null;
+
+  const out: (JobScore | null)[] = new Array(jobs.length).fill(null);
+  for (const item of data.items) {
+    const idx = Number(item.i);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= jobs.length) continue;
+    out[idx] = {
+      score: Math.max(0, Math.min(100, Math.round(Number(item.score) || 0))),
+      reasons:
+        typeof item.reasons === "string" ? item.reasons.trim().slice(0, 600) : "",
+    };
+  }
+  return out;
+}
+
+/**
+ * Recolecta → pre-filtra → puntúa en lotes (máx `maxScore` por corrida) →
+ * guarda solo las que superan el umbral. Devuelve estadísticas para el digest.
  */
 export async function collectAndScoreJobs(opts?: { maxScore?: number; minScore?: number }): Promise<JobCollectStats> {
-  const maxScore = opts?.maxScore ?? 12;
+  const maxScore = opts?.maxScore ?? 24;
   const minScore = opts?.minScore ?? 55;
 
   const items = await fetchAllJobSources();
@@ -94,41 +122,50 @@ export async function collectAndScoreJobs(opts?: { maxScore?: number; minScore?:
     .catch(() => []);
   const seen = new Set(existing.map((e) => `${e.source}|${e.externalId}`));
   const fresh = unique.filter((j) => !seen.has(`${j.source}|${j.externalId}`) && isRelevant(j));
+  const bySource: Record<string, number> = {};
+  for (const j of unique) bySource[j.source] = (bySource[j.source] || 0) + 1;
 
   const toScore = fresh.slice(0, maxScore);
   let scored = 0;
   let inserted = 0;
 
-  for (const job of toScore) {
-    const intel = await scoreJobWithAI(job);
-    if (!intel) break; // cuota agotada o IA caída: se reintenta mañana
-    scored++;
-    if (intel.score < minScore) continue;
-    try {
-      await prisma.jobOpportunity.create({
-        data: {
-          source: job.source,
-          externalId: job.externalId.slice(0, 200),
-          title: job.title.slice(0, 250),
-          company: job.company.slice(0, 200),
-          url: job.url.slice(0, 600),
-          location: job.location?.slice(0, 150) ?? null,
-          remote: job.remote,
-          salaryText: job.salaryText?.slice(0, 200) ?? null,
-          salaryMin: job.salaryMin ?? null,
-          description: job.description?.slice(0, 2000) ?? null,
-          score: intel.score,
-          matchReasons: intel.reasons,
-          status: "NEW",
-        },
-      });
-      inserted++;
-    } catch {
-      // duplicado por carrera: se ignora
+  // Lotes de 8: 24 vacantes = 3 llamadas de IA (antes eran 24)
+  for (let i = 0; i < toScore.length; i += 8) {
+    const batch = toScore.slice(i, i + 8);
+    const intel = await scoreJobsBatchWithAI(batch);
+    if (!intel) break; // cuota agotada o IA caída: se reintenta en el próximo tick
+    for (let j = 0; j < batch.length; j++) {
+      const result = intel[j];
+      if (!result) continue;
+      scored++;
+      if (result.score < minScore) continue;
+      const job = batch[j];
+      try {
+        await prisma.jobOpportunity.create({
+          data: {
+            source: job.source,
+            externalId: job.externalId.slice(0, 200),
+            title: job.title.slice(0, 250),
+            company: job.company.slice(0, 200),
+            url: job.url.slice(0, 600),
+            location: job.location?.slice(0, 150) ?? null,
+            remote: job.remote,
+            salaryText: job.salaryText?.slice(0, 200) ?? null,
+            salaryMin: job.salaryMin ?? null,
+            description: job.description?.slice(0, 2000) ?? null,
+            score: result.score,
+            matchReasons: result.reasons,
+            status: "NEW",
+          },
+        });
+        inserted++;
+      } catch {
+        // duplicado por carrera: se ignora
+      }
     }
   }
 
-  return { fetched: items.length, fresh: fresh.length, scored, inserted };
+  return { fetched: items.length, fresh: fresh.length, scored, inserted, bySource };
 }
 
 const DRAFT_SYSTEM = `Eres el asistente de postulaciones del candidato descrito. Escribe una carta de presentación en ESPAÑOL (250-320 palabras) para la vacante dada.

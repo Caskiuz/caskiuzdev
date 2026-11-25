@@ -8,6 +8,7 @@ import { sendEmail, emailShell, isEmailConfigured } from "@/lib/email";
 import { notifyIndexNow, coreSiteUrls } from "@/lib/indexnow";
 import { sendMonthlyDigest } from "@/lib/newsletter";
 import { collectAndScoreJobs } from "@/lib/job-intel";
+import { outreachConfigured, sendProspectOutreach } from "@/lib/prospect-outreach";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // límite del plan Hobby
@@ -33,25 +34,11 @@ async function handle(request: NextRequest) {
   const problems: string[] = [];
   const summary: Record<string, unknown> = {};
 
-  // 1) Prospección automática
-  let prospecting: Awaited<ReturnType<typeof runProspecting>> | null = null;
+  // 1) Hub de empleo: recolectar vacantes de 10 fuentes gratis y puntuarlas
+  //    en lote. Va PRIMERO porque es lo más importante para el candidato y su
+  //    duración es predecible; la prospección IA va después con tiempo acotado.
   try {
-    prospecting = await runProspecting();
-    summary.prospecting = {
-      inserted: prospecting.inserted,
-      found: prospecting.found,
-      mode: prospecting.mode,
-    };
-    if (prospecting.error) problems.push(`Prospección: ${prospecting.error}`);
-  } catch (error) {
-    problems.push(
-      `Prospección: ${error instanceof Error ? error.message : "error desconocido"}`
-    );
-  }
-
-  // 2) Hub de empleo: recolectar vacantes de las fuentes gratis y puntuarlas
-  try {
-    const jobs = await collectAndScoreJobs();
+    const jobs = await collectAndScoreJobs({ maxScore: 8 });
     summary.jobs = jobs;
 
     // Digest de vacantes nuevas con alto match (una sola notificación)
@@ -97,6 +84,32 @@ async function handle(request: NextRequest) {
   } catch (error) {
     summary.jobs = { error: error instanceof Error ? error.message : "error" };
     problems.push("Hub de empleo: la recolección falló");
+  }
+
+  // 2) Outreach por email a prospectos verificados (si hay proveedor)
+  if (outreachConfigured()) {
+    try {
+      summary.outreach = await sendProspectOutreach({ limit: 10 });
+    } catch {
+      summary.outreach = "error (no bloquea)";
+    }
+  }
+
+  // 3) Prospección IA con Google Search (ronda corta; el motor OSM corre
+  //    cada 30 min por GitHub Actions, así que aquí no hace falta el máximo).
+  let prospecting: Awaited<ReturnType<typeof runProspecting>> | null = null;
+  try {
+    prospecting = await runProspecting({ timeoutMs: 24000 });
+    summary.prospecting = {
+      inserted: prospecting.inserted,
+      found: prospecting.found,
+      mode: prospecting.mode,
+    };
+    if (prospecting.error) problems.push(`Prospección: ${prospecting.error}`);
+  } catch (error) {
+    problems.push(
+      `Prospección: ${error instanceof Error ? error.message : "error desconocido"}`
+    );
   }
 
   // 3) Chequeo de salud

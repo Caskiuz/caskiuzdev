@@ -1,0 +1,35 @@
+name: Motor Caskiuz (cada 30 min)
+
+# El plan Hobby de Vercel solo permite 2 crons al día. GitHub Actions es
+# gratis y dispara el motor continuo: un tick descubre prospectos en
+# OpenStreetMap y el siguiente recolecta vacantes + envía outreach.
+# Requiere el secret CRON_SECRET (Settings → Secrets and variables → Actions).
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: motor-caskiuz
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Disparar tick del motor
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Falta el secret CRON_SECRET en el repositorio"
+            exit 1
+          fi
+          curl -sS -X POST \
+            "https://caskiuz.vercel.app/api/cron/engine?mode=auto" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            --max-time 90 \
+            -w "\nHTTP %{http_code}\n"
