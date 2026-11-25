@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma/client";
 import { serialize } from "@/lib/affiliate-queries";
+import { outreachConfigured } from "@/lib/prospect-outreach";
 import { ProspectosClient } from "./prospectos-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProspectosPage() {
-  const [prospects, cfgRows] = await Promise.all([
+  const [prospects, cfgRows, pendingEmails] = await Promise.all([
     prisma.prospect.findMany({
       orderBy: [{ status: "asc" }, { score: "desc" }, { createdAt: "desc" }],
       take: 100,
@@ -15,6 +16,17 @@ export default async function ProspectosPage() {
         key: { in: ["prospect_niches", "prospect_region", "prospect_volume", "prospect_mode"] },
       },
     }),
+    prisma.prospect
+      .count({
+        where: {
+          status: "NEW",
+          emailOptOut: false,
+          outreachCount: 0,
+          contactVerified: true,
+          email: { not: null },
+        },
+      })
+      .catch(() => 0),
   ]);
 
   const cfg = Object.fromEntries(cfgRows.map((r) => [r.key, r.value]));
@@ -63,6 +75,8 @@ export default async function ProspectosPage() {
 
       <ProspectosClient
         prospects={serialized}
+        emailReady={outreachConfigured()}
+        pendingEmails={pendingEmails}
         config={{
           prospect_niches: cfg.prospect_niches || "",
           prospect_region: cfg.prospect_region || "",

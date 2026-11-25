@@ -162,7 +162,6 @@ async function verifyBusiness(
   if (
     site &&
     scrapeBudget.left > 0 &&
-    !b.emails.length &&
     !b.whatsappNumbers.length &&
     !b.telegrams.length
   ) {

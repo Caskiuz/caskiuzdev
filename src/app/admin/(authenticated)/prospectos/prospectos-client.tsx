@@ -68,9 +68,13 @@ const CHANNEL_META: Record<string, { label: string; className: string }> = {
 export function ProspectosClient({
   prospects,
   config,
+  emailReady = false,
+  pendingEmails = 0,
 }: {
   prospects: Prospect[];
   config: Config;
+  emailReady?: boolean;
+  pendingEmails?: number;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(prospects);
@@ -391,6 +395,34 @@ export function ProspectosClient({
         <p className="text-sm text-muted-foreground bg-surface-hover border border-border rounded-xl px-4 py-2.5">
           {runMsg}
         </p>
+      )}
+
+      {/* Estado del outreach por email (Brevo/SMTP) */}
+      {pendingEmails > 0 && (
+        <div
+          className={`rounded-xl border px-4 py-3 text-xs leading-relaxed ${
+            emailReady
+              ? "border-green-500/30 bg-green-500/5 text-green-500"
+              : "border-amber-500/30 bg-amber-500/5 text-amber-400"
+          }`}
+        >
+          {emailReady ? (
+            <>
+              📧 <strong>{pendingEmails}</strong> prospecto(s) con email verificado listos para envío
+              automático. Usa «Enviar emails» (máx. 20/día) o espera al motor: envía 8 por tick.
+            </>
+          ) : (
+            <>
+              📧 <strong>{pendingEmails}</strong> prospecto(s) con email verificado esperando envío
+              automático. Falta conectar un proveedor gratis: crea una cuenta en{" "}
+              <a href="https://www.brevo.com/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+                Brevo
+              </a>{" "}
+              (300 emails/día), verifica tu correo y agrega <code>BREVO_API_KEY</code> en Vercel.
+              WhatsApp y Telegram siguen funcionando con un clic.
+            </>
+          )}
+        </div>
       )}
 
       {/* Editor de nichos */}

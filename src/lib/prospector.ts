@@ -28,6 +28,7 @@ import {
 } from "@/lib/gemini";
 import {
   verifyWhatsAppNumber,
+  verifyTelegramHandle,
   fetchAndExtractContacts,
   isUrlAlive,
   nameMatches,
@@ -66,7 +67,7 @@ Devuelve SOLO un JSON válido: {"prospects": [{"businessName": "", "niche": "", 
 Reglas estrictas — ANTI-INVENCIÓN (lo verificamos después y lo inventado se descarta):
 - businessName: nombre real del negocio VISTO en los resultados de búsqueda (nunca inventado ni genérico).
 - sourceUrl: la URL EXACTA de una de las fuentes de búsqueda donde viste el negocio (una de las páginas que Google devolvió). Obligatoria.
-- contactUrl: SOLO un link wa.me/… o URL de contacto que hayas VISTO literalmente en una página del negocio o en los resultados. Si no lo viste, null. NUNCA construyas ni adivines números de teléfono.
+- contactUrl: SOLO un link wa.me/…, t.me/… o URL de contacto que hayas VISTO literalmente en una página del negocio o en los resultados. Si no lo viste, null. NUNCA construyas ni adivines números de teléfono ni usuarios de Telegram.
 - siteUrl: su web actual SOLO si viste el dominio en los resultados; null si no (y en el perfil "sin web" siempre null).
 - why: 1-2 líneas con la EVIDENCIA de por qué es buen prospecto (qué encontraste y en qué fuente).
 - angle: el servicio de Caskiuz que encaja + el gancho de venta en 1-2 líneas.
@@ -90,6 +91,10 @@ interface VerifiedProspect {
   siteUrl: string | null;
   sourceUrl: string | null;
   contactVerified: boolean;
+  phone: string | null;
+  email: string | null;
+  telegram: string | null;
+  channel: "WHATSAPP" | "TELEGRAM" | "WEB";
   why: string;
   angle: string;
   draftMessage: string;
@@ -164,10 +169,38 @@ async function verifyCandidate(
     }
   }
 
-  // 4) URLs: comprobar vivas; las muertas NO se guardan (el bug que reportó el usuario).
-  //    Los wa.me no se "verifican" aquí: ya pasaron el sondeo real de arriba.
+  // 4) Telegram: t.me del contacto citado o extraído del HTML, verificado en
+  //    su ficha pública (los bots no pueden consultar usuarios ajenos, pero
+  //    t.me sí renderiza el nombre del canal/usuario si existe).
+  let verifiedTg: string | null = null;
+  const tgHandles = new Set<string>();
+  const tgFromContact = cand.contactUrl?.match(/t\.me\/([A-Za-z0-9_]{4,64})/i)?.[1];
+  if (tgFromContact) tgHandles.add(tgFromContact);
+  for (const ext of extractions) {
+    for (const h of ext.contacts.telegrams) tgHandles.add(h);
+  }
+  for (const handle of [...tgHandles].slice(0, 2)) {
+    const check = await verifyTelegramHandle(handle);
+    if (check.exists && check.handle) {
+      verifiedTg = check.handle;
+      contactSource =
+        extractions.find((e) => e.contacts.telegrams.includes(check.handle!))
+          ?.sourceUrl ??
+        cand.sourceUrl ??
+        scrapeUrls[0] ??
+        null;
+      break;
+    }
+  }
+
+  // 5) URLs: comprobar vivas; las muertas NO se guardan (el bug que reportó el usuario).
+  //    Los wa.me/t.me no se "verifican" aquí: ya pasaron el sondeo real de arriba.
   const plainUrls = [cand.contactUrl, cand.siteUrl].filter(
-    (u): u is string => Boolean(u) && /^https?:\/\//.test(u!) && !u!.includes("wa.me/")
+    (u): u is string =>
+      Boolean(u) &&
+      /^https?:\/\//.test(u!) &&
+      !u!.includes("wa.me/") &&
+      !u!.includes("t.me/")
   );
   const urlChecks = await Promise.allSettled(
     plainUrls.map((u) => isUrlAlive(u).then((alive) => ({ url: u, alive })))
@@ -180,21 +213,26 @@ async function verifyCandidate(
     return hit?.value.alive ?? false;
   };
 
-  const aliveContactUrl = !verifiedWa && aliveOf(cand.contactUrl) ? cand.contactUrl!.slice(0, 500) : null;
+  const aliveContactUrl =
+    !verifiedWa && !verifiedTg && aliveOf(cand.contactUrl) ? cand.contactUrl!.slice(0, 500) : null;
   const aliveSiteUrl = aliveOf(cand.siteUrl) ? cand.siteUrl!.slice(0, 500) : null;
 
-  // 5) Regla de oro: sin ningún canal verificado → fuera
-  const contactVerified = Boolean(verifiedWa || aliveContactUrl || aliveSiteUrl);
+  // 6) Regla de oro: sin ningún canal verificado → fuera
+  const contactVerified = Boolean(verifiedWa || verifiedTg || aliveContactUrl || aliveSiteUrl);
   if (!contactVerified) return null;
 
   return {
     businessName,
     niche: (cand.niche || "").slice(0, 120),
     region: (cand.region || "").slice(0, 120),
-    contactUrl: verifiedWa ?? aliveContactUrl,
+    contactUrl: verifiedWa ?? (verifiedTg ? `https://t.me/${verifiedTg}` : aliveContactUrl),
     siteUrl: aliveSiteUrl,
     sourceUrl: (contactSource || cand.sourceUrl || scrapeUrls[0] || null)?.slice(0, 500) ?? null,
-    contactVerified: Boolean(verifiedWa),
+    contactVerified: Boolean(verifiedWa || verifiedTg),
+    phone: verifiedWa?.match(/wa\.me\/(\d{8,15})/)?.[1] ?? null,
+    email: null,
+    telegram: verifiedTg,
+    channel: verifiedWa ? "WHATSAPP" : verifiedTg ? "TELEGRAM" : "WEB",
     why: (cand.why || "").slice(0, 2000),
     angle: (cand.angle || "").slice(0, 2000),
     draftMessage: (cand.draftMessage || "").slice(0, 2000),
@@ -317,16 +355,11 @@ IMPORTANTE: responde ÚNICAMENTE con el JSON pedido en tus instrucciones (sin ma
 
   if (toInsert.length) {
     await prisma.prospect.createMany({
-      data: toInsert.map((p) => {
-        const waDigits = p.contactUrl?.match(/wa\.me\/(\d{8,15})/)?.[1] ?? null;
-        return {
-          ...p,
-          source: "AI",
-          channel: waDigits ? "WHATSAPP" : "WEB",
-          phone: waDigits,
-          externalId: null,
-        };
-      }),
+      data: toInsert.map((p) => ({
+        ...p,
+        source: "AI",
+        externalId: null,
+      })),
     });
   }
 
