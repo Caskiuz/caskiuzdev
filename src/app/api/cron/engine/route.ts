@@ -38,7 +38,9 @@ async function handle(request: NextRequest) {
       result.prospects = await runOsmProspecting({ budgetMs: 45000, maxVerify: 40 });
     }
     if (mode === "jobs" || mode === "all") {
-      result.jobs = await collectAndScoreJobs({ maxScore: 16 });
+      // 8 vacantes = 2 lotes de IA: cabe holgado en los 60s del plan Hobby
+      // incluso con los 10 fetchers de fuentes en frío.
+      result.jobs = await collectAndScoreJobs({ maxScore: 8 });
       if (outreachConfigured()) {
         result.outreach = await sendProspectOutreach({ limit: 8 });
       }

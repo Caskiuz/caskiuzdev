@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   // action === "run" (por defecto)
   try {
-    const stats = await collectAndScoreJobs({ maxScore: 12 });
+    const stats = await collectAndScoreJobs({ maxScore: 8 });
     return NextResponse.json({ success: true, stats });
   } catch (error) {
     console.error("Error recolectando vacantes:", error);
