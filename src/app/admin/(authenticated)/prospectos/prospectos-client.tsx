@@ -712,6 +712,17 @@ export function ProspectosClient({
                       <ExternalLink className="w-3 h-3" /> {p.siteUrl}
                     </a>
                   )}
+                  {p.siteUrl && (
+                    <a
+                      href={`/auditoria?url=${encodeURIComponent(p.siteUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-aff-cyan ml-3"
+                      title="Analiza su web y usa los hallazgos en el mensaje"
+                    >
+                      🔎 Auditar su web gratis
+                    </a>
+                  )}
                   {p.why && (
                     <p className="text-xs text-muted-foreground">
                       <span className="font-semibold text-foreground">Por qué: </span>
