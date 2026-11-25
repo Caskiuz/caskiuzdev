@@ -177,7 +177,22 @@ export async function sendProspectOutreach(opts?: {
       skipped: 0,
       remainingToday,
       error:
-        "Outreach sin proveedor: configura BREVO_API_KEY (300 emails/día gratis) o OUTREACH_VIA_SMTP=1 con SMTP_USER/SMTP_PASS.",
+        "Outreach sin proveedor: configura Gmail SMTP (SMTP_USER/SMTP_PASS + OUTREACH_VIA_SMTP=1) o un dominio verificado en Resend.",
+    };
+  }
+
+  // Resend sin dominio propio solo puede enviar al correo dueño de la cuenta.
+  // Se corta con un mensaje claro en vez de fallar prospecto por prospecto.
+  if (provider === "resend" && /(resend\.dev|gmail\.com|hotmail\.com|outlook\.com)/i.test(FROM)) {
+    return {
+      configured: false,
+      provider,
+      sent: 0,
+      failed: 0,
+      skipped: 0,
+      remainingToday,
+      error:
+        "Resend sin dominio verificado: solo puede enviar a tu propio correo. Verifica un dominio en resend.com/domains o usa Gmail SMTP gratis (OUTREACH_VIA_SMTP=1).",
     };
   }
 

@@ -414,12 +414,9 @@ export function ProspectosClient({
           ) : (
             <>
               📧 <strong>{pendingEmails}</strong> prospecto(s) con email verificado esperando envío
-              automático. Falta conectar un proveedor gratis: crea una cuenta en{" "}
-              <a href="https://www.brevo.com/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
-                Brevo
-              </a>{" "}
-              (300 emails/día), verifica tu correo y agrega <code>BREVO_API_KEY</code> en Vercel.
-              WhatsApp y Telegram siguen funcionando con un clic.
+              automático. Falta conectar un proveedor gratis: <strong>Gmail SMTP</strong> (App
+              Password) o <strong>SMTP2GO</strong> (1.000 emails/mes). Resend solo sirve con un
+              dominio propio verificado. WhatsApp y Telegram siguen funcionando con un clic.
             </>
           )}
         </div>
