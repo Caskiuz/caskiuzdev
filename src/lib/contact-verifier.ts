@@ -229,10 +229,13 @@ export function extractContactLinks(html: string): ExtractedContacts {
 }
 
 /** Descarga una página y extrae sus contactos. null si está muerta o cae. */
-export async function fetchAndExtractContacts(url: string): Promise<ExtractedContacts | null> {
+export async function fetchAndExtractContacts(
+  url: string,
+  timeoutMs = FETCH_TIMEOUT_MS
+): Promise<ExtractedContacts | null> {
   try {
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
       redirect: "follow",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; caskiuz-verifier/1.0)" },
     });

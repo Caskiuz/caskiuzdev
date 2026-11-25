@@ -253,7 +253,7 @@ function parseElement(el: {
 function buildQuery(city: OsmCity): string {
   return `[out:json][timeout:20];
 nwr(around:${city.radius},${city.lat},${city.lon})["name"][~"^(shop|amenity|office|craft|tourism|healthcare|leisure)$"~"."][~"^(phone|contact:phone|contact:whatsapp|contact:mobile|email|contact:email|website|contact:website|contact:telegram|contact:instagram|contact:facebook)$"~"."];
-out tags center 400;`;
+out tags center 600;`;
 }
 
 /**
@@ -339,19 +339,17 @@ export async function fetchOsmCity(
 }
 
 /**
- * Ciudades de la ronda: San Cristóbal siempre (base local) + una rotativa.
- * La rotación usa día y hora para que dos ejecuciones del mismo día cubran
- * ciudades distintas sin repetir la misma en cada tick del motor.
+ * Ciudades de la ronda. Cada tick de 30 min abre una ciudad nueva (el pool
+ * de contactos de una ciudad se agota en 2-3 rondas) y San Cristóbal entra
+ * en los ticks pares para no perder la base local.
  */
 export function pickCities(count = 2): OsmCity[] {
-  const base = OSM_CITIES[0];
+  const tick = Math.floor(Date.now() / (30 * 60 * 1000));
   const rest = OSM_CITIES.slice(1);
-  const seed = Math.floor(Date.now() / (3 * 60 * 60 * 1000)); // cambia cada 3h
-  const picked: OsmCity[] = [base];
-  for (let i = 0; i < count - 1; i++) {
-    picked.push(rest[(seed + i * 5) % rest.length]);
-  }
-  return picked;
+  const a = rest[tick % rest.length];
+  const b = rest[(tick + 5) % rest.length];
+  if (tick % 2 === 0) return [OSM_CITIES[0], a].slice(0, Math.max(count, 2));
+  return [a, b].slice(0, Math.max(count, 2));
 }
 
 /**

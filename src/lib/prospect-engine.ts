@@ -166,7 +166,7 @@ async function verifyBusiness(
     !b.telegrams.length
   ) {
     scrapeBudget.left--;
-    const contacts = await fetchAndExtractContacts(site);
+    const contacts = await fetchAndExtractContacts(site, 6000);
     if (contacts) {
       siteAlive = true;
       for (const n of contacts.whatsappNumbers) waNumbers.add(normalizePhone(n));
@@ -387,7 +387,7 @@ export async function runOsmProspecting(opts?: {
 
   // Ranking: primero los que tienen más canales y WhatsApp explícito
   fresh.sort((a, b) => ruleScore(b) - ruleScore(a));
-  const perCity = opts?.perCity ?? 60;
+  const perCity = opts?.perCity ?? 80;
   const byCity = new Map<string, OsmBusiness[]>();
   for (const b of fresh) {
     const list = byCity.get(b.city) || [];
@@ -398,7 +398,7 @@ export async function runOsmProspecting(opts?: {
   stats.candidates = candidates.length;
 
   const maxVerify = Math.min(opts?.maxVerify ?? 50, candidates.length);
-  const scrapeBudget = { left: 8 };
+  const scrapeBudget = { left: 4 };
   const verified: VerifiedBusiness[] = [];
 
   // Bloques de 8 para no abrir 50 conexiones a la vez

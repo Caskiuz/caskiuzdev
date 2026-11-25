@@ -35,7 +35,7 @@ async function handle(request: NextRequest) {
 
   try {
     if (mode === "prospects" || mode === "all") {
-      result.prospects = await runOsmProspecting({ budgetMs: 45000, maxVerify: 40 });
+      result.prospects = await runOsmProspecting({ budgetMs: 45000, maxVerify: 32 });
     }
     if (mode === "jobs" || mode === "all") {
       // 8 vacantes = 2 lotes de IA: cabe holgado en los 60s del plan Hobby
