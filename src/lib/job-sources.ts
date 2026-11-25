@@ -298,7 +298,12 @@ export async function fetchArbeitnow(): Promise<JobSourceItem[]> {
     "https://www.arbeitnow.com/api/job-board-api"
   );
   return (data?.data ?? [])
-    .filter((j) => j.title && j.url)
+    .filter(
+      (j) =>
+        j.title &&
+        j.url &&
+        (j.remote || /remote|remoto|anywhere|worldwide/i.test(`${j.title} ${j.location || ""}`))
+    )
     .map((j) => ({
       source: "ARBEITNOW" as const,
       externalId: String(j.slug ?? j.url),

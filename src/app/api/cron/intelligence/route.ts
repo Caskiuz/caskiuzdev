@@ -104,8 +104,10 @@ async function handle(request: NextRequest) {
       inserted: prospecting.inserted,
       found: prospecting.found,
       mode: prospecting.mode,
+      ...(prospecting.error ? { error: prospecting.error } : {}),
     };
-    if (prospecting.error) problems.push(`Prospección: ${prospecting.error}`);
+    // Un timeout o la cuota de IA agotada son esperables: no disparan la
+    // alerta de "problemas" (el motor OSM sigue trabajando cada 30 min).
   } catch (error) {
     problems.push(
       `Prospección: ${error instanceof Error ? error.message : "error desconocido"}`
